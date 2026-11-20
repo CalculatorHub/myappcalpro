@@ -104,7 +104,7 @@ export function PercentageRupeeCalc() {
           {/* Direction Toggle & Switch Button */}
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-medium text-zinc-200">
+              <span className="text-xs font-medium text-text-4">
                 Conversion Direction
               </span>
               <button
@@ -234,20 +234,20 @@ export function PercentageRupeeCalc() {
         ) : (
           <>
             {/* Spotlight Conversion Result */}
-            <div className="rounded-xl border border-[#D4AF37]/40 bg-[#131209] p-5 sm:p-6">
+            <div className="rounded-xl border border-gold/40 bg-bg-0 p-5 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <span className="text-xs font-medium text-[#E5C158]">
+                  <span className="text-xs font-medium text-gold-hover">
                     {isRupeesToPercent
                       ? 'Converted Percentage (%)'
                       : 'Converted Rupee Amount (₹)'}
                   </span>
-                  <div className="font-mono-num mt-1.5 text-3xl font-bold tracking-tight text-white">
+                  <div className="font-mono-num mt-1.5 text-3xl font-bold tracking-tight text-text-0">
                     {isRupeesToPercent
                       ? `${formatNumberIN(result.rupeesToPercentValue, 4)}%`
                       : formatINR(result.percentToRupeesValue)}
                   </div>
-                  <p className="font-mono-num mt-1.5 text-xs text-zinc-300">
+                  <p className="font-mono-num mt-1.5 text-xs text-text-3">
                     {isRupeesToPercent
                       ? `${formatINR(result.valueToConvert)} → ${formatNumberIN(
                           result.rupeesToPercentValue,
@@ -260,11 +260,11 @@ export function PercentageRupeeCalc() {
                 </div>
 
                 <div className="text-left sm:text-right">
-                  <span className="text-xs text-zinc-400">Conversion Ratio</span>
-                  <div className="font-mono-num mt-0.5 text-base font-semibold text-[#E5C158]">
+                  <span className="text-xs text-text-4">Conversion Ratio</span>
+                  <div className="font-mono-num mt-0.5 text-base font-semibold text-gold-hover">
                     ₹1 = 12%
                   </div>
-                  <span className="mt-0.5 block text-[11px] text-zinc-400">
+                  <span className="mt-0.5 block text-xs text-text-4">
                     {isRupeesToPercent
                       ? `Input: Rupees (₹) · Output: Percentage (%)`
                       : `Input: Percentage (%) · Output: Rupees (₹)`}
@@ -274,23 +274,23 @@ export function PercentageRupeeCalc() {
             </div>
 
             {/* Formula & Step-by-Step Breakdown */}
-            <div className="rounded-xl border border-white/[0.08] bg-[#111116] p-5 sm:p-6">
+            <div className="rounded-xl border border-white/[0.08] bg-bg-2 p-5 sm:p-6">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
-                <h3 className="font-display text-sm font-semibold text-white">
+                <h3 className="font-display text-sm font-semibold text-text-0">
                   Formula & Calculation Steps
                 </h3>
-                <code className="font-mono-num rounded bg-[#181820] px-2.5 py-1 text-xs text-[#E5C158]">
+                <code className="font-mono-num rounded bg-bg-3 px-2.5 py-1 text-xs text-gold-hover">
                   {activeFormula}
                 </code>
               </div>
 
-              <ol className="space-y-2.5 text-xs text-zinc-300 sm:text-sm">
+              <ol className="space-y-2.5 text-xs text-text-3 sm:text-sm">
                 {(isRupeesToPercent
                   ? result.rupeesToPercentSteps
                   : result.percentToRupeesSteps
                 ).map((step, i) => (
                   <li key={i} className="flex items-start gap-3">
-                    <span className="font-mono-num mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-[#D4AF37]/30 bg-[#D4AF37]/10 text-xs font-semibold text-[#E5C158]">
+                    <span className="font-mono-num mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-gold/30 bg-gold/10 text-xs font-semibold text-gold-hover">
                       {i + 1}
                     </span>
                     <span className="font-mono-num leading-relaxed">{step}</span>

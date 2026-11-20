@@ -39,7 +39,7 @@ export function Tooltip({ text, label = 'More information' }: TooltipProps) {
         onClick={() => setOpen((prev) => !prev)}
         onFocus={() => setOpen(true)}
         onBlur={() => setOpen(false)}
-        className="inline-flex h-5 w-5 items-center justify-center rounded text-zinc-400 transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-[#D4AF37] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37]"
+        className="inline-flex h-5 w-5 items-center justify-center rounded text-text-4 transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
       >
         <Question size={14} weight="regular" aria-hidden="true" />
       </button>
@@ -47,10 +47,10 @@ export function Tooltip({ text, label = 'More information' }: TooltipProps) {
       {open && (
         <div
           role="tooltip"
-          className="absolute bottom-full left-1/2 z-40 mb-2 w-64 -translate-x-1/2 rounded-lg border border-[#313131] bg-[#1F1F1F] p-3 text-xs leading-relaxed text-zinc-200 shadow-xl"
+          className="absolute bottom-full left-1/2 z-40 mb-2 w-64 -translate-x-1/2 rounded-lg border border-border-3 bg-bg-3 p-3 text-xs leading-relaxed text-text-1 shadow-xl"
         >
           {text}
-          <div className="absolute top-full left-1/2 -mt-px h-2 w-2 -translate-x-1/2 rotate-45 border-r border-b border-[#313131] bg-[#1F1F1F]" />
+          <div className="absolute top-full left-1/2 -mt-px h-2 w-2 -translate-x-1/2 rotate-45 border-r border-b border-border-3 bg-bg-3" />
         </div>
       )}
     </div>

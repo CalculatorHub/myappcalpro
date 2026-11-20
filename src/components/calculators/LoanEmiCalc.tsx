@@ -245,14 +245,14 @@ export function LoanEmiCalc() {
                         key={pct}
                         type="button"
                         onClick={() => applyDownPaymentPercent(pct)}
-                        className="rounded border border-border-subtle bg-bg-card px-2 py-1 text-[11px] text-secondary hover:border-accent-gold/50 hover:text-accent-gold"
+                        className="rounded border border-border-subtle bg-bg-card px-2 py-1 text-xs text-secondary hover:border-accent-gold/50 hover:text-accent-gold"
                       >
                         {pct}% Down
                       </button>
                     ))}
                   </div>
                   {ltvPercent !== null && (
-                    <span className="font-mono-num text-[11px] text-muted">
+                    <span className="font-mono-num text-xs text-muted">
                       LTV: {ltvPercent.toFixed(1)}%
                     </span>
                   )}
@@ -339,14 +339,14 @@ export function LoanEmiCalc() {
               error={parsedFee.error}
               tooltip="Upfront loan origination / processing fee added to calculate total borrowing cost."
             />
-            <div className="grid grid-cols-2 gap-1.5 rounded-lg border border-white/[0.08] bg-[#0B0B0E] p-1">
+            <div className="grid grid-cols-2 gap-1.5 rounded-lg border border-border-3 bg-bg-3 p-1">
               <button
                 type="button"
                 onClick={() => setFeeMode('flat')}
                 className={`min-h-[34px] rounded-md px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap ${
                   feeMode === 'flat'
-                    ? 'bg-zinc-800 text-[#E5C158]'
-                    : 'text-zinc-400 hover:text-white'
+                    ? 'bg-text-5 text-gold-hover'
+                    : 'text-text-4 hover:text-text-0'
                 }`}
               >
                 Flat Fee (₹)
@@ -356,8 +356,8 @@ export function LoanEmiCalc() {
                 onClick={() => setFeeMode('percent')}
                 className={`min-h-[34px] rounded-md px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap ${
                   feeMode === 'percent'
-                    ? 'bg-zinc-800 text-[#E5C158]'
-                    : 'text-zinc-400 hover:text-white'
+                    ? 'bg-text-5 text-gold-hover'
+                    : 'text-text-4 hover:text-text-0'
                 }`}
               >
                 % of Loan
@@ -415,14 +415,14 @@ export function LoanEmiCalc() {
         ) : (
           <>
             {/* Spotlight EMI Card + Supporting KPIs */}
-            <div className="rounded-xl border border-[#D4AF37]/40 bg-[#131209] p-5 sm:p-6">
+            <div className="rounded-xl border border-gold/40 bg-gold/5 p-5 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <span className="text-xs font-medium text-[#E5C158]">Monthly EMI</span>
-                  <div className="font-mono-num mt-1 text-3xl font-bold tracking-tight text-white">
+                  <span className="text-xs font-medium text-gold-hover">Monthly EMI</span>
+                  <div className="font-mono-num mt-1 text-3xl font-bold tracking-tight text-text-0">
                     {formatINR(result.monthlyEmi)}
                   </div>
-                  <p className="mt-1 text-xs text-zinc-400">
+                  <p className="mt-1 text-xs text-text-4">
                     {result.totalMonths} monthly installments
                     {crossoverYear ? ` · Principal exceeds interest from Year ${crossoverYear}` : ''}
                   </p>
@@ -430,20 +430,20 @@ export function LoanEmiCalc() {
 
                 <div className="grid grid-cols-3 gap-4 sm:text-right">
                   <div>
-                    <span className="text-xs text-zinc-400">Total Interest</span>
-                    <div className="font-mono-num mt-0.5 text-sm font-semibold text-white">
+                    <span className="text-xs text-text-4">Total Interest</span>
+                    <div className="font-mono-num mt-0.5 text-sm font-semibold text-text-2">
                       {formatINR(result.totalInterest, 0)}
                     </div>
                   </div>
                   <div>
-                    <span className="text-xs text-zinc-400">Total Repayment</span>
-                    <div className="font-mono-num mt-0.5 text-sm font-semibold text-zinc-200">
+                    <span className="text-xs text-text-4">Total Repayment</span>
+                    <div className="font-mono-num mt-0.5 text-sm font-semibold text-text-3">
                       {formatINR(result.totalRepayment, 0)}
                     </div>
                   </div>
                   <div>
-                    <span className="text-xs text-zinc-400">Total w/ Fee</span>
-                    <div className="font-mono-num mt-0.5 text-sm font-semibold text-[#E5C158]">
+                    <span className="text-xs text-text-4">Total w/ Fee</span>
+                    <div className="font-mono-num mt-0.5 text-sm font-semibold text-gold-hover">
                       {formatINR(result.totalCostIncludingFee, 0)}
                     </div>
                   </div>
@@ -461,19 +461,19 @@ export function LoanEmiCalc() {
             />
 
             {/* Formula Block */}
-            <div className="rounded-xl border border-white/[0.08] bg-[#111116] p-5">
+            <div className="rounded-xl border border-white/[0.08] bg-bg-2 p-5">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
-                <h3 className="font-display text-sm font-semibold text-white">
+                <h3 className="font-display text-sm font-semibold text-text-0">
                   EMI Formula & Calculation Steps
                 </h3>
-                <code className="font-mono-num rounded bg-[#181820] px-2.5 py-1 text-xs text-[#E5C158]">
+                <code className="font-mono-num rounded bg-bg-3 px-2.5 py-1 text-xs text-gold-hover">
                   {result.formula}
                 </code>
               </div>
-              <ol className="space-y-1.5 text-xs text-zinc-300">
+              <ol className="space-y-1.5 text-xs text-text-3">
                 {result.steps.map((s, i) => (
                   <li key={i} className="font-mono-num flex items-start gap-2">
-                    <span className="text-[#D4AF37]">{i + 1}.</span>
+                    <span className="text-gold">{i + 1}.</span>
                     <span>{s}</span>
                   </li>
                 ))}
@@ -481,19 +481,19 @@ export function LoanEmiCalc() {
             </div>
 
             {/* Amortization Schedule */}
-            <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#111116]">
+            <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-bg-2">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-3.5">
                 <div>
-                  <h3 className="font-display text-sm font-semibold text-white">
+                  <h3 className="font-display text-sm font-semibold text-text-0">
                     Amortization Schedule
                   </h3>
-                  <p className="text-xs text-zinc-400">
+                  <p className="text-xs text-text-4">
                     Monthly principal & interest split ({result.totalMonths} installments)
                   </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  <label htmlFor="amort-year-filter" className="text-xs text-zinc-400">
+                  <label htmlFor="amort-year-filter" className="text-xs text-text-4">
                     View:
                   </label>
                   <select
@@ -504,7 +504,7 @@ export function LoanEmiCalc() {
                         e.target.value === 'all' ? 'all' : Number(e.target.value)
                       )
                     }
-                    className="rounded-lg border border-white/10 bg-[#0E0E13] px-2.5 py-1.5 text-xs text-white focus:border-[#D4AF37] focus:outline-none"
+                    className="rounded-lg border border-border-3 bg-bg-3 px-2.5 py-1.5 text-xs text-text-0 focus:border-gold focus:outline-none"
                   >
                     {result.yearlySummary.map((y) => (
                       <option key={y.year} value={y.year}>
@@ -518,7 +518,7 @@ export function LoanEmiCalc() {
                   <button
                     type="button"
                     onClick={handleDownloadScheduleCSV}
-                    className="inline-flex min-h-[32px] items-center gap-1.5 rounded-lg border border-white/15 bg-[#16161D] px-3 py-1 text-xs font-medium text-zinc-200 transition-colors hover:border-[#D4AF37]/50 hover:text-[#E5C158] whitespace-nowrap"
+                    className="inline-flex min-h-[32px] items-center gap-1.5 rounded-lg border border-border-3 bg-bg-3 px-3 py-1 text-xs font-medium text-text-2 transition-colors hover:border-gold/50 hover:text-gold-hover whitespace-nowrap"
                   >
                     <DownloadSimple size={14} weight="bold" aria-hidden="true" />
                     <span>Export CSV</span>
@@ -528,7 +528,7 @@ export function LoanEmiCalc() {
 
               <div className="max-h-96 overflow-x-auto overflow-y-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="sticky top-0 bg-[#16161D] text-zinc-400">
+                  <thead className="sticky top-0 bg-bg-3 text-text-4">
                     <tr className="border-b border-white/[0.08]">
                       <th className="px-3.5 py-2.5 font-medium">Month</th>
                       <th className="px-3.5 py-2.5 text-right font-medium">Opening Bal.</th>
@@ -538,23 +538,23 @@ export function LoanEmiCalc() {
                       <th className="px-3.5 py-2.5 text-right font-medium">Closing Bal.</th>
                     </tr>
                   </thead>
-                  <tbody className="font-mono-num divide-y divide-white/[0.05]">
+                  <tbody className="font-mono-num divide-y divide-border-subtle">
                     {visibleSchedule.map((row) => (
-                      <tr key={row.month} className="hover:bg-white/[0.02]">
-                        <td className="px-3.5 py-2 text-zinc-200">{row.month}</td>
-                        <td className="px-3.5 py-2 text-right text-zinc-300">
+                      <tr key={row.month} className="hover:bg-bg-hover/50">
+                        <td className="px-3.5 py-2 text-text-2">{row.month}</td>
+                        <td className="px-3.5 py-2 text-right text-text-3">
                           {formatINR(row.openingBalance)}
                         </td>
-                        <td className="px-3.5 py-2 text-right text-white">
+                        <td className="px-3.5 py-2 text-right text-text-0">
                           {formatINR(row.emi)}
                         </td>
-                        <td className="px-3.5 py-2 text-right text-[#E5C158]">
+                        <td className="px-3.5 py-2 text-right text-gold-hover">
                           {formatINR(row.principalPaid)}
                         </td>
-                        <td className="px-3.5 py-2 text-right text-zinc-400">
+                        <td className="px-3.5 py-2 text-right text-text-4">
                           {formatINR(row.interestPaid)}
                         </td>
-                        <td className="px-3.5 py-2 text-right font-medium text-zinc-200">
+                        <td className="px-3.5 py-2 text-right font-medium text-text-2">
                           {formatINR(row.closingBalance)}
                         </td>
                       </tr>

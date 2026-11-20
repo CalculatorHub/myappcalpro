@@ -58,13 +58,13 @@ export function HeroPreview({ onOpenCalculator }: HeroPreviewProps) {
   const current = PREVIEW_SAMPLES[selectedIdx];
 
   return (
-    <div className="rounded-2xl border border-[#272727] bg-[#181818] p-4 sm:p-6">
+    <div className="rounded-2xl border border-border-3 bg-bg-2 p-4 sm:p-6">
       {/* Inner tab strip: outer rounded-2xl (16px) - p-2 (8px) = rounded-lg (8px) */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div
           role="tablist"
           aria-label="FinCalc Pro calculator preview tabs"
-          className="flex flex-wrap gap-2 rounded-xl border border-[#272727] bg-[#000000] p-1"
+          className="flex flex-wrap gap-2 rounded-xl border border-border-3 bg-bg-0 p-1"
         >
           {PREVIEW_SAMPLES.map((sample, idx) => {
             const active = idx === selectedIdx;
@@ -75,10 +75,10 @@ export function HeroPreview({ onOpenCalculator }: HeroPreviewProps) {
                 type="button"
                 aria-selected={active}
                 onClick={() => setSelectedIdx(idx)}
-                className={`button-xsm rounded-lg px-3 py-2 transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] whitespace-nowrap ${
+                className={`button-xsm rounded-lg px-3 py-2 transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold whitespace-nowrap ${
                   active
-                    ? 'bg-[#D4AF37] text-[#000000]'
-                    : 'text-zinc-400 hover:text-white'
+                    ? 'bg-gold text-bg-0'
+                    : 'text-text-4 hover:text-text-0'
                 }`}
               >
                 {sample.tab}
@@ -87,33 +87,33 @@ export function HeroPreview({ onOpenCalculator }: HeroPreviewProps) {
           })}
         </div>
 
-        <span className="caption-4 inline-flex items-center gap-1.5 text-zinc-400">
-          <CheckCircle size={14} weight="fill" className="text-[#D4AF37]" aria-hidden="true" />
+        <span className="caption-4 inline-flex items-center gap-1.5 text-text-4">
+          <CheckCircle size={14} weight="fill" className="text-gold" aria-hidden="true" />
           <span>Interactive workspace preview</span>
         </span>
       </div>
 
       {/* Preview Readout Card */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
-        <div className="rounded-xl border border-[#272727] bg-[#131209] p-6 md:col-span-7">
-          <p className="caption-4 text-[#D4AF37]">{current.headline}</p>
-          <p className="body-5 mt-2 text-zinc-300">{current.inputLabel}</p>
+        <div className="rounded-xl border border-border-3 bg-bg-0 p-6 md:col-span-7">
+          <p className="caption-4 text-gold">{current.headline}</p>
+          <p className="body-5 mt-2 text-text-2">{current.inputLabel}</p>
           <div className="mt-6">
-            <span className="caption-4 block text-zinc-400">{current.outputLabel}</span>
+            <span className="caption-4 block text-text-4">{current.outputLabel}</span>
             <div className="font-mono-num heading-3 mt-1 text-white">
               {current.outputValue}
             </div>
           </div>
-          <p className="caption-4 mt-4 text-zinc-400">{current.formula}</p>
+          <p className="caption-4 mt-4 text-text-4">{current.formula}</p>
         </div>
 
-        <div className="flex flex-col justify-between rounded-xl border border-[#272727] bg-[#1F1F1F] p-6 md:col-span-5">
+        <div className="flex flex-col justify-between rounded-xl border border-border-3 bg-bg-3 p-6 md:col-span-5">
           <div>
-            <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#313131] bg-[#181818] text-[#D4AF37]">
+            <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border-3 bg-bg-2 text-gold">
               <Calculator size={20} weight="regular" aria-hidden="true" />
             </div>
-            <h3 className="title-2 text-white">Run your own figures</h3>
-            <p className="body-6 mt-2 text-zinc-400">
+            <h3 className="title-2 text-text-0">Run your own figures</h3>
+            <p className="body-6 mt-2 text-text-4">
               Open the interactive workspace to test custom rupee amounts, export schedules as CSV, and inspect every formula step.
             </p>
           </div>
@@ -121,7 +121,7 @@ export function HeroPreview({ onOpenCalculator }: HeroPreviewProps) {
           <button
             type="button"
             onClick={() => onOpenCalculator(current.id)}
-            className="button-sm mt-6 inline-flex items-center justify-between gap-2 rounded-lg border border-[#313131] bg-[#181818] px-3 py-2 text-white transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-[#D4AF37] hover:text-[#D4AF37] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37]"
+            className="button-sm mt-6 inline-flex items-center justify-between gap-2 rounded-lg border border-border-3 bg-bg-3 px-3 py-2 text-text-0 transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-gold hover:text-gold active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
           >
             <span>Open {current.tab} tool</span>
             <ArrowRight size={16} weight="bold" aria-hidden="true" />

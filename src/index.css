@@ -27,6 +27,22 @@
   --color-accent-blue:     #4F8EF7;
   --color-accent-blue-dim: rgba(79,142,247,0.1);
 
+  /* Legacy dark palette tokens */
+  --color-gold:        #D4AF37;
+  --color-gold-hover:  #E5C158;
+  --color-bg-0:        #000000;
+  --color-bg-1:        #09090B;
+  --color-bg-2:        #181818;
+  --color-bg-3:        #1F1F1F;
+  --color-border-2:    #272727;
+  --color-border-3:    #313131;
+  --color-text-0:      #FFFFFF;
+  --color-text-1:      #E5E5E5;
+  --color-text-2:      #D4D4D4;
+  --color-text-3:      #A1A1AA;
+  --color-text-4:      #71717A;
+  --color-text-5:      #52525B;
+
   --color-success:    #10B981;
   --color-success-bg: rgba(16,185,129,0.12);
   --color-error:      #F87171;
@@ -162,6 +178,28 @@
 
   .gold-accent-bg { background-color: var(--accent-gold-dim); }
   .gold-border    { border-color: var(--accent-gold); }
+
+  /* Legacy dark palette helpers */
+  .text-gold      { color: var(--color-gold); }
+  .text-gold-hover { color: var(--color-gold-hover); }
+  .bg-gold        { background-color: var(--color-gold); }
+  .bg-gold-hover  { background-color: var(--color-gold-hover); }
+  .bg-0           { background-color: var(--color-bg-0); }
+  .bg-1           { background-color: var(--color-bg-1); }
+  .bg-2           { background-color: var(--color-bg-2); }
+  .bg-3           { background-color: var(--color-bg-3); }
+  .border-2       { border-color: var(--color-border-2); }
+  .border-3       { border-color: var(--color-border-3); }
+  .text-0         { color: var(--color-text-0); }
+  .text-1         { color: var(--color-text-1); }
+  .text-2         { color: var(--color-text-2); }
+  .text-3         { color: var(--color-text-3); }
+  .text-4         { color: var(--color-text-4); }
+  .text-5         { color: var(--color-text-5); }
+  .bg-zinc-500    { background-color: var(--color-text-5); }
+  .bg-zinc-600    { background-color: var(--color-text-4); }
+  .bg-zinc-800    { background-color: var(--color-text-5); }
+  .border-zinc-500 { border-color: var(--color-text-4); }
 
   .success-text { color: var(--success); }
   .success-bg   { background-color: var(--success-bg); }

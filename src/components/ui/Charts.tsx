@@ -32,23 +32,23 @@ export function CompoundGrowthChart({ principal, rows }: CompoundChartProps) {
   const activeRow = hoveredIdx !== null ? displayRows[hoveredIdx] : null;
 
   return (
-    <div className="rounded-xl border border-[#272727] bg-[#181818] p-4 sm:p-5">
+    <div className="rounded-xl border border-border-2 bg-bg-2 p-4 sm:p-5">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h4 className="font-display text-sm font-semibold text-white">
+          <h4 className="font-display text-sm font-semibold text-text-0">
             Year-by-Year Compounding Growth
           </h4>
-          <p className="text-xs text-zinc-400">
+          <p className="text-xs text-text-4">
             Principal base vs. cumulative interest earned over tenure
           </p>
         </div>
-        <div className="flex items-center gap-4 text-xs text-zinc-300">
+        <div className="flex items-center gap-4 text-xs text-text-4">
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-xs bg-zinc-600" />
+            <span className="h-2.5 w-2.5 rounded-xs bg-text-4" />
             <span>Principal</span>
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-xs bg-[#D4AF37]" />
+            <span className="h-2.5 w-2.5 rounded-xs bg-gold" />
             <span>Cumulative Interest</span>
           </span>
         </div>
@@ -139,9 +139,9 @@ export function CompoundGrowthChart({ principal, rows }: CompoundChartProps) {
         </svg>
 
         {activeRow && (
-          <div className="mt-2 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#D4AF37]/30 bg-[#16161D] px-3.5 py-2 text-xs">
-            <span className="font-semibold text-[#E5C158]">{activeRow.periodLabel}</span>
-            <div className="font-mono-num flex flex-wrap items-center gap-4 text-zinc-200">
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gold/30 bg-bg-3 px-3.5 py-2 text-xs">
+            <span className="font-semibold text-gold-hover">{activeRow.periodLabel}</span>
+            <div className="font-mono-num flex flex-wrap items-center gap-4 text-text-2">
               <span>Closing: {formatINR(activeRow.closingBalance)}</span>
               <span>Interest (Yr): {formatINR(activeRow.interestEarned)}</span>
               <span>Cum. Interest: {formatINR(activeRow.cumulativeInterest)}</span>
@@ -198,23 +198,23 @@ export function LoanBreakdownChart({
   const activeYear = hoveredYr !== null ? yearlySummary[hoveredYr] : null;
 
   return (
-    <div className="rounded-xl border border-[#272727] bg-[#181818] p-4 sm:p-5">
+    <div className="rounded-xl border border-border-2 bg-bg-2 p-4 sm:p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h4 className="font-display text-sm font-semibold text-white">
+          <h4 className="font-display text-sm font-semibold text-text-0">
             Principal vs. Interest Breakdown
           </h4>
-          <p className="text-xs text-zinc-400">
+          <p className="text-xs text-text-4">
             Total repayment split and year-wise amortization composition
           </p>
         </div>
-        <div className="flex items-center gap-4 text-xs text-zinc-300">
+        <div className="flex items-center gap-4 text-xs text-text-3">
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-xs bg-[#D4AF37]" />
+            <span className="h-2.5 w-2.5 rounded-xs bg-gold" />
             <span>Principal ({formatPercent(principalPercent, 1)})</span>
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-xs bg-zinc-500" />
+            <span className="h-2.5 w-2.5 rounded-xs bg-text-5" />
             <span>Interest ({formatPercent(interestPercent, 1)})</span>
           </span>
         </div>
@@ -234,7 +234,7 @@ export function LoanBreakdownChart({
               cy="75"
               r={radius}
               fill="none"
-              stroke="#52525B"
+              stroke="var(--color-text-4)"
               strokeWidth={strokeW}
             />
             <circle
@@ -242,7 +242,7 @@ export function LoanBreakdownChart({
               cy="75"
               r={radius}
               fill="none"
-              stroke="#D4AF37"
+              stroke="var(--color-gold)"
               strokeWidth={strokeW}
               strokeDasharray={`${principalDash} ${interestDash}`}
               strokeLinecap="butt"
@@ -252,7 +252,7 @@ export function LoanBreakdownChart({
               x="75"
               y="71"
               textAnchor="middle"
-              fill="#A1A1AA"
+              fill="var(--color-text-3)"
               fontSize="10"
             >
               Principal Share
@@ -261,7 +261,7 @@ export function LoanBreakdownChart({
               x="75"
               y="88"
               textAnchor="middle"
-              fill="#FFFFFF"
+              fill="var(--color-text-1)"
               fontSize="14"
               fontWeight="700"
               fontFamily="JetBrains Mono, monospace"
@@ -270,15 +270,15 @@ export function LoanBreakdownChart({
             </text>
           </svg>
           <div className="mt-2 grid w-full grid-cols-2 gap-2 text-center text-xs">
-            <div className="rounded-lg border border-white/[0.06] bg-[#16161D] p-2">
-              <div className="text-zinc-400">Principal</div>
-              <div className="font-mono-num mt-0.5 font-semibold text-[#E5C158]">
+            <div className="rounded-lg border border-white/[0.06] bg-bg-3 p-2">
+              <div className="text-text-4">Principal</div>
+              <div className="font-mono-num mt-0.5 font-semibold text-gold-hover">
                 {formatINRCompact(principal) ?? formatINR(principal, 0)}
               </div>
             </div>
-            <div className="rounded-lg border border-white/[0.06] bg-[#16161D] p-2">
-              <div className="text-zinc-400">Total Interest</div>
-              <div className="font-mono-num mt-0.5 font-semibold text-zinc-200">
+            <div className="rounded-lg border border-white/[0.06] bg-bg-3 p-2">
+              <div className="text-text-4">Total Interest</div>
+              <div className="font-mono-num mt-0.5 font-semibold text-text-2">
                 {formatINRCompact(totalInterest) ?? formatINR(totalInterest, 0)}
               </div>
             </div>
@@ -372,9 +372,9 @@ export function LoanBreakdownChart({
             })}
           </svg>
           {activeYear && (
-            <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[#D4AF37]/30 bg-[#16161D] px-3 py-1.5 text-xs">
-              <span className="font-semibold text-[#E5C158]">Year {activeYear.year}</span>
-              <span className="font-mono-num text-zinc-200">
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gold/30 bg-bg-3 px-3 py-1.5 text-xs">
+              <span className="font-semibold text-gold-hover">Year {activeYear.year}</span>
+              <span className="font-mono-num text-text-2">
                 Principal: {formatINR(activeYear.principalPaid, 0)} · Interest:{' '}
                 {formatINR(activeYear.interestPaid, 0)}
               </span>
@@ -405,25 +405,25 @@ export function TaxVisualBreakdown({
   const maxSlabTax = Math.max(...slabBreakdown.map((s) => s.taxAmount), 1);
 
   return (
-    <div className="grid grid-cols-1 gap-4 rounded-xl border border-white/[0.08] bg-[#111116] p-4 sm:p-5 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 rounded-xl border border-white/[0.08] bg-bg-2 p-4 sm:p-5 lg:grid-cols-2">
       <div>
-        <h4 className="font-display text-sm font-semibold text-white">
+        <h4 className="font-display text-sm font-semibold text-text-0">
           Regime Tax Comparison
         </h4>
-        <p className="mb-3 text-xs text-zinc-400">
+        <p className="mb-3 text-xs text-text-4">
           Estimated total tax liability (including surcharge & 4% cess)
         </p>
         <div className="space-y-3">
           <div>
             <div className="mb-1 flex items-center justify-between text-xs">
-              <span className="font-medium text-[#E5C158]">{selectedLabel} (Selected)</span>
-              <span className="font-mono-num font-semibold text-white">
+              <span className="font-medium text-gold-hover">{selectedLabel} (Selected)</span>
+              <span className="font-mono-num font-semibold text-text-0">
                 {formatINR(selectedTotalTax, 0)}
               </span>
             </div>
-            <div className="h-3 w-full overflow-hidden rounded-full bg-zinc-800">
+            <div className="h-3 w-full overflow-hidden rounded-full bg-bg-3">
               <div
-                className="h-full rounded-full bg-[#D4AF37] transition-all duration-200"
+                className="h-full rounded-full bg-gold transition-all duration-200"
                 style={{ width: `${Math.max(2, (selectedTotalTax / maxCompare) * 100)}%` }}
               />
             </div>
@@ -431,14 +431,14 @@ export function TaxVisualBreakdown({
 
           <div>
             <div className="mb-1 flex items-center justify-between text-xs">
-              <span className="font-medium text-zinc-300">{alternateLabel}</span>
-              <span className="font-mono-num font-semibold text-zinc-200">
+              <span className="font-medium text-text-3">{alternateLabel}</span>
+              <span className="font-mono-num font-semibold text-text-2">
                 {formatINR(alternateTotalTax, 0)}
               </span>
             </div>
-            <div className="h-3 w-full overflow-hidden rounded-full bg-zinc-800">
+            <div className="h-3 w-full overflow-hidden rounded-full bg-bg-3">
               <div
-                className="h-full rounded-full bg-zinc-500 transition-all duration-200"
+                className="h-full rounded-full bg-text-5 transition-all duration-200"
                 style={{ width: `${Math.max(2, (alternateTotalTax / maxCompare) * 100)}%` }}
               />
             </div>
@@ -447,10 +447,10 @@ export function TaxVisualBreakdown({
       </div>
 
       <div>
-        <h4 className="font-display text-sm font-semibold text-white">
+        <h4 className="font-display text-sm font-semibold text-text-0">
           Tax Distribution by Slab
         </h4>
-        <p className="mb-3 text-xs text-zinc-400">
+        <p className="mb-3 text-xs text-text-4">
           Pre-rebate slab tax contribution across brackets
         </p>
         <div className="space-y-2">
@@ -459,16 +459,16 @@ export function TaxVisualBreakdown({
             .map((slab) => (
               <div key={slab.label} className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-zinc-300">
+                  <span className="text-text-3">
                     {slab.label} ({slab.rate}%)
                   </span>
-                  <span className="font-mono-num text-zinc-200">
+                  <span className="font-mono-num text-text-2">
                     {formatINR(slab.taxAmount, 0)}
                   </span>
                 </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-800">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-bg-3">
                   <div
-                    className="h-full rounded-full bg-[#D4AF37]/80"
+                    className="h-full rounded-full bg-gold/80"
                     style={{
                       width: `${slab.taxAmount > 0 ? Math.max(3, (slab.taxAmount / maxSlabTax) * 100) : 0}%`,
                     }}
@@ -477,7 +477,7 @@ export function TaxVisualBreakdown({
               </div>
             ))}
           {slabBreakdown.every((s) => s.taxableInSlab === 0) && (
-            <p className="text-xs text-zinc-400">Zero taxable income across all slabs.</p>
+            <p className="text-xs text-text-4">Zero taxable income across all slabs.</p>
           )}
         </div>
       </div>

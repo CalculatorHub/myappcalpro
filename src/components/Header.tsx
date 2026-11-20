@@ -73,7 +73,7 @@ interface HeaderProps {
 
 export function Header({ activeCalc, onSelectCalc, onOpenReference }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-30 border-b border-white/[0.08] bg-[#09090B]/95 backdrop-blur-md" style={{ overflow: 'visible' }}>
+    <header className="sticky top-0 z-30 border-b border-white/[0.08] bg-bg-1/95 backdrop-blur-md" style={{ overflow: 'visible' }}>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-8 px-4 sm:px-6 lg:px-8" style={{ overflow: 'visible' }}>
         {/* Zone 1: Brand Zone with 3D Logo */}
         <a
@@ -83,10 +83,10 @@ export function Header({ activeCalc, onSelectCalc, onOpenReference }: HeaderProp
             onSelectCalc('simple-interest');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className="inline-flex items-center gap-2.5 font-display text-lg font-bold tracking-tight text-white whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37]"
+          className="inline-flex items-center gap-2.5 font-display text-lg font-bold tracking-tight text-text-0 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
         >
           <Logo3D />
-          FinCalc <span className="text-[#D4AF37]">Pro</span>
+          FinCalc <span className="text-gold">Pro</span>
         </a>
 
         {/* Zone 2: 5 concise single-line nav links */}
@@ -101,17 +101,17 @@ export function Header({ activeCalc, onSelectCalc, onOpenReference }: HeaderProp
                 key={calc.id}
                 type="button"
                 onClick={() => onSelectCalc(calc.id)}
-                className={`relative py-1 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] ${
+                className={`relative py-1 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
                   isActive
-                    ? 'text-[#E5C158]'
-                    : 'text-zinc-400 hover:text-white'
+                    ? 'text-gold-hover'
+                    : 'text-text-3 hover:text-text-0'
                 }`}
               >
                 {calc.shortNavLabel}
                 {isActive && (
                   <span
                     aria-hidden="true"
-                    className="absolute right-0 -bottom-[21px] left-0 h-0.5 bg-[#D4AF37]"
+                    className="absolute right-0 -bottom-[21px] left-0 h-0.5 bg-gold"
                   />
                 )}
               </button>
@@ -124,7 +124,7 @@ export function Header({ activeCalc, onSelectCalc, onOpenReference }: HeaderProp
           <button
             type="button"
             onClick={onOpenReference}
-            className="min-h-[40px] rounded-lg border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-4 py-2 text-xs font-semibold text-[#E5C158] transition-colors hover:bg-[#D4AF37] hover:text-[#09090B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] whitespace-nowrap shrink-0"
+            className="min-h-[40px] rounded-lg border border-gold/40 bg-gold/10 px-4 py-2 text-xs font-semibold text-gold-hover transition-colors hover:bg-gold hover:text-bg-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold whitespace-nowrap shrink-0"
           >
             Formula Guide
           </button>
