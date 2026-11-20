@@ -86,8 +86,8 @@ export function LegalOrFallbackView({
               </p>
             </section>
             <section className="space-y-2">
-              <h2 className="title-2 text-white">Official verification</h2>
-              <p className="body-6 text-zinc-400">
+              <h2 className="title-2 text-primary">Statutory verification</h2>
+              <p className="body-6 text-secondary">
                 Users must verify statutory deductions, exemptions, surcharge rules, and return filing requirements against official notifications published by the Income Tax Department of India.
               </p>
             </section>

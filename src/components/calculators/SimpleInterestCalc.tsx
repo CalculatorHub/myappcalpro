@@ -224,7 +224,7 @@ export function SimpleInterestCalc() {
                   <span className="caption-4 gold-accent">
                     Simple Interest Earned
                   </span>
-                  <div className="font-mono-num mt-1 text-3xl font-bold tracking-tight text-primary">
+                  <div className="font-mono-num mt-1 text-3xl font-semibold tracking-tight text-primary">
                     {formatINR(result.simpleInterest)}
                   </div>
                   <p className="mt-1 caption-5 text-secondary">

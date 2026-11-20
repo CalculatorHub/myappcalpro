@@ -200,11 +200,11 @@ export function LandingPage({
             <button
               type="button"
               onClick={() => onOpenCalculator('income-tax')}
-              className="button-md inline-flex items-center gap-2.5 rounded-xl px-6 py-3 text-black font-bold"
+              className="button-md inline-flex items-center gap-2.5 rounded-xl px-6 py-3 text-black font-semibold"
               style={{
                 background: 'linear-gradient(135deg, #F5B800, #FFD04D)',
                 boxShadow: '0 8px 32px rgba(245,184,0,0.4), 0 2px 8px rgba(0,0,0,0.3)',
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                transition: 'transform 0.3s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s cubic-bezier(0.22,1,0.36,1)',
               }}
               onMouseEnter={e => {
                 const b = e.currentTarget as HTMLButtonElement;
@@ -218,7 +218,7 @@ export function LandingPage({
               }}
             >
               <Calculator size={18} weight="bold" aria-hidden="true" />
-              Open Calculators
+              Explore calculators
               <ArrowRight size={16} weight="bold" aria-hidden="true" />
             </button>
 

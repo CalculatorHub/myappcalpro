@@ -350,11 +350,11 @@ export function IncomeTaxCalc({ selectedFY, onChangeFY }: IncomeTaxCalcProps) {
           <>
             {/* Verification & Regime Context Banner */}
             {!result.verified && (
-              <div className="flex items-start gap-3 rounded-xl border border-amber-500/40 bg-[#181818] p-4 text-xs text-amber-200">
+              <div className="flex items-start gap-3 rounded-xl border border-amber-500/40 bg-bg-card p-4 text-xs text-amber-200">
                 <Warning size={16} weight="fill" className="mt-0.5 shrink-0 text-amber-400" aria-hidden="true" />
                 <div>
                   <span className="font-semibold">Sample Estimate Only:</span> Tax slabs for{' '}
-                  {result.financialYear} could not be officially verified and are displayed as illustrative sample estimates.
+                  {result.financialYear} are displayed as illustrative estimates. Verify against official Income Tax Department of India notifications before filing.
                 </div>
               </div>
             )}
