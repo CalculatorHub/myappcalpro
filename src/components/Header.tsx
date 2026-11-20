@@ -1,3 +1,5 @@
+import { Logo3D } from './landing/Logo3D';
+
 export type CalculatorId =
   | 'simple-interest'
   | 'compound-interest'
@@ -71,9 +73,9 @@ interface HeaderProps {
 
 export function Header({ activeCalc, onSelectCalc, onOpenReference }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-30 border-b border-white/[0.08] bg-[#09090B]/95 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-8 px-4 sm:px-6 lg:px-8">
-        {/* Zone 1: Single text element Brand Zone */}
+    <header className="sticky top-0 z-30 border-b border-white/[0.08] bg-[#09090B]/95 backdrop-blur-md" style={{ overflow: 'visible' }}>
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-8 px-4 sm:px-6 lg:px-8" style={{ overflow: 'visible' }}>
+        {/* Zone 1: Brand Zone with 3D Logo */}
         <a
           href="#top"
           onClick={(e) => {
@@ -81,8 +83,9 @@ export function Header({ activeCalc, onSelectCalc, onOpenReference }: HeaderProp
             onSelectCalc('simple-interest');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className="font-display text-lg font-bold tracking-tight text-white whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37]"
+          className="inline-flex items-center gap-2.5 font-display text-lg font-bold tracking-tight text-white whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37]"
         >
+          <Logo3D />
           FinCalc <span className="text-[#D4AF37]">Pro</span>
         </a>
 

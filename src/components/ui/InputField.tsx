@@ -60,27 +60,27 @@ export function InputField({
       <div className="flex items-center justify-between gap-2">
         <label
           htmlFor={id}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-200"
+          className="inline-flex items-center gap-1.5 title-3 text-primary"
         >
           <span>{label}</span>
           {tooltip && <Tooltip text={tooltip} label={`About ${label}`} />}
         </label>
         {compactScale && (
-          <span className="font-mono-num text-xs font-medium text-[#E5C158]">
+          <span className="font-mono-num caption-4 gold-accent">
             {compactScale}
           </span>
         )}
       </div>
 
       <div
-        className={`flex min-h-[44px] items-center rounded-lg border bg-[#000000] transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`flex min-h-[44px] items-center rounded-lg border bg-bg-card transition-colors ${
           error
-            ? 'border-red-500/70 focus-within:border-red-400'
-            : 'border-[#272727] hover:border-[#313131] focus-within:border-[#D4AF37]'
+            ? 'border-error bg-error-bg/20 focus-within:border-error'
+            : 'border-border-subtle hover:border-border-default focus-within:border-accent-gold'
         } ${disabled ? 'opacity-60' : ''}`}
       >
         {prefix && (
-          <span className="select-none border-r border-[#272727] px-3 py-2 font-mono-num text-sm text-[#D4AF37]">
+          <span className="select-none border-r border-border-subtle px-3 py-2 font-mono-num caption-2 gold-accent">
             {prefix}
           </span>
         )}
@@ -95,10 +95,10 @@ export function InputField({
           placeholder={placeholder}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? `${id}-error` : helperText ? `${id}-help` : undefined}
-          className="font-mono-num w-full bg-transparent px-3 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none"
+          className="font-mono-num w-full bg-transparent px-3 py-2.5 caption-2 text-primary placeholder:text-muted focus:outline-none"
         />
         {suffix && (
-          <span className="select-none border-l border-[#272727] px-3 py-2 text-xs font-medium text-zinc-400 whitespace-nowrap">
+          <span className="select-none border-l border-border-subtle px-3 py-2 caption-5 font-medium text-secondary whitespace-nowrap">
             {suffix}
           </span>
         )}
@@ -120,7 +120,7 @@ export function InputField({
             onChange={(e) => onChange(e.target.value)}
             className="gold-slider w-full"
           />
-          <div className="font-mono-num mt-0.5 flex justify-between text-xs text-zinc-500">
+          <div className="font-mono-num mt-0.5 flex justify-between caption-5 text-muted">
             <span>
               {prefix ?? ''}
               {formatNumberIN(slider.min, 0)}
@@ -144,10 +144,10 @@ export function InputField({
                 key={chip.label}
                 type="button"
                 onClick={() => onChange(chip.value)}
-                className={`rounded-md border px-2 py-1 font-mono-num text-xs transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] whitespace-nowrap ${
+                className={`rounded-md border px-2 py-1 font-mono-num caption-5 transition-colors ${
                   isSelected
-                    ? 'border-[#D4AF37] bg-[#131209] text-[#E5C158]'
-                    : 'border-[#272727] bg-[#1F1F1F] text-zinc-400 hover:border-[#313131] hover:text-zinc-200'
+                    ? 'border-accent-gold bg-bg-raised gold-accent'
+                    : 'card text-secondary hover:text-primary'
                 }`}
               >
                 {chip.label}
@@ -161,13 +161,13 @@ export function InputField({
         <p
           id={`${id}-error`}
           role="alert"
-          className="flex items-center gap-1.5 text-xs text-red-400"
+          className="flex items-center gap-1.5 caption-5 text-error"
         >
           <WarningCircle size={14} weight="fill" className="shrink-0" aria-hidden="true" />
           <span>{error}</span>
         </p>
       ) : helperText ? (
-        <p id={`${id}-help`} className="text-xs text-zinc-500">
+        <p id={`${id}-help`} className="caption-5 text-muted">
           {helperText}
         </p>
       ) : null}

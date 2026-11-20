@@ -78,12 +78,12 @@ export function SimpleInterestCalc() {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
       {/* Input Column */}
-      <div className="rounded-xl border border-white/[0.08] bg-[#111116] p-5 sm:p-6 lg:col-span-5">
-        <div className="mb-5 border-b border-white/[0.08] pb-4">
-          <h2 className="font-display text-lg font-semibold text-white">
+      <div className="rounded-xl card p-5 sm:p-6 lg:col-span-5">
+        <div className="mb-5 border-b border-border-subtle pb-4">
+          <h2 className="heading-5 text-primary">
             Simple Interest Inputs
           </h2>
-          <p className="mt-1 text-xs text-zinc-400">
+          <p className="mt-1 caption-5 text-secondary">
             Supports years, months, or exact day counts for deposits and short-term bills.
           </p>
         </div>
@@ -137,16 +137,16 @@ export function SimpleInterestCalc() {
               tooltip="Duration of the deposit or loan. Months divide by 12; days divide by 365 (standard) or 360 (commercial)."
             />
 
-            <div className="grid grid-cols-3 gap-1.5 rounded-lg border border-white/[0.08] bg-[#0B0B0E] p-1">
+            <div className="grid grid-cols-3 gap-1.5 rounded-lg border border-border-subtle bg-bg-raised p-1">
               {(['years', 'months', 'days'] as SimpleTimeUnit[]).map((unit) => (
                 <button
                   key={unit}
                   type="button"
                   onClick={() => setTimeUnit(unit)}
-                  className={`min-h-[36px] rounded-md px-3 py-1.5 text-xs font-medium capitalize transition-colors whitespace-nowrap ${
+                  className={`min-h-[36px] rounded-md px-3 py-1.5 caption-4 capitalize transition-colors whitespace-nowrap ${
                     timeUnit === unit
-                      ? 'bg-[#D4AF37] text-[#09090B] font-semibold'
-                      : 'text-zinc-400 hover:text-white'
+                      ? 'bg-accent-gold text-bg-main font-semibold'
+                      : 'text-secondary hover:text-primary'
                   }`}
                 >
                   {unit}
@@ -157,19 +157,19 @@ export function SimpleInterestCalc() {
 
           {timeUnit === 'days' && (
             <div className="space-y-1.5">
-              <span className="block text-xs font-medium text-zinc-300">
+              <span className="block caption-4 text-primary">
                 Day-Count Convention
               </span>
-              <div className="grid grid-cols-2 gap-1.5 rounded-lg border border-white/[0.08] bg-[#0B0B0E] p-1">
+              <div className="grid grid-cols-2 gap-1.5 rounded-lg border border-border-subtle bg-bg-raised p-1">
                 {[365, 360].map((basis) => (
                   <button
                     key={basis}
                     type="button"
                     onClick={() => setDaysInYear(basis as 365 | 360)}
-                    className={`min-h-[36px] rounded-md px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
+                    className={`min-h-[36px] rounded-md px-3 py-1.5 caption-4 transition-colors whitespace-nowrap ${
                       daysInYear === basis
-                        ? 'bg-zinc-800 text-[#E5C158] border border-[#D4AF37]/40'
-                        : 'text-zinc-400 hover:text-white'
+                        ? 'bg-bg-card gold-accent border border-accent-gold/40'
+                        : 'text-secondary hover:text-primary'
                     }`}
                   >
                     {basis} Days / Yr
@@ -218,16 +218,16 @@ export function SimpleInterestCalc() {
         ) : (
           <>
             {/* Spotlight Output + Supporting KPIs */}
-            <div className="rounded-xl border border-[#D4AF37]/40 bg-[#131209] p-5 sm:p-6">
+            <div className="rounded-xl border border-accent-gold/40 bg-bg-card p-5 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <span className="text-xs font-medium text-[#E5C158]">
+                  <span className="caption-4 gold-accent">
                     Simple Interest Earned
                   </span>
-                  <div className="font-mono-num mt-1 text-3xl font-bold tracking-tight text-white">
+                  <div className="font-mono-num mt-1 text-3xl font-bold tracking-tight text-primary">
                     {formatINR(result.simpleInterest)}
                   </div>
-                  <p className="mt-1 text-xs text-zinc-400">
+                  <p className="mt-1 caption-5 text-secondary">
                     Over {formatNumberIN(result.timeValue)} {result.timeUnit} (
                     {formatNumberIN(result.timeInYears, 4)} yrs) at {result.annualRate}% p.a.
                   </p>
@@ -235,14 +235,14 @@ export function SimpleInterestCalc() {
 
                 <div className="grid grid-cols-2 gap-4 sm:text-right">
                   <div>
-                    <span className="text-xs text-zinc-400">Principal (P)</span>
-                    <div className="font-mono-num mt-0.5 text-base font-semibold text-zinc-200">
+                    <span className="caption-5 text-muted">Principal (P)</span>
+                    <div className="font-mono-num mt-0.5 title-2 text-primary">
                       {formatINR(result.principal)}
                     </div>
                   </div>
                   <div>
-                    <span className="text-xs text-zinc-400">Maturity Value (A)</span>
-                    <div className="font-mono-num mt-0.5 text-base font-semibold text-[#E5C158]">
+                    <span className="caption-5 text-muted">Maturity Value (A)</span>
+                    <div className="font-mono-num mt-0.5 title-2 gold-accent">
                       {formatINR(result.totalAmount)}
                     </div>
                   </div>
@@ -250,22 +250,22 @@ export function SimpleInterestCalc() {
               </div>
 
               {/* Principal vs Interest Share Bar */}
-              <div className="mt-5 border-t border-white/[0.08] pt-4">
-                <div className="mb-1.5 flex items-center justify-between text-xs">
-                  <span className="text-zinc-300">
+              <div className="mt-5 border-t border-border-subtle pt-4">
+                <div className="mb-1.5 flex items-center justify-between caption-5">
+                  <span className="text-secondary">
                     Principal ({formatPercent(principalSharePct, 1)})
                   </span>
-                  <span className="text-[#E5C158]">
+                  <span className="gold-accent">
                     Interest ({formatPercent(interestSharePct, 1)})
                   </span>
                 </div>
-                <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-zinc-800">
+                <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-bg-raised">
                   <div
-                    className="h-full bg-zinc-500 transition-all duration-200"
+                    className="h-full bg-muted transition-all duration-200"
                     style={{ width: `${principalSharePct}%` }}
                   />
                   <div
-                    className="h-full bg-[#D4AF37] transition-all duration-200"
+                    className="h-full bg-accent-gold transition-all duration-200"
                     style={{ width: `${interestSharePct}%` }}
                   />
                 </div>
@@ -273,23 +273,23 @@ export function SimpleInterestCalc() {
             </div>
 
             {/* Formula & Step-by-Step Breakdown */}
-            <div className="rounded-xl border border-white/[0.08] bg-[#111116] p-5 sm:p-6">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
-                <h3 className="font-display text-sm font-semibold text-white">
+            <div className="card p-5 sm:p-6">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-border-subtle pb-3">
+                <h3 className="title-3 text-primary">
                   Formula & Calculation Steps
                 </h3>
-                <code className="font-mono-num rounded bg-[#181820] px-2.5 py-1 text-xs text-[#E5C158]">
+                <code className="font-mono-num rounded bg-bg-raised px-2.5 py-1 caption-5 gold-accent">
                   {result.formula}
                 </code>
               </div>
 
-              <ol className="space-y-2.5 text-sm text-zinc-300">
+              <ol className="space-y-2.5 text-sm text-secondary">
                 {result.steps.map((step, i) => (
                   <li key={i} className="flex items-start gap-3">
-                    <span className="font-mono-num mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-[#D4AF37]/30 bg-[#D4AF37]/10 text-xs font-semibold text-[#E5C158]">
+                    <span className="font-mono-num mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-accent-gold/30 bg-accent-gold/10 caption-4 gold-accent">
                       {i + 1}
                     </span>
-                    <span className="font-mono-num text-xs leading-relaxed sm:text-sm">
+                    <span className="font-mono-num caption-2 leading-relaxed text-secondary">
                       {step}
                     </span>
                   </li>

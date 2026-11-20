@@ -176,22 +176,23 @@ export function LoanEmiCalc() {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
       {/* Left Input Panel */}
-      <div className="rounded-xl border border-white/[0.08] bg-[#111116] p-5 sm:p-6 lg:col-span-5">
-        <div className="mb-4 border-b border-white/[0.08] pb-4">
-          <h2 className="font-display text-lg font-semibold text-white">
+      <div className="card p-5 sm:p-6 lg:col-span-5">
+
+        <div className="mb-4 border-b border-border-subtle pb-4">
+          <h2 className="heading-5 text-primary">
             Loan & EMI Parameters
           </h2>
-          <p className="mt-1 text-xs text-zinc-400">
+          <p className="mt-1 caption-5 text-secondary">
             Reducing-balance monthly EMI with processing fee and amortization schedule.
           </p>
         </div>
 
         {/* Optional Home Price & Down Payment Estimator */}
-        <div className="mb-5 rounded-lg border border-white/[0.08] bg-[#0B0B0E]">
+        <div className="mb-5 rounded-lg border border-border-subtle bg-bg-raised">
           <button
             type="button"
             onClick={() => setShowEstimator((s) => !s)}
-            className="flex min-h-[42px] w-full items-center justify-between px-3.5 py-2.5 text-left text-xs font-medium text-[#E5C158] hover:text-[#F0CE66]"
+            className="flex min-h-[42px] w-full items-center justify-between px-3.5 py-2.5 text-left caption-4 gold-accent hover:text-accent-gold-hover"
           >
             <span className="inline-flex items-center gap-2">
               <House size={14} weight="regular" aria-hidden="true" />
@@ -205,7 +206,7 @@ export function LoanEmiCalc() {
           </button>
 
           {showEstimator && (
-            <div className="space-y-3 border-t border-white/[0.08] p-3.5">
+            <div className="space-y-3 border-t border-border-subtle p-3.5">
               <InputField
                 id="emi-home-price"
                 label="Home / Property Price"
@@ -244,14 +245,14 @@ export function LoanEmiCalc() {
                         key={pct}
                         type="button"
                         onClick={() => applyDownPaymentPercent(pct)}
-                        className="rounded border border-white/10 bg-[#16161D] px-2 py-1 text-[11px] text-zinc-300 hover:border-[#D4AF37]/50 hover:text-[#E5C158]"
+                        className="rounded border border-border-subtle bg-bg-card px-2 py-1 text-[11px] text-secondary hover:border-accent-gold/50 hover:text-accent-gold"
                       >
                         {pct}% Down
                       </button>
                     ))}
                   </div>
                   {ltvPercent !== null && (
-                    <span className="font-mono-num text-[11px] text-zinc-400">
+                    <span className="font-mono-num text-[11px] text-muted">
                       LTV: {ltvPercent.toFixed(1)}%
                     </span>
                   )}
@@ -308,16 +309,16 @@ export function LoanEmiCalc() {
                   : { min: 12, max: 360, step: 6 }
               }
             />
-            <div className="grid grid-cols-2 gap-1.5 rounded-lg border border-white/[0.08] bg-[#0B0B0E] p-1">
+            <div className="grid grid-cols-2 gap-1.5 rounded-lg border border-border-subtle bg-bg-raised p-1">
               {(['years', 'months'] as LoanTenureUnit[]).map((unit) => (
                 <button
                   key={unit}
                   type="button"
                   onClick={() => setTenureUnit(unit)}
-                  className={`min-h-[36px] rounded-md px-3 py-1.5 text-xs font-medium capitalize transition-colors whitespace-nowrap ${
+                  className={`min-h-[36px] rounded-md px-3 py-1.5 caption-4 capitalize transition-colors whitespace-nowrap ${
                     tenureUnit === unit
-                      ? 'bg-[#D4AF37] text-[#09090B] font-semibold'
-                      : 'text-zinc-400 hover:text-white'
+                      ? 'bg-accent-gold text-bg-main font-semibold'
+                      : 'text-secondary hover:text-primary'
                   }`}
                 >
                   {unit}

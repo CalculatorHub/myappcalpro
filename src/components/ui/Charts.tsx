@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { CompoundGrowthRow } from '../../logic/compoundInterest';
 import { YearlyAmortizationSummary } from '../../logic/loanEmi';
 import { SlabBreakdownRow } from '../../logic/incomeTax';
+import { SimpleTimeUnit } from '../../logic/simpleInterest';
 import { formatINR, formatINRCompact, formatPercent } from '../../utils/formatters';
 
 interface CompoundChartProps {

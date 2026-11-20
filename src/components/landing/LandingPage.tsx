@@ -1,408 +1,597 @@
-import { useState } from 'react';
 import {
+  ArrowRight,
+  ArrowsLeftRight,
+  Bank,
   BookOpen,
-  CaretDown,
+  Calculator,
+  ChartLine,
   CheckCircle,
-  DownloadSimple,
-  FileCsv,
-  ListChecks,
+  Lightning,
+  Percent,
   Scales,
-  ShieldCheck,
-  WarningCircle,
+  Shield,
+  Sparkle,
+  TrendUp,
 } from '@phosphor-icons/react';
 import { CalculatorId } from '../Header';
-import { HeroPreview } from './HeroPreview';
 import { ScrollReveal } from './ScrollReveal';
-import { TaglineReveal } from './TaglineReveal';
+import { ParticleBackground } from './ParticleBackground';
+import { Card3D } from './Card3D';
 
 interface LandingPageProps {
   onDownloadKit: () => void;
   downloadStatus: string | null;
   onOpenCalculator: (id: CalculatorId) => void;
+  onOpenFormulaGuide: () => void;
 }
 
-const BENEFITS = [
+const CALCULATOR_CARDS: {
+  id: CalculatorId;
+  title: string;
+  category: string;
+  description: string;
+  icon: typeof Percent;
+  formula: string;
+  accent: string;
+  accentDim: string;
+}[] = [
   {
+    id: 'simple-interest',
+    title: 'Simple Interest',
+    category: 'Interest & Deposits',
+    description: 'Fixed deposits, short-term bills, and commercial paper with 365/360 day-count conventions.',
+    icon: Percent,
+    formula: 'I = (P × R × T) / 100',
+    accent: '#2DD4BF',
+    accentDim: 'rgba(45,212,191,0.1)',
+  },
+  {
+    id: 'compound-interest',
+    title: 'Compound Interest',
+    category: 'Wealth Growth',
+    description: 'Annual to daily compounding with Effective Annual Rate — with year-by-year growth breakdown.',
+    icon: TrendUp,
+    formula: 'A = P(1 + r/n)^(nt)',
+    accent: '#4F8EF7',
+    accentDim: 'rgba(79,142,247,0.1)',
+  },
+  {
+    id: 'loan-emi',
+    title: 'Home Loan EMI',
+    category: 'Loans & Mortgages',
+    description: 'Monthly reducing-balance EMI, total interest, processing fees & full amortization schedule.',
+    icon: Bank,
+    formula: 'EMI = [P·R·(1+R)^N] / [(1+R)^N−1]',
+    accent: '#F5B800',
+    accentDim: 'rgba(245,184,0,0.1)',
+  },
+  {
+    id: 'percentage-rupee',
+    title: 'Rupee & Percentage',
+    category: 'Quick Conversions',
+    description: 'Instant two-way conversion between rupee amounts and percentages using custom ratios.',
+    icon: ArrowsLeftRight,
+    formula: '% = ₹ Amount × Ratio',
+    accent: '#A78BFA',
+    accentDim: 'rgba(167,139,250,0.1)',
+  },
+  {
+    id: 'income-tax',
+    title: 'Income Tax Estimator',
+    category: 'Indian Taxation',
+    description: 'New vs. Old Tax Regimes for FY 2024–27 with Section 87A rebate and marginal relief.',
     icon: Scales,
-    title: 'Slab by slab tax clarity',
-    detail:
-      'Inspect taxable income slices across FY 2024 to 2027, Section 87A rebates, marginal relief, and surcharge brackets without manual table lookups.',
-  },
-  {
-    icon: ListChecks,
-    title: 'Zero drift loan amortization',
-    detail:
-      'Follow every monthly installment from month 1 to closure, including home price, down payment, and upfront processing fee totals.',
-  },
-  {
-    icon: FileCsv,
-    title: 'Indian numbering and CSV export',
-    detail:
-      'Read every rupee figure in lakh and crore grouping, copy exact step derivations, and export full schedules to CSV.',
-  },
-  {
-    icon: BookOpen,
-    title: 'Offline CA formula reference',
-    detail:
-      'Keep interest equations, compounding periods, custom rupee ratio formulas, and tax slab rules saved locally on your device.',
+    formula: 'Tax = Slab Rate − 87A Rebate + 4% Cess',
+    accent: '#F87171',
+    accentDim: 'rgba(248,113,113,0.1)',
   },
 ];
 
-const HOW_IT_WORKS = [
-  {
-    step: '01',
-    title: 'Download the free CA formula kit',
-    description:
-      'Save the complete Indian finance and tax reference sheet to your phone or laptop with zero email gate.',
-  },
-  {
-    step: '02',
-    title: 'Enter rupee amounts in the calculator',
-    description:
-      'Open any of the five calculators in your browser, pick a worked preset or type your own numbers, and inspect live validation.',
-  },
-  {
-    step: '03',
-    title: 'Verify steps and export schedules',
-    description:
-      'Review the formula substitution, check New versus Old tax regime savings, and copy results or export CSV tables.',
-  },
+const STATS = [
+  { value: '5', label: 'Calculators', icon: Calculator },
+  { value: '3 FY', label: 'Tax Years', icon: ChartLine },
+  { value: '100%', label: 'Free & Private', icon: Shield },
+  { value: '∞', label: 'Calculations', icon: Lightning },
 ];
 
-const FAQS = [
+const WHY_CARDS = [
   {
-    question: 'What is inside the free FinCalc Pro CA formula kit?',
-    answer:
-      'The kit includes Simple Interest day count rules, Compound Interest and Effective Annual Rate formulas, reducing balance EMI equations, the ₹1 = 12% two way ratio formulas, and Indian Income Tax slabs for FY 2024 to 2027.',
+    icon: Sparkle,
+    title: 'Every Step Explained',
+    description: 'No black-box results. Every calculation shows the full mathematical derivation so you understand the formula, not just the number.',
+    accent: '#F5B800',
   },
   {
-    question: 'Do I need to create an account or enter an email?',
-    answer:
-      'No. FinCalc Pro is free to use with no signup required. Both the downloadable formula kit and all five browser calculators work immediately.',
+    icon: Shield,
+    title: 'Fully Private & Offline',
+    description: 'All calculations run directly in your browser. Zero data leaves your device. No account, no tracking, no ads — ever.',
+    accent: '#2DD4BF',
   },
   {
-    question: 'Which financial years are covered in the income tax estimator?',
-    answer:
-      'The estimator covers FY 2024 to 2025, FY 2025 to 2026, and FY 2026 to 2027 for both the New Tax Regime under Section 115BAC and the Old Tax Regime across all three age categories.',
-  },
-  {
-    question: 'Does it calculate Section 87A marginal relief and surcharge?',
-    answer:
-      'Yes. When net taxable income crosses the Section 87A threshold or surcharge thresholds of ₹50 lakh, ₹1 crore, or ₹2 crore, marginal relief is computed automatically.',
-  },
-  {
-    question: 'How does the rupee and percentage ratio converter work?',
-    answer:
-      'It uses a fixed ₹1 = 12% custom conversion ratio with a direction switch. Entering ₹5 converts to 60%, and switching direction converts 60% back to ₹5.',
-  },
-  {
-    question: 'Are the calculations suitable for official tax filing?',
-    answer:
-      'FinCalc Pro is an educational study and planning resource for CA students and Indian users. Always confirm final return filings against official Income Tax India notifications.',
+    icon: ChartLine,
+    title: 'CA-Grade Accuracy',
+    description: 'Built for CA students and finance professionals. Covers FY 2024–27 tax regimes, reducing-balance EMI, and EAR calculations.',
+    accent: '#4F8EF7',
   },
 ];
 
 export function LandingPage({
   onDownloadKit,
-  downloadStatus,
   onOpenCalculator,
+  onOpenFormulaGuide,
 }: LandingPageProps) {
-  const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(0);
-
   return (
-    <div className="space-y-16 pb-20 sm:space-y-24">
-      {/* 1. HERO SECTION */}
-      <section
-        aria-label="FinCalc Pro overview"
-        className="mx-auto max-w-6xl px-4 pt-28 sm:px-6 sm:pt-32 lg:px-8"
-      >
-        <div className="space-y-6">
-          <p className="caption-1 text-[#D4AF37]">
-            Indian finance workspace and CA study kit
-          </p>
+    <div className="pb-24">
 
-          <h1 className="heading-1 max-w-[680px] bg-gradient-to-r from-[#FFFFFF] to-[#9B9B9B] bg-clip-text text-transparent">
-            Accurate Indian finance math
-            <br />
-            for CA students
+      {/* ── HERO ── */}
+      <section
+        aria-label="FinCalc Pro introduction"
+        className="relative min-h-[92vh] flex flex-col items-center justify-center overflow-hidden px-4 pt-20"
+      >
+        {/* Ambient orbs */}
+        <div
+          aria-hidden="true"
+          className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] rounded-full pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(79,142,247,0.12) 0%, transparent 70%)',
+            animation: 'orbFloat 18s ease-in-out infinite',
+            filter: 'blur(60px)',
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute bottom-[-5%] right-[-5%] w-[500px] h-[500px] rounded-full pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(245,184,0,0.09) 0%, transparent 70%)',
+            animation: 'orbFloat 22s ease-in-out infinite reverse',
+            filter: 'blur(60px)',
+          }}
+        />
+
+        {/* 3D Particle canvas */}
+        <div className="absolute inset-0 pointer-events-none">
+          <ParticleBackground />
+        </div>
+
+        {/* Vignette */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse 85% 70% at 50% 50%, transparent 30%, #07090F 90%)' }}
+        />
+
+        {/* Hero content */}
+        <div className="relative z-10 mx-auto max-w-4xl text-center space-y-6" style={{ animation: 'fadeUp 0.8s ease both' }}>
+
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold tracking-wide"
+            style={{
+              background: 'rgba(245,184,0,0.08)',
+              border: '1px solid rgba(245,184,0,0.25)',
+              backdropFilter: 'blur(12px)',
+              color: '#F5B800',
+              boxShadow: '0 0 20px rgba(245,184,0,0.12)',
+            }}
+          >
+            <Sparkle size={12} weight="fill" aria-hidden="true" />
+            Professional Financial Tools · FY 2026-27 Ready
+          </div>
+
+          {/* Headline — left-to-right gradient per B5 */}
+          <h1
+            className="heading-1 leading-[1.08]"
+            style={{
+              background: 'linear-gradient(90deg, #FFFFFF 0%, #A0A8C8 60%, #9B9B9B 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >
+            Indian finance and tax<br className="hidden sm:block" /> calculators, with every<br className="hidden sm:block" /> step explained.
           </h1>
 
-          <p className="body-2 max-w-[680px] text-zinc-300">
-            Download the free FinCalc Pro formula reference kit and verify Indian income tax slabs, home loan EMI schedules, and compound interest with transparent calculation steps.
+          {/* Subtext */}
+          <p className="body-2 max-w-2xl mx-auto" style={{ color: '#8894C0' }}>
+            Practical calculators for finance, taxation and CA studies, with clear step-by-step solutions.
           </p>
 
-          {/* Single Primary CTA + Risk Reversal */}
-          <div className="flex flex-wrap items-center gap-4 pt-2">
+          {/* CTAs */}
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
             <button
               type="button"
-              onClick={onDownloadKit}
-              className="button-md inline-flex items-center gap-2 rounded-lg bg-[#D4AF37] px-3 py-2 text-[#000000] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#E5C158] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white whitespace-nowrap"
+              onClick={() => onOpenCalculator('income-tax')}
+              className="button-md inline-flex items-center gap-2.5 rounded-xl px-6 py-3 text-black font-bold"
+              style={{
+                background: 'linear-gradient(135deg, #F5B800, #FFD04D)',
+                boxShadow: '0 8px 32px rgba(245,184,0,0.4), 0 2px 8px rgba(0,0,0,0.3)',
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+              }}
+              onMouseEnter={e => {
+                const b = e.currentTarget as HTMLButtonElement;
+                b.style.transform = 'translateY(-2px) scale(1.03)';
+                b.style.boxShadow = '0 14px 40px rgba(245,184,0,0.5), 0 4px 16px rgba(0,0,0,0.4)';
+              }}
+              onMouseLeave={e => {
+                const b = e.currentTarget as HTMLButtonElement;
+                b.style.transform = '';
+                b.style.boxShadow = '0 8px 32px rgba(245,184,0,0.4), 0 2px 8px rgba(0,0,0,0.3)';
+              }}
             >
-              <DownloadSimple size={18} weight="bold" aria-hidden="true" />
-              <span>Download free CA formula kit</span>
+              <Calculator size={18} weight="bold" aria-hidden="true" />
+              Open Calculators
+              <ArrowRight size={16} weight="bold" aria-hidden="true" />
             </button>
 
-            <span className="caption-1 inline-flex items-center gap-2 text-zinc-400">
-              <ShieldCheck size={16} weight="fill" className="text-[#D4AF37]" aria-hidden="true" />
-              <span>Free to use with no signup required</span>
-            </span>
-          </div>
-
-          {downloadStatus && (
-            <p
-              role="status"
-              className="caption-1 inline-flex items-center gap-2 rounded-lg border border-[#272727] bg-[#131209] px-3 py-2 text-zinc-200"
+            <button
+              type="button"
+              onClick={onOpenFormulaGuide}
+              className="button-md inline-flex items-center gap-2.5 rounded-xl px-6 py-3 font-semibold"
+              style={{
+                background: 'rgba(255,255,255,0.06)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                color: '#EEF0FF',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                transition: 'transform 0.2s ease, background 0.2s ease, border-color 0.2s ease',
+              }}
+              onMouseEnter={e => {
+                const b = e.currentTarget as HTMLButtonElement;
+                b.style.transform = 'translateY(-2px)';
+                b.style.background = 'rgba(255,255,255,0.1)';
+                b.style.borderColor = 'rgba(245,184,0,0.3)';
+              }}
+              onMouseLeave={e => {
+                const b = e.currentTarget as HTMLButtonElement;
+                b.style.transform = '';
+                b.style.background = 'rgba(255,255,255,0.06)';
+                b.style.borderColor = 'rgba(255,255,255,0.12)';
+              }}
             >
-              <CheckCircle size={16} weight="fill" className="text-[#D4AF37]" aria-hidden="true" />
-              <span>{downloadStatus}</span>
+              <BookOpen size={18} weight="regular" aria-hidden="true" />
+              Formula Guide
+            </button>
+          </div>
+        </div>
+
+        {/* Stats strip */}
+        <div
+          className="relative z-10 mt-16 grid grid-cols-2 md:grid-cols-4 gap-3 mx-auto w-full max-w-3xl px-4"
+          style={{ animation: 'fadeUp 0.8s 0.2s ease both', opacity: 0, animationFillMode: 'both' }}
+        >
+          {STATS.map(({ value, label, icon: Icon }) => (
+            <div
+              key={label}
+              className="flex flex-col items-center gap-1 rounded-2xl py-4 px-3"
+              style={{
+                background: 'rgba(255,255,255,0.04)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255,255,255,0.08)',
+              }}
+            >
+              <Icon size={18} weight="duotone" className="gold-accent mb-0.5" aria-hidden="true" />
+              <span className="font-mono-num text-xl font-bold" style={{ color: '#F5B800' }}>{value}</span>
+              <span className="caption-5" style={{ color: '#8894C0' }}>{label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Scroll indicator */}
+        <div
+          aria-hidden="true"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 opacity-40"
+          style={{ animation: 'pulseGold 2.5s ease-in-out infinite' }}
+        >
+          <span className="caption-5" style={{ color: '#8894C0', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Explore</span>
+          <div className="w-px h-8" style={{ background: 'linear-gradient(to bottom, rgba(245,184,0,0.6), transparent)' }} />
+        </div>
+      </section>
+
+      {/* ── CALCULATORS ── */}
+      <section
+        id="calculators"
+        aria-label="Calculator directory"
+        className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-24"
+      >
+        <ScrollReveal>
+          <div className="mb-12 text-center">
+            <span
+              className="inline-block caption-3 tracking-widest uppercase mb-3 px-3 py-1 rounded-full"
+              style={{ color: '#F5B800', background: 'rgba(245,184,0,0.08)', border: '1px solid rgba(245,184,0,0.2)' }}
+            >
+              Interactive Suite
+            </span>
+            <h2 className="heading-3 text-gradient-hero">Five powerful calculators</h2>
+            <p className="body-6 mt-3 max-w-xl mx-auto" style={{ color: '#8894C0' }}>
+              Select any calculator to enter custom figures, view step-by-step derivations, and export schedules.
             </p>
-          )}
-
-          {/* Proof Signal */}
-          <p className="caption-2 text-zinc-400">
-            Includes 5 verified calculators, 3 Indian financial years, and Section 87A marginal relief tables.
-          </p>
-        </div>
-
-        {/* Hero Visual */}
-        <div className="mt-10">
-          <HeroPreview onOpenCalculator={onOpenCalculator} />
-        </div>
-      </section>
-
-      {/* 2. MANDATORY TAGLINE REVEAL SECTION (B11) */}
-      <TaglineReveal />
-
-      {/* 3. PROBLEM TO SOLUTION */}
-      <section
-        id="problem-solution"
-        aria-label="Problem and solution"
-        className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8"
-      >
-        <ScrollReveal>
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <article className="rounded-2xl border border-[#272727] bg-[#181818] p-6 sm:p-8">
-              <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#313131] bg-[#1F1F1F] text-zinc-400">
-                <WarningCircle size={20} weight="regular" aria-hidden="true" />
-              </div>
-              <span className="caption-4 block text-zinc-400">The friction today</span>
-              <h2 className="heading-5 mt-2 text-white">
-                Scattered PDFs and hidden spreadsheet formulas slow down study sessions
-              </h2>
-              <p className="body-6 mt-3 text-zinc-400">
-                Generic calculators use million and billion formatting, skip Section 87A marginal relief, and hide how monthly EMI interest splits over 240 installments. Cross checking a single CA problem takes multiple tabs and manual rounding.
-              </p>
-            </article>
-
-            <article className="rounded-2xl border border-[#272727] bg-[#131209] p-6 sm:p-8">
-              <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#313131] bg-[#181818] text-[#D4AF37]">
-                <CheckCircle size={20} weight="fill" aria-hidden="true" />
-              </div>
-              <span className="caption-4 block text-[#D4AF37]">The FinCalc Pro approach</span>
-              <h2 className="heading-5 mt-2 text-white">
-                Every equation, slab threshold, and schedule step in plain sight
-              </h2>
-              <p className="body-6 mt-3 text-zinc-300">
-                FinCalc Pro pairs a downloadable offline formula reference sheet with five Indian calculators. Every calculation displays substituted variables, Indian lakh and crore formatting, and full regime comparisons in one place.
-              </p>
-            </article>
-          </div>
-        </ScrollReveal>
-      </section>
-
-      {/* 4. BENEFITS SECTION */}
-      <section
-        id="benefits"
-        aria-label="Key benefits"
-        className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8"
-      >
-        <ScrollReveal>
-          <div className="max-w-[680px]">
-            <p className="caption-1 text-[#D4AF37]">Built for Indian accuracy</p>
-            <h2 className="heading-3 mt-2 text-white">
-              Cut manual verification from twenty minutes to seconds
-            </h2>
           </div>
 
-          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
-            {BENEFITS.map((item) => {
-              const Icon = item.icon;
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {CALCULATOR_CARDS.map((calc) => {
+              const Icon = calc.icon;
               return (
-                <article
-                  key={item.title}
-                  className="rounded-2xl border border-[#272727] bg-[#181818] p-6 transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-[#313131] hover:bg-[#1F1F1F]"
+                <Card3D
+                  key={calc.id}
+                  as="article"
+                  className="p-6"
+                  onClick={() => onOpenCalculator(calc.id)}
                 >
-                  <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#313131] bg-[#1F1F1F] text-[#D4AF37]">
-                    <Icon size={20} weight="regular" aria-hidden="true" />
+                  <div className="flex flex-col h-full">
+                    <div className="mb-5 flex items-start justify-between">
+                      {/* Icon */}
+                      <span
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-xl"
+                        style={{
+                          background: calc.accentDim,
+                          border: `1px solid ${calc.accent}30`,
+                          color: calc.accent,
+                          boxShadow: `0 4px 16px ${calc.accent}20`,
+                        }}
+                      >
+                        <Icon size={22} weight="duotone" aria-hidden="true" />
+                      </span>
+                      <span
+                        className="caption-5 rounded-full px-2.5 py-1"
+                        style={{
+                          background: 'rgba(255,255,255,0.05)',
+                          color: '#8894C0',
+                          border: '1px solid rgba(255,255,255,0.08)',
+                        }}
+                      >
+                        {calc.category}
+                      </span>
+                    </div>
+
+                    <h3 className="title-2 mb-2" style={{ color: '#EEF0FF' }}>{calc.title}</h3>
+                    <p className="body-6 flex-1" style={{ color: '#8894C0' }}>{calc.description}</p>
+
+                    <div
+                      className="mt-5 pt-4 space-y-3"
+                      style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
+                    >
+                      <code
+                        className="font-mono-num caption-5 block truncate"
+                        style={{ color: calc.accent, opacity: 0.8 }}
+                      >
+                        {calc.formula}
+                      </code>
+
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onOpenCalculator(calc.id); }}
+                        className="button-sm w-full rounded-xl py-2.5 inline-flex items-center justify-center gap-1.5 transition-all"
+                        style={{
+                          background: `${calc.accent}12`,
+                          border: `1px solid ${calc.accent}25`,
+                          color: calc.accent,
+                        }}
+                        onMouseEnter={e => {
+                          const b = e.currentTarget;
+                          b.style.background = `${calc.accent}22`;
+                          b.style.borderColor = `${calc.accent}50`;
+                        }}
+                        onMouseLeave={e => {
+                          const b = e.currentTarget;
+                          b.style.background = `${calc.accent}12`;
+                          b.style.borderColor = `${calc.accent}25`;
+                        }}
+                      >
+                        Open calculator
+                        <ArrowRight size={13} weight="bold" aria-hidden="true" />
+                      </button>
+                    </div>
                   </div>
-                  <h3 className="title-2 text-white">{item.title}</h3>
-                  <p className="body-6 mt-2 text-zinc-400">{item.detail}</p>
-                </article>
+                </Card3D>
               );
             })}
           </div>
         </ScrollReveal>
       </section>
 
-      {/* 5. HOW IT WORKS */}
+      {/* ── WHY FINCALC PRO ── */}
       <section
-        id="how-it-works"
-        aria-label="How FinCalc Pro works"
-        className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8"
+        aria-label="Why FinCalc Pro"
+        className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-28"
       >
         <ScrollReveal>
-          <div className="max-w-[680px]">
-            <p className="caption-1 text-[#D4AF37]">Three simple steps</p>
-            <h2 className="heading-3 mt-2 text-white">
-              From formula sheet to verified answer
-            </h2>
+          <div className="mb-12 text-center">
+            <span
+              className="inline-block caption-3 tracking-widest uppercase mb-3 px-3 py-1 rounded-full"
+              style={{ color: '#2DD4BF', background: 'rgba(45,212,191,0.08)', border: '1px solid rgba(45,212,191,0.2)' }}
+            >
+              Why FinCalc Pro
+            </span>
+            <h2 className="heading-3 text-gradient-hero">Built for professionals.<br className="hidden sm:block" /> Transparent by design.</h2>
           </div>
 
-          <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-            {HOW_IT_WORKS.map((item) => (
-              <article
-                key={item.step}
-                className="rounded-2xl border border-[#272727] bg-[#181818] p-6"
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {WHY_CARDS.map(({ icon: Icon, title, description, accent }) => (
+              <div
+                key={title}
+                className="rounded-2xl p-6 relative overflow-hidden group"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
+                }}
+                onMouseEnter={e => {
+                  const el = e.currentTarget as HTMLDivElement;
+                  el.style.transform = 'translateY(-4px)';
+                  el.style.boxShadow = `0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px ${accent}20 inset`;
+                  el.style.borderColor = `${accent}30`;
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget as HTMLDivElement;
+                  el.style.transform = '';
+                  el.style.boxShadow = '';
+                  el.style.borderColor = 'rgba(255,255,255,0.07)';
+                }}
               >
-                <span className="font-mono-num title-2 text-[#D4AF37]">{item.step}</span>
-                <h3 className="title-2 mt-3 text-white">{item.title}</h3>
-                <p className="body-6 mt-2 text-zinc-400">{item.description}</p>
-              </article>
+                {/* Glow orb */}
+                <div
+                  aria-hidden="true"
+                  className="absolute top-0 right-0 w-32 h-32 rounded-full pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  style={{ background: `radial-gradient(circle, ${accent}18 0%, transparent 70%)`, filter: 'blur(20px)', transform: 'translate(30%, -30%)' }}
+                />
+                <div
+                  className="inline-flex h-12 w-12 items-center justify-center rounded-xl mb-4"
+                  style={{ background: `${accent}15`, border: `1px solid ${accent}30`, color: accent }}
+                >
+                  <Icon size={24} weight="duotone" aria-hidden="true" />
+                </div>
+                <h3 className="title-2 mb-2" style={{ color: '#EEF0FF' }}>{title}</h3>
+                <p className="body-6" style={{ color: '#8894C0' }}>{description}</p>
+              </div>
             ))}
           </div>
         </ScrollReveal>
       </section>
 
-      {/* 6. SOCIAL PROOF & VERIFIED COVERAGE */}
-      <section
-        id="proof"
-        aria-label="Verified coverage and feedback"
-        className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8"
-      >
+      {/* ── TRUST / CHECKMARKS ── */}
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-20">
         <ScrollReveal>
-          <div className="rounded-2xl border border-[#272727] bg-[#181818] p-6 sm:p-8">
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-              <div className="lg:col-span-5">
-                <p className="caption-1 text-[#D4AF37]">Verified scope</p>
-                <h2 className="heading-4 mt-2 text-white">
-                  Built on published Indian financial rules
-                </h2>
-                <p className="body-6 mt-3 text-zinc-400">
-                  Every tax slab, standard deduction, and rebate rule lives in one inspectable configuration file covering FY 2024 to 2027.
-                </p>
-              </div>
+          <div
+            className="rounded-2xl p-8 sm:p-10 relative overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, rgba(79,142,247,0.06) 0%, rgba(45,212,191,0.04) 50%, rgba(245,184,0,0.05) 100%)',
+              backdropFilter: 'blur(24px)',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}
+          >
+            {/* Shimmer line top */}
+            <div aria-hidden="true" className="absolute top-0 left-0 right-0 h-px"
+              style={{ background: 'linear-gradient(90deg, transparent, rgba(79,142,247,0.6), rgba(45,212,191,0.6), rgba(245,184,0,0.6), transparent)' }}
+            />
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-7">
-                <div className="rounded-xl border border-[#272727] bg-[#1F1F1F] p-6">
-                  <span className="caption-4 text-[#D4AF37]">Student feedback placeholder</span>
-                  <p className="body-5 mt-2 text-zinc-200">
-                    {'{{testimonial_quote_1}}'}
-                  </p>
-                  <p className="caption-4 mt-4 text-zinc-400">
-                    {'{{student_name_1}}'} · {'{{ca_level_1}}'}
-                  </p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                'FY 2024-25, 2025-26 & 2026-27 tax slabs',
+                'Section 87A rebate + marginal relief',
+                'New vs Old regime comparison',
+                'Reducing-balance EMI amortization',
+                'Simple & compound interest with EAR',
+                '₹ ↔ % two-way ratio converter',
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-3">
+                  <CheckCircle size={18} weight="fill" style={{ color: '#2DD4BF', flexShrink: 0 }} aria-hidden="true" />
+                  <span className="body-6" style={{ color: '#8894C0' }}>{item}</span>
                 </div>
-
-                <div className="rounded-xl border border-[#272727] bg-[#1F1F1F] p-6">
-                  <span className="caption-4 text-[#D4AF37]">Educator feedback placeholder</span>
-                  <p className="body-5 mt-2 text-zinc-200">
-                    {'{{testimonial_quote_2}}'}
-                  </p>
-                  <p className="caption-4 mt-4 text-zinc-400">
-                    {'{{reviewer_name_2}}'} · {'{{institution_2}}'}
-                  </p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </ScrollReveal>
       </section>
 
-      {/* 7. FAQ SECTION */}
+      {/* ── FORMULA KIT CTA ── */}
       <section
-        id="faq"
-        aria-label="Frequently asked questions"
-        className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8"
+        id="formula-kit"
+        aria-label="Formula Reference Kit"
+        className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-20"
       >
         <ScrollReveal>
-          <div className="max-w-[680px]">
-            <p className="caption-1 text-[#D4AF37]">Common questions</p>
-            <h2 className="heading-3 mt-2 text-white">
-              Everything about the kit and calculators
-            </h2>
-          </div>
+          <div
+            className="rounded-3xl p-10 sm:p-14 text-center relative overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, rgba(245,184,0,0.07) 0%, rgba(255,255,255,0.03) 50%, rgba(79,142,247,0.05) 100%)',
+              backdropFilter: 'blur(30px)',
+              border: '1px solid rgba(245,184,0,0.18)',
+              boxShadow: '0 40px 80px rgba(0,0,0,0.4), 0 0 80px rgba(245,184,0,0.05)',
+            }}
+          >
+            {/* Shimmer sweep */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl"
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'linear-gradient(105deg, transparent 35%, rgba(245,184,0,0.07) 50%, transparent 65%)',
+                  animation: 'shimmer 4s infinite linear',
+                  transform: 'translateX(-100%)',
+                }}
+              />
+            </div>
 
-          <div className="mt-8 space-y-3">
-            {FAQS.map((faq, idx) => {
-              const isOpen = openFaqIdx === idx;
-              return (
-                <div
-                  key={faq.question}
-                  className="rounded-xl border border-[#272727] bg-[#181818]"
-                >
-                  <button
-                    type="button"
-                    aria-expanded={isOpen}
-                    onClick={() => setOpenFaqIdx(isOpen ? null : idx)}
-                    className="flex w-full items-center justify-between gap-4 px-6 py-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] rounded-xl"
-                  >
-                    <span className="title-3 text-white">{faq.question}</span>
-                    <CaretDown
-                      size={18}
-                      weight="bold"
-                      aria-hidden="true"
-                      className={`shrink-0 text-[#D4AF37] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-                        isOpen ? 'rotate-180' : 'rotate-0'
-                      }`}
-                    />
-                  </button>
-                  {isOpen && (
-                    <div className="border-t border-[#272727] px-6 py-4">
-                      <p className="body-6 text-zinc-400">{faq.answer}</p>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </ScrollReveal>
-      </section>
+            {/* Top glow border */}
+            <div aria-hidden="true" className="absolute top-0 left-0 right-0 h-px"
+              style={{ background: 'linear-gradient(90deg, transparent, rgba(245,184,0,0.6), transparent)' }}
+            />
 
-      {/* 8. RISK REVERSAL & FINAL CTA */}
-      <section
-        aria-label="Download call to action"
-        className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8"
-      >
-        <ScrollReveal>
-          <div className="rounded-2xl border border-[#D4AF37]/40 bg-[#131209] p-8 sm:p-12">
-            <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-center">
-              <div className="max-w-[680px]">
-                <span className="caption-1 text-[#D4AF37]">
-                  Free to use with no signup required
-                </span>
-                <h2 className="heading-3 mt-2 text-white">
-                  Keep every Indian tax slab and finance formula within reach
-                </h2>
-                <p className="body-5 mt-3 text-zinc-300">
-                  No email form, no credit card, and no locked calculators. Download the study kit now or launch any calculator directly in your browser.
-                </p>
-              </div>
+            <div className="relative z-10">
+              <span
+                className="inline-flex items-center gap-1.5 caption-3 tracking-widest uppercase mb-4 px-3 py-1 rounded-full"
+                style={{ color: '#F5B800', background: 'rgba(245,184,0,0.1)', border: '1px solid rgba(245,184,0,0.25)' }}
+              >
+                <Sparkle size={11} weight="fill" aria-hidden="true" />
+                Offline Study Reference
+              </span>
 
-              <div className="flex flex-col items-start gap-3 shrink-0">
+              <h2
+                className="heading-4 mb-3"
+                style={{
+                  background: 'linear-gradient(135deg, #FFFFFF, #F5B800)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}
+              >
+                CA Formula Reference Kit
+              </h2>
+              <p className="body-5 mb-8 max-w-lg mx-auto" style={{ color: '#8894C0' }}>
+                A comprehensive offline reference containing Interest, EMI, Rupee Ratio, and Tax Slab formulas — download once, study anywhere.
+              </p>
+
+              <div className="flex flex-wrap items-center justify-center gap-4">
                 <button
                   type="button"
                   onClick={onDownloadKit}
-                  className="button-md inline-flex items-center gap-2 rounded-lg bg-[#D4AF37] px-3 py-2 text-[#000000] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#E5C158] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white whitespace-nowrap"
+                  className="button-md inline-flex items-center gap-2.5 rounded-xl px-7 py-3 font-bold"
+                  style={{
+                    background: 'linear-gradient(135deg, #F5B800, #FFD04D)',
+                    color: '#000',
+                    boxShadow: '0 8px 30px rgba(245,184,0,0.4)',
+                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                  }}
+                  onMouseEnter={e => {
+                    const b = e.currentTarget as HTMLButtonElement;
+                    b.style.transform = 'translateY(-2px)';
+                    b.style.boxShadow = '0 14px 40px rgba(245,184,0,0.5)';
+                  }}
+                  onMouseLeave={e => {
+                    const b = e.currentTarget as HTMLButtonElement;
+                    b.style.transform = '';
+                    b.style.boxShadow = '0 8px 30px rgba(245,184,0,0.4)';
+                  }}
                 >
-                  <DownloadSimple size={18} weight="bold" aria-hidden="true" />
-                  <span>Download free CA formula kit</span>
+                  Download free formula kit
                 </button>
+
                 <button
                   type="button"
                   onClick={() => onOpenCalculator('income-tax')}
-                  className="button-sm text-zinc-300 transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-[#D4AF37] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37]"
+                  className="button-md inline-flex items-center gap-2 rounded-xl px-6 py-3"
+                  style={{
+                    background: 'rgba(255,255,255,0.06)',
+                    backdropFilter: 'blur(16px)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    color: '#EEF0FF',
+                    transition: 'background 0.2s ease, border-color 0.2s ease',
+                  }}
+                  onMouseEnter={e => {
+                    const b = e.currentTarget as HTMLButtonElement;
+                    b.style.background = 'rgba(255,255,255,0.1)';
+                    b.style.borderColor = 'rgba(245,184,0,0.3)';
+                  }}
+                  onMouseLeave={e => {
+                    const b = e.currentTarget as HTMLButtonElement;
+                    b.style.background = 'rgba(255,255,255,0.06)';
+                    b.style.borderColor = 'rgba(255,255,255,0.12)';
+                  }}
                 >
-                  Or open the interactive calculators
+                  Try calculators instead
                 </button>
               </div>
             </div>

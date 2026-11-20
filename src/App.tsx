@@ -105,12 +105,12 @@ export default function App() {
     <MotionConfig reducedMotion="user">
       <div
         id="top"
-        className="flex min-h-screen flex-col overflow-x-clip bg-[#000000] text-white"
+        className="flex min-h-screen flex-col overflow-x-clip bg-bg-main text-primary"
       >
         {/* Keyboard Skip to Content Link */}
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-[#D4AF37] focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-[#000000]"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-accent-gold focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-bg-main"
         >
           Skip to content
         </a>
@@ -119,6 +119,7 @@ export default function App() {
           currentRoute={route}
           onNavigate={navigate}
           onDownloadKit={handleDownloadKit}
+          onOpenCalculators={() => navigate('calculators')}
         />
 
         <main id="main-content" className="flex-1">
@@ -127,16 +128,17 @@ export default function App() {
               onDownloadKit={handleDownloadKit}
               downloadStatus={downloadStatus}
               onOpenCalculator={handleOpenCalculator}
+              onOpenFormulaGuide={() => setReferenceOpen(true)}
             />
           )}
 
           {route === 'calculators' && (
-            <div className="mx-auto w-full max-w-6xl space-y-8 px-4 pt-28 pb-12 sm:px-6 lg:px-8">
+            <div className="mx-auto w-full max-w-7xl space-y-6 px-4 pt-20 pb-12 sm:px-6 lg:px-8">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <button
                   type="button"
                   onClick={() => navigate('landing')}
-                  className="button-sm inline-flex items-center gap-2 rounded-lg border border-[#272727] bg-[#181818] px-3 py-2 text-zinc-200 transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-[#D4AF37] hover:text-[#D4AF37]"
+                  className="button-sm inline-flex items-center gap-2 rounded-lg border border-border-subtle bg-bg-raised px-3 py-1.5 text-secondary transition-colors hover:border-border-default hover:text-primary"
                 >
                   <ArrowLeft size={16} weight="bold" aria-hidden="true" />
                   <span>Back to overview</span>
@@ -145,7 +147,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setReferenceOpen(true)}
-                  className="button-sm inline-flex items-center gap-2 rounded-lg border border-[#272727] bg-[#181818] px-3 py-2 text-[#D4AF37] transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-[#D4AF37]"
+                  className="button-sm inline-flex items-center gap-2 rounded-lg border border-border-subtle bg-bg-raised px-3 py-1.5 text-accent-gold transition-colors hover:border-accent-gold"
                 >
                   <BookOpen size={16} weight="regular" aria-hidden="true" />
                   <span>Formula guide</span>
@@ -161,16 +163,16 @@ export default function App() {
 
               <section
                 aria-label={`${activeMeta.title} workspace`}
-                className="space-y-6 border-t border-[#272727] pt-6"
+                className="space-y-6 border-t border-border-subtle pt-6"
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <div>
-                    <span className="caption-4 text-[#D4AF37]">
+                    <span className="caption-4 gold-accent">
                       {activeMeta.categoryLabel}
                     </span>
-                    <h2 className="heading-4 mt-1 text-white">{activeMeta.title}</h2>
+                    <h2 className="heading-4 mt-1 text-primary">{activeMeta.title}</h2>
                   </div>
-                  <p className="caption-2 text-zinc-400">{activeMeta.summary}</p>
+                  <p className="caption-2 text-secondary">{activeMeta.summary}</p>
                 </div>
 
                 <AnimatePresence mode="wait">

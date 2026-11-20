@@ -108,12 +108,12 @@ export function CompoundInterestCalc() {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
       {/* Inputs */}
-      <div className="rounded-xl border border-white/[0.08] bg-[#111116] p-5 sm:p-6 lg:col-span-5">
-        <div className="mb-5 border-b border-white/[0.08] pb-4">
-          <h2 className="font-display text-lg font-semibold text-white">
+      <div className="card p-5 sm:p-6 lg:col-span-5">
+        <div className="mb-5 border-b border-border-subtle pb-4">
+          <h2 className="heading-5 text-primary">
             Compound Interest Inputs
           </h2>
-          <p className="mt-1 text-xs text-zinc-400">
+          <p className="mt-1 caption-5 text-secondary">
             Supports annual, half-yearly, quarterly, monthly, and daily compounding.
           </p>
         </div>
@@ -165,16 +165,16 @@ export function CompoundInterestCalc() {
                   : { min: 3, max: 120, step: 3 }
               }
             />
-            <div className="grid grid-cols-2 gap-1.5 rounded-lg border border-white/[0.08] bg-[#0B0B0E] p-1">
+            <div className="grid grid-cols-2 gap-1.5 rounded-lg border border-border-subtle bg-bg-raised p-1">
               {(['years', 'months'] as CompoundTimeUnit[]).map((unit) => (
                 <button
                   key={unit}
                   type="button"
                   onClick={() => setTimeUnit(unit)}
-                  className={`min-h-[36px] rounded-md px-3 py-1.5 text-xs font-medium capitalize transition-colors whitespace-nowrap ${
+                  className={`min-h-[36px] rounded-md px-3 py-1.5 caption-4 capitalize transition-colors whitespace-nowrap ${
                     timeUnit === unit
-                      ? 'bg-[#D4AF37] text-[#09090B] font-semibold'
-                      : 'text-zinc-400 hover:text-white'
+                      ? 'bg-accent-gold text-bg-main font-semibold'
+                      : 'text-secondary hover:text-primary'
                   }`}
                 >
                   {unit}
@@ -186,7 +186,7 @@ export function CompoundInterestCalc() {
           <div className="space-y-1.5">
             <label
               htmlFor="ci-frequency"
-              className="block text-sm font-medium text-zinc-200"
+              className="block caption-4 text-primary"
             >
               Compounding Frequency
             </label>
@@ -194,7 +194,7 @@ export function CompoundInterestCalc() {
               id="ci-frequency"
               value={frequency}
               onChange={(e) => setFrequency(e.target.value as CompoundingFrequency)}
-              className="min-h-[44px] w-full rounded-lg border border-white/10 bg-[#0E0E13] px-3 py-2.5 text-sm text-white focus:border-[#D4AF37] focus:outline-none"
+              className="min-h-[44px] w-full rounded-lg border border-border-subtle bg-bg-raised px-3 py-2.5 text-sm text-primary focus:border-accent-gold focus:outline-none"
             >
               {FREQUENCIES.map((freq) => (
                 <option key={freq} value={freq}>
@@ -244,18 +244,18 @@ export function CompoundInterestCalc() {
         ) : (
           <>
             {/* Spotlight Maturity Card + Supporting KPIs */}
-            <div className="rounded-xl border border-[#D4AF37]/40 bg-[#131209] p-5 sm:p-6">
+            <div className="rounded-xl border border-accent-gold/40 bg-bg-card p-5 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <span className="text-xs font-medium text-[#E5C158]">
+                  <span className="caption-4 gold-accent">
                     Total Maturity Value
                   </span>
-                  <div className="font-mono-num mt-1 text-3xl font-bold tracking-tight text-white">
+                  <div className="font-mono-num mt-1 text-3xl font-bold tracking-tight text-primary">
                     {formatINR(result.totalAmount)}
                   </div>
-                  <p className="mt-1 text-xs text-zinc-400">
+                  <p className="mt-1 caption-5 text-secondary">
                     {formatNumberIN(result.totalPeriods, 2)} periods ·{' '}
-                    <span className="font-mono-num text-[#E5C158]">
+                    <span className="font-mono-num gold-accent">
                       {wealthMultiplier.toFixed(2)}×
                     </span>{' '}
                     initial capital
@@ -264,14 +264,14 @@ export function CompoundInterestCalc() {
 
                 <div className="grid grid-cols-2 gap-4 sm:text-right">
                   <div>
-                    <span className="text-xs text-zinc-400">Compound Interest</span>
-                    <div className="font-mono-num mt-0.5 text-base font-semibold text-white">
+                    <span className="caption-5 text-muted">Compound Interest</span>
+                    <div className="font-mono-num mt-0.5 title-2 text-primary">
                       {formatINR(result.compoundInterest)}
                     </div>
                   </div>
                   <div>
-                    <span className="text-xs text-zinc-400">Effective Rate (EAR)</span>
-                    <div className="font-mono-num mt-0.5 text-base font-semibold text-[#E5C158]">
+                    <span className="caption-5 text-muted">Effective Rate (EAR)</span>
+                    <div className="font-mono-num mt-0.5 title-2 gold-accent">
                       {formatPercent(result.effectiveAnnualRate, 2)}
                     </div>
                   </div>
@@ -286,28 +286,28 @@ export function CompoundInterestCalc() {
             />
 
             {/* Formula & Assumptions */}
-            <div className="rounded-xl border border-white/[0.08] bg-[#111116] p-5">
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
-                <h3 className="font-display text-sm font-semibold text-white">
+            <div className="card p-5">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-border-subtle pb-3">
+                <h3 className="title-3 text-primary">
                   Formula, Steps & Assumptions
                 </h3>
-                <code className="font-mono-num rounded bg-[#181820] px-2.5 py-1 text-xs text-[#E5C158]">
+                <code className="font-mono-num rounded bg-bg-raised px-2.5 py-1 caption-5 gold-accent">
                   {result.formula}
                 </code>
               </div>
 
-              <ol className="mb-4 space-y-2 text-xs text-zinc-300 sm:text-sm">
+              <ol className="mb-4 space-y-2 caption-5 text-secondary">
                 {result.steps.map((step, i) => (
                   <li key={i} className="font-mono-num flex items-start gap-2.5">
-                    <span className="text-[#D4AF37]">{i + 1}.</span>
+                    <span className="gold-accent">{i + 1}.</span>
                     <span>{step}</span>
                   </li>
                 ))}
               </ol>
 
-              <div className="border-t border-white/[0.08] pt-3">
-                <p className="mb-1.5 text-xs font-medium text-zinc-400">Assumptions</p>
-                <ul className="list-disc space-y-1 pl-4 text-xs text-zinc-400">
+              <div className="border-t border-border-subtle pt-3">
+                <p className="mb-1.5 caption-4 text-primary">Assumptions</p>
+                <ul className="list-disc space-y-1 pl-4 caption-5 text-secondary">
                   {result.assumptions.map((a, i) => (
                     <li key={i}>{a}</li>
                   ))}
@@ -316,24 +316,24 @@ export function CompoundInterestCalc() {
             </div>
 
             {/* Year-by-Year Growth Table */}
-            <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#111116]">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] px-5 py-3.5">
-                <h3 className="font-display text-sm font-semibold text-white">
+            <div className="overflow-hidden card">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border-subtle px-5 py-3.5">
+                <h3 className="title-3 text-primary">
                   Year-by-Year Growth Schedule
                 </h3>
                 <button
                   type="button"
                   onClick={handleDownloadCSV}
-                  className="inline-flex min-h-[34px] items-center gap-1.5 rounded-lg border border-white/15 bg-[#16161D] px-3 py-1.5 text-xs font-medium text-zinc-200 transition-colors hover:border-[#D4AF37]/50 hover:text-[#E5C158] whitespace-nowrap"
+                  className="button-sm inline-flex min-h-[34px] items-center gap-1.5 rounded-lg border border-border-subtle bg-bg-raised px-3 py-1.5 text-secondary transition-colors hover:border-accent-gold/50 hover:text-accent-gold whitespace-nowrap"
                 >
                   <DownloadSimple size={14} weight="bold" aria-hidden="true" />
                   <span>Download CSV</span>
                 </button>
               </div>
               <div className="max-h-80 overflow-x-auto overflow-y-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="sticky top-0 bg-[#16161D] text-zinc-400">
-                    <tr className="border-b border-white/[0.08]">
+                <table className="w-full text-left caption-2">
+                  <thead className="sticky top-0 bg-bg-raised text-secondary">
+                    <tr className="border-b border-border-subtle">
                       <th className="px-4 py-2.5 font-medium">Period</th>
                       <th className="px-4 py-2.5 text-right font-medium">Opening Balance</th>
                       <th className="px-4 py-2.5 text-right font-medium">Interest Earned</th>
@@ -341,22 +341,22 @@ export function CompoundInterestCalc() {
                       <th className="px-4 py-2.5 text-right font-medium">Closing Balance</th>
                     </tr>
                   </thead>
-                  <tbody className="font-mono-num divide-y divide-white/[0.05]">
+                  <tbody className="font-mono-num divide-y divide-border-subtle">
                     {result.yearlySchedule.map((row) => (
-                      <tr key={row.periodLabel} className="hover:bg-white/[0.02]">
-                        <td className="px-4 py-2.5 font-sans font-medium text-zinc-200">
+                      <tr key={row.periodLabel} className="hover:bg-bg-raised/50">
+                        <td className="px-4 py-2.5 font-sans font-medium text-primary">
                           {row.periodLabel}
                         </td>
-                        <td className="px-4 py-2.5 text-right text-zinc-300">
+                        <td className="px-4 py-2.5 text-right text-secondary">
                           {formatINR(row.openingBalance)}
                         </td>
-                        <td className="px-4 py-2.5 text-right text-[#E5C158]">
+                        <td className="px-4 py-2.5 text-right gold-accent">
                           +{formatINR(row.interestEarned)}
                         </td>
-                        <td className="px-4 py-2.5 text-right text-zinc-400">
+                        <td className="px-4 py-2.5 text-right text-muted">
                           {formatINR(row.cumulativeInterest)}
                         </td>
-                        <td className="px-4 py-2.5 text-right font-semibold text-white">
+                        <td className="px-4 py-2.5 text-right font-semibold text-primary">
                           {formatINR(row.closingBalance)}
                         </td>
                       </tr>

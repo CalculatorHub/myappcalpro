@@ -59,10 +59,10 @@ export function CategoryGrid({
     <section aria-label="Calculator directory" className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="caption-1 text-[#D4AF37]">
+          <span className="caption-4 gold-accent">
             Indian Financial &amp; CA Study Suite
-          </p>
-          <h1 className="heading-3 mt-1 text-white">
+          </span>
+          <h1 className="heading-3 mt-1 text-primary">
             Interactive Calculator Workspace
           </h1>
         </div>
@@ -72,7 +72,7 @@ export function CategoryGrid({
           <MagnifyingGlass
             size={16}
             weight="regular"
-            className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-zinc-500"
+            className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-muted"
             aria-hidden="true"
           />
           <input
@@ -82,19 +82,19 @@ export function CategoryGrid({
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search calculators (EMI, 87A, ₹ ratio)..."
             aria-label="Search calculators"
-            className="min-h-[44px] w-full rounded-lg border border-[#272727] bg-[#181818] pr-16 pl-10 text-xs text-white placeholder:text-zinc-500 transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-[#313131] focus:border-[#D4AF37] focus:outline-none"
+            className="min-h-[44px] w-full rounded-lg border border-border-subtle bg-bg-card pr-16 pl-10 text-xs text-primary placeholder:text-muted transition-colors hover:border-border-default focus:border-accent-gold focus:outline-none"
           />
           {searchQuery ? (
             <button
               type="button"
               onClick={() => onSearchChange('')}
               aria-label="Clear calculator search"
-              className="absolute top-1/2 right-2.5 -translate-y-1/2 rounded p-1 text-zinc-400 hover:text-white"
+              className="absolute top-1/2 right-2.5 -translate-y-1/2 rounded p-1 text-secondary hover:text-primary"
             >
               <X size={14} weight="bold" aria-hidden="true" />
             </button>
           ) : (
-            <kbd className="pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 font-mono-num text-xs text-zinc-500 sm:inline-block">
+            <kbd className="pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 font-mono-num text-xs text-muted sm:inline-block">
               Ctrl K
             </kbd>
           )}
@@ -103,12 +103,12 @@ export function CategoryGrid({
 
       {/* Responsive Category Cards */}
       {filtered.length === 0 ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#272727] bg-[#181818] px-5 py-4 text-xs text-zinc-400">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border-subtle bg-bg-card px-5 py-4 text-xs text-secondary">
           <span>No calculators match &ldquo;{searchQuery}&rdquo;.</span>
           <button
             type="button"
             onClick={() => onSearchChange('')}
-            className="font-medium text-[#E5C158] hover:underline"
+            className="font-medium gold-accent hover:underline"
           >
             Show all calculators
           </button>
@@ -123,10 +123,10 @@ export function CategoryGrid({
                 key={calc.id}
                 type="button"
                 onClick={() => onSelectCalc(calc.id)}
-                className={`group flex min-w-[235px] snap-start flex-col justify-between rounded-xl border p-4 text-left transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] sm:min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] ${
+                className={`group flex min-w-[235px] snap-start flex-col justify-between rounded-xl border p-4 text-left transition-colors sm:min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold ${
                   isActive
-                    ? 'border-[#D4AF37] bg-[#131209]'
-                    : 'border-[#272727] bg-[#181818] hover:border-[#313131] hover:bg-[#1F1F1F]'
+                    ? 'border-accent-gold bg-bg-raised'
+                    : 'card card-hover'
                 }`}
               >
                 <div>
@@ -134,30 +134,30 @@ export function CategoryGrid({
                     <span
                       className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${
                         isActive
-                          ? 'border-[#D4AF37] bg-[#181818] text-[#D4AF37]'
-                          : 'border-[#313131] bg-[#1F1F1F] text-zinc-400 group-hover:text-[#D4AF37]'
+                          ? 'border-accent-gold bg-bg-card gold-accent'
+                          : 'border-border-subtle bg-bg-raised text-secondary group-hover:text-accent-gold'
                       }`}
                     >
                       <Icon size={16} weight="regular" aria-hidden="true" />
                     </span>
                     <span
                       className={`caption-4 ${
-                        isActive ? 'text-[#D4AF37]' : 'text-zinc-500'
+                        isActive ? 'gold-accent' : 'text-muted'
                       }`}
                     >
                       {isActive ? 'Active' : calc.categoryLabel.split(' · ')[0]}
                     </span>
                   </div>
 
-                  <h2 className="title-4 text-white group-hover:text-[#E5C158]">
+                  <h2 className="title-4 text-primary group-hover:text-accent-gold-hover">
                     {calc.title}
                   </h2>
-                  <p className="caption-5 mt-1.5 text-zinc-400">
+                  <p className="caption-5 mt-1.5 text-secondary">
                     {calc.summary}
                   </p>
                 </div>
 
-                <div className="font-mono-num caption-5 mt-3 border-t border-[#272727] pt-2.5 text-zinc-500 truncate">
+                <div className="font-mono-num caption-5 mt-3 border-t border-border-subtle pt-2.5 text-muted truncate">
                   {calc.formulaHint}
                 </div>
               </button>

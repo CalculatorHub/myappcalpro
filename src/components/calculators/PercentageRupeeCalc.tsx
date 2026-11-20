@@ -79,24 +79,24 @@ export function PercentageRupeeCalc() {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
       {/* Left Input Column */}
-      <div className="rounded-xl border border-white/[0.08] bg-[#111116] p-5 sm:p-6 lg:col-span-5">
-        <div className="mb-4 border-b border-white/[0.08] pb-4">
-          <h2 className="font-display text-lg font-semibold text-white">
+      <div className="card p-5 sm:p-6 lg:col-span-5">
+        <div className="mb-4 border-b border-border-subtle pb-4">
+          <h2 className="heading-5 text-primary">
             Rupee ↔ Percentage Converter
           </h2>
-          <p className="mt-1 text-xs text-zinc-400">
+          <p className="mt-1 caption-5 text-secondary">
             Convert between Rupees (₹) and Percentage (%) at the ₹1 = 12% ratio.
           </p>
         </div>
 
         <div className="space-y-4">
           {/* Ratio Note */}
-          <div className="rounded-lg border border-[#D4AF37]/25 bg-[#15130E] p-3 text-xs leading-relaxed text-zinc-300">
-            <span className="flex items-center gap-1.5 font-semibold text-[#E5C158]">
+          <div className="rounded-lg border border-accent-gold/25 bg-bg-raised p-3 caption-2 text-secondary">
+            <span className="flex items-center gap-1.5 font-semibold gold-accent">
               <Info size={14} weight="fill" className="shrink-0" aria-hidden="true" />
               <span>Conversion Ratio: ₹1 = 12%</span>
             </span>
-            <span className="mt-1 block text-zinc-400">
+            <span className="mt-1 block text-muted">
               Custom conversion ratio (not a standard currency exchange rate).
             </span>
           </div>
@@ -110,21 +110,21 @@ export function PercentageRupeeCalc() {
               <button
                 type="button"
                 onClick={() => handleSwitchDirection()}
-                className="inline-flex items-center gap-1.5 rounded-md border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-2.5 py-1 text-xs font-medium text-[#E5C158] transition-colors hover:bg-[#D4AF37] hover:text-[#09090B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] whitespace-nowrap"
+                className="inline-flex items-center gap-1.5 rounded-md border border-accent-gold/40 bg-accent-gold/10 px-2.5 py-1 caption-4 gold-accent transition-colors hover:bg-accent-gold hover:text-bg-main focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold whitespace-nowrap"
               >
                 <ArrowsLeftRight size={14} weight="bold" aria-hidden="true" />
                 <span>Switch Direction</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-1.5 rounded-lg border border-white/[0.08] bg-[#0B0B0E] p-1">
+            <div className="grid grid-cols-2 gap-1.5 rounded-lg border border-border-subtle bg-bg-raised p-1">
               <button
                 type="button"
                 onClick={() => handleSwitchDirection('rupees-to-percent')}
-                className={`min-h-[38px] rounded-md px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
+                className={`min-h-[38px] rounded-md px-3 py-1.5 caption-4 transition-colors whitespace-nowrap ${
                   isRupeesToPercent
-                    ? 'bg-[#D4AF37] text-[#09090B] font-semibold'
-                    : 'text-zinc-400 hover:text-white'
+                    ? 'bg-accent-gold text-bg-main font-semibold'
+                    : 'text-secondary hover:text-primary'
                 }`}
               >
                 ₹ → % (Rupees to %)
@@ -132,10 +132,10 @@ export function PercentageRupeeCalc() {
               <button
                 type="button"
                 onClick={() => handleSwitchDirection('percent-to-rupees')}
-                className={`min-h-[38px] rounded-md px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
+                className={`min-h-[38px] rounded-md px-3 py-1.5 caption-4 transition-colors whitespace-nowrap ${
                   !isRupeesToPercent
-                    ? 'bg-[#D4AF37] text-[#09090B] font-semibold'
-                    : 'text-zinc-400 hover:text-white'
+                    ? 'bg-accent-gold text-bg-main font-semibold'
+                    : 'text-secondary hover:text-primary'
                 }`}
               >
                 % → ₹ (% to Rupees)
