@@ -4,9 +4,10 @@ import { AppRoute } from './landing/FloatingNav';
 interface FooterProps {
   selectedFY: FinancialYearKey;
   onNavigate: (route: AppRoute) => void;
+  onOpenInstallHelp?: () => void;
 }
 
-export function Footer({ selectedFY, onNavigate }: FooterProps) {
+export function Footer({ selectedFY, onNavigate, onOpenInstallHelp }: FooterProps) {
   const rules = CONFIGURABLE_TAX_RULES[selectedFY];
 
   return (
@@ -56,6 +57,15 @@ export function Footer({ selectedFY, onNavigate }: FooterProps) {
           >
             Terms of use
           </button>
+          {onOpenInstallHelp && (
+            <button
+              type="button"
+              onClick={onOpenInstallHelp}
+              className="caption-4 text-accent-gold transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:underline"
+            >
+              Install App
+            </button>
+          )}
         </div>
       </div>
     </footer>

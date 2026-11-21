@@ -3,27 +3,60 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FinCalc Pro | Free CA Finance &amp; Indian Tax Formula Kit</title>
+    <title>CalHub — FinCalc Pro | Indian Finance &amp; Tax Calculators</title>
     <meta
       name="description"
-      content="Download the free CA formula kit and compute Indian income tax slabs, home loan EMI, compound interest, and rupee ratios with no signup required."
+      content="CalHub FinCalc Pro: Practical Indian finance, loan EMI, compound interest, rupee-percentage ratio, and income tax calculators with step-by-step explanations."
     />
-    <meta property="og:title" content="FinCalc Pro | Free CA Finance &amp; Indian Tax Formula Kit" />
+    <meta property="og:site_name" content="CalHub FinCalc Pro" />
+    <meta property="og:title" content="CalHub — FinCalc Pro | Indian Finance &amp; Tax Calculators" />
     <meta
       property="og:description"
-      content="Download the free CA formula kit and compute Indian income tax slabs, home loan EMI, compound interest, and rupee ratios with no signup required."
+      content="Compute Indian income tax slabs, home loan EMI amortization, compound growth, and custom rupee-percentage conversions with clear formulas and CSV/PDF export."
     />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="/og-image.svg" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CalHub — FinCalc Pro | Indian Finance &amp; Tax Calculators" />
+    <meta
+      name="twitter:description"
+      content="Practical Indian finance and tax calculators for individuals and CA students with step-by-step solutions."
+    />
     <meta name="twitter:image" content="/og-image.svg" />
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#050505" />
+
+    <!-- iOS Home Screen Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CalHub FinCalc" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Geist:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "CalHub — FinCalc Pro",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "All",
+        "url": "https://mycalapphub.vercel.app/",
+        "description": "Practical Indian finance and tax calculators for individuals and CA students with step-by-step breakdowns, Indian rupee formatting, and offline export.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "INR"
+        }
+      }
+    </script>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -31,41 +64,33 @@
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "What is inside the free FinCalc Pro CA formula kit?",
+            "name": "Do I need an account or signup to use CalHub FinCalc Pro?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The kit includes verified Indian income tax slab tables for FY 2024 to 2027, Section 87A rebate limits, marginal relief rules, EMI amortization equations, simple and compound interest formulas, and rupee ratio conversions."
+              "text": "No. All interactive calculators, local calculation history, and CSV/PDF exports are free to use without signup."
             }
           },
           {
             "@type": "Question",
-            "name": "Do I need an account or signup to download the kit?",
+            "name": "Are the Indian income tax calculations official tax filings?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. Both the formula kit download and all five interactive calculators are completely free to use with no signup required."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Are the Indian income tax rules updated for FY 2026 to 2027?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Yes. Both the kit and the tax estimator cover FY 2024 to 2025, FY 2025 to 2026, and FY 2026 to 2027 across New and Old regimes, including the 75,000 standard deduction and 4 percent health and education cess."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Does FinCalc Pro work offline after downloading?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "The downloaded CA formula reference sheet works completely offline on any phone or laptop, and all browser calculations run locally on your device."
+              "text": "No. All tax outputs are structured educational estimates for CA exam practice and personal planning across FY 2024 to 2027."
             }
           }
         ]
       }
     </script>
+
+    <!-- Content Security Policy -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; frame-src 'none'; connect-src 'self';"
+    />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
   </head>
-  <body class="bg-bg-main text-primary antialiased selection:bg-accent-gold/30 selection:text-primary">
+  <body class="bg-[#050505] text-white antialiased selection:bg-[#D4AF37]/30 selection:text-[#F5D76E]">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

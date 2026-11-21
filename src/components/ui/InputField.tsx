@@ -21,6 +21,7 @@ interface InputFieldProps {
   showIndianScale?: boolean;
   disabled?: boolean;
   step?: string;
+  className?: string;
   quickChips?: QuickPresetChip[];
   slider?: {
     min: number;
@@ -43,6 +44,7 @@ export function InputField({
   showIndianScale = false,
   disabled = false,
   step = 'any',
+  className,
   quickChips,
   slider,
 }: InputFieldProps) {
@@ -56,7 +58,7 @@ export function InputField({
       : null;
 
   return (
-    <div className="space-y-1.5">
+    <div className={`space-y-1.5 ${className ?? ''}`}>
       <div className="flex items-center justify-between gap-2">
         <label
           htmlFor={id}
