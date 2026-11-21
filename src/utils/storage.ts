@@ -13,6 +13,7 @@ export interface CalculationHistoryItem {
   primaryMetricLabel: string;
   primaryMetricValue: string;
   summaryLine: string;
+  details?: string[];
   timestamp: string;
 }
 
@@ -121,6 +122,8 @@ export function getCalculationHistory(): CalculationHistoryItem[] {
           typeof e.primaryMetricLabel === 'string' &&
           typeof e.primaryMetricValue === 'string' &&
           typeof e.summaryLine === 'string' &&
+          (e.details === undefined ||
+            (Array.isArray(e.details) && e.details.every((d) => typeof d === 'string'))) &&
           typeof e.timestamp === 'string'
         );
       })

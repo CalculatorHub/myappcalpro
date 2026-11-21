@@ -123,26 +123,26 @@ export const ResultEmptyState: React.FC<ResultEmptyStateProps> = ({
   onLoadExample,
 }) => {
   return (
-    <div className="luxury-card p-8 sm:p-10 flex flex-col items-center justify-center text-center min-h-[280px] space-y-4">
+    <div className="luxury-card p-6 sm:p-8 flex flex-col items-center justify-center text-center min-h-[220px] space-y-3.5">
       <div
-        className={`flex h-12 w-12 items-center justify-center rounded-2xl border ${
+        className={`flex h-11 w-11 items-center justify-center rounded-2xl border ${
           hasErrors
             ? 'border-red-500/40 bg-red-950/35 text-red-400'
             : 'border-[#D4AF37]/35 bg-[#D4AF37]/10 text-[#F5D76E]'
         }`}
       >
         {hasErrors ? (
-          <AlertCircle className="h-6 w-6" aria-hidden="true" />
+          <AlertCircle className="h-5 w-5" aria-hidden="true" />
         ) : (
-          <Calculator className="h-6 w-6" aria-hidden="true" />
+          <Calculator className="h-5 w-5" aria-hidden="true" />
         )}
       </div>
 
-      <div className="max-w-sm space-y-1.5">
+      <div className="max-w-md space-y-1">
         <h4 className="text-base font-semibold text-white">
           {hasErrors ? 'Check highlighted input fields' : 'Ready to calculate'}
         </h4>
-        <p className="text-sm leading-relaxed text-[#A1A1AA]">
+        <p className="text-xs sm:text-sm leading-relaxed text-[#A1A1AA]">
           {message ??
             (hasErrors
               ? 'Correct the invalid fields on the left to view your updated calculation and breakdown.'

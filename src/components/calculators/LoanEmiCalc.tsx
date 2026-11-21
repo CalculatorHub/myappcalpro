@@ -176,6 +176,14 @@ export const LoanEmiCalc: React.FC<LoanEmiCalcProps> = ({ onSaveHistory }) => {
         primaryMetricLabel: 'Monthly EMI',
         primaryMetricValue: formatINR(result.monthlyEmi),
         summaryLine: `${formatINR(result.loanAmount)} @ ${result.annualRate}% for ${result.tenureMonths} mo · Interest ${formatINR(result.totalInterest)}`,
+        details: [
+          `Loan Principal: ${formatINR(result.loanAmount)}`,
+          `Interest Rate: ${result.annualRate}% p.a.`,
+          `Tenure: ${result.tenureMonths} months`,
+          `Monthly EMI: ${formatINR(result.monthlyEmi)}`,
+          `Total Interest: ${formatINR(result.totalInterest)}`,
+          `Processing Fee: ${formatINR(result.processingFee)} · Total Cost: ${formatINR(result.totalCostWithFee)}`,
+        ],
       });
     }
     if (isValid && resultsRef.current && window.innerWidth < 1024) {

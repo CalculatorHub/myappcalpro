@@ -57,20 +57,48 @@ function createOctagonRingGeometry(): THREE.ExtrudeGeometry {
   return geo;
 }
 
+function createBeveledBarGeometry(width: number, height: number, depth: number): THREE.ExtrudeGeometry {
+  const hw = width / 2;
+  const hh = height / 2;
+  const r = Math.min(hh, 0.045);
+
+  const shape = new THREE.Shape();
+  shape.moveTo(-hw + r, -hh);
+  shape.lineTo(hw - r, -hh);
+  shape.quadraticCurveTo(hw, -hh, hw, -hh + r);
+  shape.lineTo(hw, hh - r);
+  shape.quadraticCurveTo(hw, hh, hw - r, hh);
+  shape.lineTo(-hw + r, hh);
+  shape.quadraticCurveTo(-hw, hh, -hw, hh - r);
+  shape.lineTo(-hw, -hh + r);
+  shape.quadraticCurveTo(-hw, -hh, -hw + r, -hh);
+
+  const geo = new THREE.ExtrudeGeometry(shape, {
+    depth,
+    bevelEnabled: true,
+    bevelThickness: 0.032,
+    bevelSize: 0.024,
+    bevelSegments: 3,
+    curveSegments: 10,
+  });
+  geo.center();
+  return geo;
+}
+
 function createRupeeBarsAndStem(): THREE.Group {
   const group = new THREE.Group();
 
-  // Sculpted extruded bar primitive for precision Rupee strokes
-  const topBarGeo = new THREE.BoxGeometry(0.94, 0.13, 0.18);
-  const midBarGeo = new THREE.BoxGeometry(0.94, 0.13, 0.18);
+  // Beveled extruded horizontal Rupee strokes matching the sculptural stem
+  const topBarGeo = createBeveledBarGeometry(0.92, 0.125, 0.16);
+  const midBarGeo = createBeveledBarGeometry(0.92, 0.125, 0.16);
 
   const topBar = new THREE.Mesh(topBarGeo);
-  topBar.position.set(0, 0.56, 0.12);
+  topBar.position.set(0.02, 0.56, 0.12);
 
   const midBar = new THREE.Mesh(midBarGeo);
-  midBar.position.set(0, 0.24, 0.12);
+  midBar.position.set(0.02, 0.24, 0.12);
 
-  // Curved shoulder arc + diagonal foot built cleanly via ExtrudeGeometry
+  // Curved shoulder arc + diagonal foot built via beveled ExtrudeGeometry
   const curveShape = new THREE.Shape();
   curveShape.moveTo(-0.08, 0.56);
   curveShape.bezierCurveTo(0.45, 0.56, 0.45, -0.05, -0.1, -0.05);
@@ -96,6 +124,7 @@ function createRupeeBarsAndStem(): THREE.Group {
   const curveMesh = new THREE.Mesh(curveGeo);
 
   group.add(topBar, midBar, curveMesh);
+  group.position.set(0.02, 0.06, 0);
   return group;
 }
 

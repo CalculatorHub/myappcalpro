@@ -96,6 +96,28 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
     });
   }, [isValid, isDefaultAllZero, financialYear, regime, ageCategory, salaryNum, otherNum, deductionsNum, tdsNum]);
 
+  const regimeComparison = useMemo(() => {
+    if (!isValid || isDefaultAllZero) return null;
+    const baseInput = {
+      financialYear,
+      ageCategory,
+      salaryIncome: Number.isFinite(salaryNum) ? salaryNum : 0,
+      otherIncome: Number.isFinite(otherNum) ? otherNum : 0,
+      eligibleDeductions: Number.isFinite(deductionsNum) ? deductionsNum : 0,
+      tdsAndCredits: Number.isFinite(tdsNum) ? tdsNum : 0,
+    };
+    const newRes = calculateIndianIncomeTax({ ...baseInput, regime: 'new' });
+    const oldRes = calculateIndianIncomeTax({ ...baseInput, regime: 'old' });
+    const diff = Math.abs(newRes.totalTaxLiability - oldRes.totalTaxLiability);
+    const suggestedRegime: TaxRegimeId | 'tie' =
+      newRes.totalTaxLiability === oldRes.totalTaxLiability
+        ? 'tie'
+        : newRes.totalTaxLiability < oldRes.totalTaxLiability
+        ? 'new'
+        : 'old';
+    return { newRes, oldRes, diff, suggestedRegime };
+  }, [isValid, isDefaultAllZero, financialYear, ageCategory, salaryNum, otherNum, deductionsNum, tdsNum]);
+
   const handleLoadExample = (
     fy: FinancialYearId,
     reg: TaxRegimeId,
@@ -118,15 +140,34 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
 
   const handleCalculate = () => {
     setSubmitted(true);
-    if (result && onSaveHistory) {
-      const refund = result.balancePayableOrRefund < 0;
-      onSaveHistory({
-        calculatorId: 'income-tax',
-        calculatorTitle: 'Income Tax',
-        primaryMetricLabel: refund ? 'Estimated Tax Refund' : 'Estimated Net Tax Payable',
-        primaryMetricValue: formatINR(Math.abs(result.balancePayableOrRefund)),
-        summaryLine: `${fyConfig.label} · ${regime === 'new' ? 'New Regime' : 'Old Regime'} · Gross ${formatINR(result.grossTotalIncome)} · Tax ${formatINR(result.totalTaxLiability)}`,
+    if (isValid) {
+      const computed = calculateIndianIncomeTax({
+        financialYear,
+        regime,
+        ageCategory,
+        salaryIncome: Number.isFinite(salaryNum) ? salaryNum : 0,
+        otherIncome: Number.isFinite(otherNum) ? otherNum : 0,
+        eligibleDeductions: Number.isFinite(deductionsNum) ? deductionsNum : 0,
+        tdsAndCredits: Number.isFinite(tdsNum) ? tdsNum : 0,
       });
+      if (onSaveHistory) {
+        const refund = computed.balancePayableOrRefund < 0;
+        const postTax = Math.max(0, computed.grossTotalIncome - computed.totalTaxLiability);
+        onSaveHistory({
+          calculatorId: 'income-tax',
+          calculatorTitle: 'Income Tax',
+          primaryMetricLabel: refund ? 'Estimated Tax Refund' : 'Estimated Net Tax Payable',
+          primaryMetricValue: formatINR(Math.abs(computed.balancePayableOrRefund)),
+          summaryLine: `${fyConfig.label} · ${regime === 'new' ? 'New Regime' : 'Old Regime'} · Gross ${formatINR(computed.grossTotalIncome)} · Tax ${formatINR(computed.totalTaxLiability)}`,
+          details: [
+            `Financial Year & Regime: ${fyConfig.label} (${regime === 'new' ? 'New Regime 115BAC' : 'Old Regime'})`,
+            `Gross Total Income: ${formatINR(computed.grossTotalIncome)}`,
+            `Deductions (Std + VI-A): ${formatINR(computed.standardDeduction + computed.eligibleDeductionsApplied)}`,
+            `Taxable Income: ${formatINR(computed.taxableIncome)}`,
+            `Total Tax + Cess: ${formatINR(computed.totalTaxLiability)} · Monthly Take-Home: ${formatINR(postTax / 12)}`,
+          ],
+        });
+      }
     }
     if (isValid && resultsRef.current && window.innerWidth < 1024) {
       resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -175,6 +216,7 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
   const postTaxIncome = result
     ? Math.max(0, result.grossTotalIncome - result.totalTaxLiability)
     : 0;
+  const monthlyTakeHome = postTaxIncome / 12;
 
   const copySummary = result
     ? [
@@ -189,7 +231,7 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
         result.surcharge > 0 ? `Surcharge: ${formatINR(result.surcharge)}` : null,
         `Health & Education Cess (4%): ${formatINR(result.cessAmount)}`,
         `Estimated Total Tax Liability: ${formatINR(result.totalTaxLiability)}`,
-        `Estimated Post-Tax Income: ${formatINR(postTaxIncome)}`,
+        `Estimated Post-Tax Income: ${formatINR(postTaxIncome)} (${formatINR(monthlyTakeHome)} / month)`,
         `Less TDS / Credits: ${formatINR(result.tdsAndCredits)}`,
         `${isRefund ? 'Estimated Refund' : 'Estimated Balance Payable'}: ${formatINR(Math.abs(result.balancePayableOrRefund))}`,
         'Note: Educational estimate only.',
@@ -449,13 +491,13 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
 
                   <div className="sm:border-l sm:border-[#D4AF37]/20 sm:pl-6">
                     <p className="text-xs font-semibold text-[#A1A1AA]">
-                      Estimated Post-Tax Income
+                      Estimated Monthly Take-Home
                     </p>
                     <p className="mt-1 font-mono text-2xl font-bold text-[#F5D76E] tabular-nums sm:text-3xl">
-                      <AnimatedNumber value={postTaxIncome} format={(n) => formatINR(n)} />
+                      <AnimatedNumber value={monthlyTakeHome} format={(n) => `${formatINR(n)}/mo`} />
                     </p>
                     <p className="mt-1 font-mono text-xs text-[#A1A1AA] tabular-nums">
-                      Gross {formatINR(result.grossTotalIncome)} − Tax {formatINR(result.totalTaxLiability)}
+                      Annual Post-Tax: {formatINR(postTaxIncome)}
                     </p>
                   </div>
                 </div>
@@ -469,31 +511,106 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
 
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="luxury-subcard p-3.5">
+                  <p className="text-xs text-[#A1A1AA]">Gross Total Income</p>
+                  <p className="mt-1 font-mono text-base font-semibold text-white tabular-nums">
+                    {formatINR(result.grossTotalIncome)}
+                  </p>
+                </div>
+                <div className="luxury-subcard p-3.5">
+                  <p className="text-xs text-[#A1A1AA]">Eligible Deductions</p>
+                  <p className="mt-1 font-mono text-base font-semibold text-white tabular-nums">
+                    {formatINR(result.standardDeduction + result.eligibleDeductionsApplied)}
+                  </p>
+                </div>
+                <div className="luxury-subcard p-3.5">
                   <p className="text-xs text-[#A1A1AA]">Taxable Income</p>
                   <p className="mt-1 font-mono text-base font-semibold text-white tabular-nums">
                     {formatINR(result.taxableIncome)}
                   </p>
                 </div>
                 <div className="luxury-subcard p-3.5">
-                  <p className="text-xs text-[#A1A1AA]">Total Tax + Cess</p>
+                  <p className="text-xs font-medium text-[#F5D76E]">Total Tax Liability</p>
                   <p className="mt-1 font-mono text-base font-semibold text-white tabular-nums">
                     {formatINR(result.totalTaxLiability)}
                   </p>
                 </div>
-                <div className="luxury-subcard p-3.5">
-                  <p className="text-xs font-medium text-[#F5D76E]">Rebate / Relief</p>
-                  <p className="mt-1 font-mono text-base font-semibold text-white tabular-nums">
-                    {formatINR(result.rebate87A + result.marginalRelief)}
-                  </p>
-                </div>
-                <div className="luxury-subcard p-3.5">
-                  <p className="text-xs text-[#A1A1AA]">Less TDS / Credits</p>
-                  <p className="mt-1 font-mono text-base font-semibold text-white tabular-nums">
-                    {formatINR(result.tdsAndCredits)}
-                  </p>
-                </div>
               </div>
             </TiltCard3D>
+
+            {regimeComparison && (
+              <div className="luxury-card p-5 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h4 className="text-sm font-semibold text-white">
+                      New vs Old Regime Comparison ({fyConfig.label})
+                    </h4>
+                    <p className="text-xs text-[#A1A1AA]">
+                      {regimeComparison.suggestedRegime === 'tie'
+                        ? 'Both regimes yield equal estimated tax liability for your current inputs.'
+                        : regimeComparison.suggestedRegime === 'new'
+                        ? `New Regime saves ${formatINR(regimeComparison.diff)} compared to Old Regime.`
+                        : `Old Regime saves ${formatINR(regimeComparison.diff)} compared to New Regime with entered deductions.`}
+                    </p>
+                  </div>
+
+                  {regimeComparison.suggestedRegime !== 'tie' &&
+                    regimeComparison.suggestedRegime !== regime && (
+                      <button
+                        type="button"
+                        onClick={() => setRegime(regimeComparison.suggestedRegime as TaxRegimeId)}
+                        className="rounded-xl border border-[#D4AF37]/40 bg-[#D4AF37]/14 px-3 py-1.5 text-xs font-semibold text-[#F5D76E] transition-colors hover:bg-[#D4AF37]/24 cursor-pointer whitespace-nowrap"
+                      >
+                        Switch to {regimeComparison.suggestedRegime === 'new' ? 'New Regime' : 'Old Regime'}
+                      </button>
+                    )}
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div
+                    className={`luxury-subcard p-3.5 ${
+                      regimeComparison.suggestedRegime === 'new'
+                        ? 'border-[#F5D76E]/55 bg-[#D4AF37]/10'
+                        : ''
+                    }`}
+                  >
+                    <p className="text-xs text-[#A1A1AA]">
+                      New Regime (115BAC)
+                      {regimeComparison.suggestedRegime === 'new' && (
+                        <span className="ml-1.5 font-semibold text-[#F5D76E]">· Lower Tax</span>
+                      )}
+                    </p>
+                    <p className="mt-1 font-mono text-lg font-bold text-white tabular-nums">
+                      {formatINR(regimeComparison.newRes.totalTaxLiability)}
+                    </p>
+                  </div>
+
+                  <div
+                    className={`luxury-subcard p-3.5 ${
+                      regimeComparison.suggestedRegime === 'old'
+                        ? 'border-[#F5D76E]/55 bg-[#D4AF37]/10'
+                        : ''
+                    }`}
+                  >
+                    <p className="text-xs text-[#A1A1AA]">
+                      Old Regime
+                      {regimeComparison.suggestedRegime === 'old' && (
+                        <span className="ml-1.5 font-semibold text-[#F5D76E]">· Lower Tax</span>
+                      )}
+                    </p>
+                    <p className="mt-1 font-mono text-lg font-bold text-white tabular-nums">
+                      {formatINR(regimeComparison.oldRes.totalTaxLiability)}
+                    </p>
+                  </div>
+
+                  <div className="luxury-subcard p-3.5">
+                    <p className="text-xs text-[#A1A1AA]">Tax Difference</p>
+                    <p className="mt-1 font-mono text-lg font-bold text-[#F5D76E] tabular-nums">
+                      {formatINR(regimeComparison.diff)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="luxury-card overflow-hidden">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#D4AF37]/15 px-5 py-4">
@@ -537,16 +654,25 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
                   <span className="font-sans">Slab Tax Before Rebate</span>
                   <span>{formatINR(result.taxBeforeRebate)}</span>
                 </div>
-                {result.rebate87A > 0 && (
-                  <div className="flex justify-between text-emerald-400">
-                    <span className="font-sans">Less: Section 87A Rebate</span>
-                    <span>-{formatINR(result.rebate87A)}</span>
-                  </div>
-                )}
-                {result.marginalRelief > 0 && (
-                  <div className="flex justify-between text-emerald-400">
-                    <span className="font-sans">Less: Section 87A Marginal Relief</span>
-                    <span>-{formatINR(result.marginalRelief)}</span>
+                {(result.rebate87A > 0 || result.marginalRelief > 0) ? (
+                  <>
+                    {result.rebate87A > 0 && (
+                      <div className="flex justify-between text-emerald-400">
+                        <span className="font-sans">Less: Section 87A Rebate</span>
+                        <span>-{formatINR(result.rebate87A)}</span>
+                      </div>
+                    )}
+                    {result.marginalRelief > 0 && (
+                      <div className="flex justify-between text-emerald-400">
+                        <span className="font-sans">Less: Section 87A Marginal Relief</span>
+                        <span>-{formatINR(result.marginalRelief)}</span>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex justify-between text-[#A1A1AA]">
+                    <span className="font-sans">Section 87A Rebate / Marginal Relief</span>
+                    <span>{formatINR(0)}</span>
                   </div>
                 )}
                 {result.surcharge > 0 && (
@@ -558,6 +684,10 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
                 <div className="flex justify-between text-[#A1A1AA]">
                   <span className="font-sans">Add: Health &amp; Education Cess (4%)</span>
                   <span>{formatINR(result.cessAmount)}</span>
+                </div>
+                <div className="flex justify-between text-[#A1A1AA]">
+                  <span className="font-sans">Less: TDS / Advance Tax Paid</span>
+                  <span>-{formatINR(result.tdsAndCredits)}</span>
                 </div>
                 <div className="flex justify-between border-t border-[#D4AF37]/18 pt-2 text-sm font-semibold text-white">
                   <span className="font-sans">Estimated Total Tax Liability</span>
@@ -576,6 +706,15 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
                 Key Assumptions ({fyConfig.label} · {regimeConfig.label})
               </h4>
               <ul className="space-y-1 text-xs text-[#A1A1AA]">
+                {regime === 'old' && ageCategory !== 'below-60' ? (
+                  <li>
+                    · Using resident{' '}
+                    {ageCategory === 'senior-60-79'
+                      ? 'Senior Citizen (60–79 years, basic exemption ₹3,00,000)'
+                      : 'Super Senior Citizen (80+ years, basic exemption ₹5,00,000)'}{' '}
+                    Old Regime slabs.
+                  </li>
+                ) : null}
                 {regimeConfig.assumptions.map((note, idx) => (
                   <li key={idx}>· {note}</li>
                 ))}

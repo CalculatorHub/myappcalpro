@@ -86,7 +86,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   return (
     <section
       id="overview"
-      className="luxury-hero-backdrop border-b border-[#D4AF37]/20"
+      className="luxury-hero-backdrop scroll-mt-24 border-b border-[#D4AF37]/20"
     >
       <div className="mx-auto max-w-6xl px-4 pt-10 pb-12 sm:px-6 sm:pt-14 sm:pb-16 space-y-10">
         {/* Top Hero Row: Cinematic Typography + Interactive 3D Metallic Gold Emblem */}
@@ -269,7 +269,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               </button>
             </div>
           ) : (
-            <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
               {filteredCards.map((card, idx) => {
                 const Icon = card.icon;
                 const isSelected = activeCalc === card.id;

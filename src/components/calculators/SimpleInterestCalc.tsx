@@ -41,8 +41,8 @@ export const SimpleInterestCalc: React.FC<SimpleInterestCalcProps> = ({ onSaveHi
 
   const errors = useMemo<SimpleInterestErrors>(() => {
     const next: SimpleInterestErrors = {};
-    if (principalStr.trim() === '' || !Number.isFinite(principalNum) || principalNum <= 0) {
-      next.principal = 'Enter a principal amount greater than ₹0.';
+    if (principalStr.trim() === '' || !Number.isFinite(principalNum) || principalNum < 0) {
+      next.principal = 'Enter a principal amount of ₹0 or greater.';
     }
     if (rateStr.trim() === '' || !Number.isFinite(rateNum) || rateNum < 0 || rateNum > 100) {
       next.rate = 'Enter an annual interest rate between 0% and 100%.';
@@ -55,12 +55,17 @@ export const SimpleInterestCalc: React.FC<SimpleInterestCalcProps> = ({ onSaveHi
 
   const isEmpty =
     principalStr.trim() === '' && rateStr.trim() === '' && timeStr.trim() === '';
+  const isDefaultAllZero =
+    !submitted &&
+    principalStr.trim() === '0' &&
+    rateStr.trim() === '0' &&
+    timeStr.trim() === '0';
   const isValid = Object.keys(errors).length === 0;
 
   const result = useMemo(() => {
-    if (!isValid) return null;
+    if (!isValid || isDefaultAllZero) return null;
     return calculateSimpleInterest(principalNum, rateNum, timeNum, timeUnit);
-  }, [isValid, principalNum, rateNum, timeNum, timeUnit]);
+  }, [isValid, isDefaultAllZero, principalNum, rateNum, timeNum, timeUnit]);
 
   const handleLoadExample = (p: string, r: string, t: string, u: SimpleInterestTimeUnit) => {
     setPrincipalStr(p);
@@ -73,14 +78,24 @@ export const SimpleInterestCalc: React.FC<SimpleInterestCalcProps> = ({ onSaveHi
 
   const handleCalculate = () => {
     setSubmitted(true);
-    if (result && onSaveHistory) {
-      onSaveHistory({
-        calculatorId: 'simple-interest',
-        calculatorTitle: 'Simple Interest',
-        primaryMetricLabel: 'Total Maturity Value',
-        primaryMetricValue: formatINR(result.totalAmount, 2),
-        summaryLine: `${formatINR(result.principal)} @ ${result.rate}% for ${result.timeValue} ${result.timeUnit} · SI ${formatINR(result.simpleInterest, 2)}`,
-      });
+    if (isValid) {
+      const computed = calculateSimpleInterest(principalNum, rateNum, timeNum, timeUnit);
+      if (onSaveHistory) {
+        onSaveHistory({
+          calculatorId: 'simple-interest',
+          calculatorTitle: 'Simple Interest',
+          primaryMetricLabel: 'Total Maturity Value',
+          primaryMetricValue: formatINR(computed.totalAmount, 2),
+          summaryLine: `${formatINR(computed.principal)} @ ${computed.rate}% for ${computed.timeValue} ${computed.timeUnit} · SI ${formatINR(computed.simpleInterest, 2)}`,
+          details: [
+            `Principal: ${formatINR(computed.principal)}`,
+            `Interest Rate: ${computed.rate}% p.a. (₹${(computed.rate / 12).toFixed(2)}/month per ₹100)`,
+            `Duration: ${computed.timeValue} ${computed.timeUnit} (${computed.timeInYears.toFixed(4)} years)`,
+            `Simple Interest: ${formatINR(computed.simpleInterest, 2)}`,
+            `Total Amount: ${formatINR(computed.totalAmount, 2)}`,
+          ],
+        });
+      }
     }
     if (isValid && resultsRef.current && window.innerWidth < 1024) {
       resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -262,22 +277,31 @@ export const SimpleInterestCalc: React.FC<SimpleInterestCalcProps> = ({ onSaveHi
                 />
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="luxury-subcard p-4">
                   <p className="text-xs text-[#A1A1AA]">Principal Amount</p>
-                  <p className="mt-1.5 font-mono text-lg font-semibold text-white tabular-nums">
+                  <p className="mt-1.5 font-mono text-base font-semibold text-white tabular-nums">
                     {formatINR(result.principal)}
                   </p>
                 </div>
                 <div className="luxury-subcard p-4">
+                  <p className="text-xs text-[#A1A1AA]">Interest Rate</p>
+                  <p className="mt-1.5 font-mono text-base font-semibold text-white tabular-nums">
+                    {result.rate}% p.a.
+                  </p>
+                  <p className="mt-0.5 font-mono text-[11px] text-[#F5D76E] tabular-nums">
+                    ₹{(result.rate / 12).toFixed(2)}/mo per ₹100
+                  </p>
+                </div>
+                <div className="luxury-subcard p-4">
                   <p className="text-xs font-medium text-[#F5D76E]">Simple Interest</p>
-                  <p className="mt-1.5 font-mono text-lg font-semibold text-white tabular-nums">
+                  <p className="mt-1.5 font-mono text-base font-semibold text-white tabular-nums">
                     {formatINR(result.simpleInterest, 2)}
                   </p>
                 </div>
                 <div className="luxury-subcard p-4">
                   <p className="text-xs text-[#A1A1AA]">Equivalent Years</p>
-                  <p className="mt-1.5 font-mono text-lg font-semibold text-white tabular-nums">
+                  <p className="mt-1.5 font-mono text-base font-semibold text-white tabular-nums">
                     {result.timeInYears.toFixed(2)} yrs
                   </p>
                 </div>

@@ -54,7 +54,7 @@ export const CalculatorWorkspace: React.FC<CalculatorWorkspaceProps> = ({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.1 }}
       transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-      className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16"
+      className="mx-auto max-w-6xl scroll-mt-24 px-4 py-12 sm:px-6 sm:py-16"
     >
       {/* Section Heading */}
       <div>

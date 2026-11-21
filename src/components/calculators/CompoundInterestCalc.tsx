@@ -44,8 +44,8 @@ export const CompoundInterestCalc: React.FC<CompoundInterestCalcProps> = ({ onSa
 
   const errors = useMemo<CompoundErrors>(() => {
     const next: CompoundErrors = {};
-    if (principalStr.trim() === '' || !Number.isFinite(principalNum) || principalNum <= 0) {
-      next.principal = 'Enter a principal amount greater than ₹0.';
+    if (principalStr.trim() === '' || !Number.isFinite(principalNum) || principalNum < 0) {
+      next.principal = 'Enter a principal amount of ₹0 or greater.';
     }
     if (rateStr.trim() === '' || !Number.isFinite(rateNum) || rateNum < 0 || rateNum > 100) {
       next.rate = 'Enter an annual rate between 0% and 100%.';
@@ -58,12 +58,17 @@ export const CompoundInterestCalc: React.FC<CompoundInterestCalcProps> = ({ onSa
 
   const isEmpty =
     principalStr.trim() === '' && rateStr.trim() === '' && yearsStr.trim() === '';
+  const isDefaultAllZero =
+    !submitted &&
+    principalStr.trim() === '0' &&
+    rateStr.trim() === '0' &&
+    yearsStr.trim() === '0';
   const isValid = Object.keys(errors).length === 0;
 
   const result = useMemo(() => {
-    if (!isValid) return null;
+    if (!isValid || isDefaultAllZero) return null;
     return calculateCompoundInterest(principalNum, rateNum, yearsNum, frequency);
-  }, [isValid, principalNum, rateNum, yearsNum, frequency]);
+  }, [isValid, isDefaultAllZero, principalNum, rateNum, yearsNum, frequency]);
 
   const chartData = useMemo<GrowthChartDatum[]>(() => {
     if (!result) return [];
@@ -102,14 +107,24 @@ export const CompoundInterestCalc: React.FC<CompoundInterestCalcProps> = ({ onSa
 
   const handleCalculate = () => {
     setSubmitted(true);
-    if (result && onSaveHistory) {
-      onSaveHistory({
-        calculatorId: 'compound-interest',
-        calculatorTitle: 'Compound Interest',
-        primaryMetricLabel: 'Maturity Value',
-        primaryMetricValue: formatINR(result.totalAmount, 2),
-        summaryLine: `${formatINR(result.principal)} @ ${result.rate}% (${result.frequency}) for ${result.years} yrs · EAR ${result.effectiveAnnualRate.toFixed(2)}%`,
-      });
+    if (isValid) {
+      const computed = calculateCompoundInterest(principalNum, rateNum, yearsNum, frequency);
+      if (onSaveHistory) {
+        onSaveHistory({
+          calculatorId: 'compound-interest',
+          calculatorTitle: 'Compound Interest',
+          primaryMetricLabel: 'Maturity Value',
+          primaryMetricValue: formatINR(computed.totalAmount, 2),
+          summaryLine: `${formatINR(computed.principal)} @ ${computed.rate}% (${computed.frequency}) for ${computed.years} yrs · EAR ${computed.effectiveAnnualRate.toFixed(2)}%`,
+          details: [
+            `Principal: ${formatINR(computed.principal)}`,
+            `Interest Rate: ${computed.rate}% p.a. (${COMPOUNDING_PERIODS[computed.frequency].label})`,
+            `Tenure: ${computed.years} years`,
+            `Compound Interest: ${formatINR(computed.compoundInterest, 2)}`,
+            `Maturity Value: ${formatINR(computed.totalAmount, 2)} (EAR ${computed.effectiveAnnualRate.toFixed(2)}%)`,
+          ],
+        });
+      }
     }
     if (isValid && resultsRef.current && window.innerWidth < 1024) {
       resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -300,22 +315,31 @@ export const CompoundInterestCalc: React.FC<CompoundInterestCalcProps> = ({ onSa
                 />
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="luxury-subcard p-4">
                   <p className="text-xs text-[#A1A1AA]">Principal Invested</p>
-                  <p className="mt-1.5 font-mono text-lg font-semibold text-white tabular-nums">
+                  <p className="mt-1.5 font-mono text-base font-semibold text-white tabular-nums">
                     {formatINR(result.principal)}
                   </p>
                 </div>
                 <div className="luxury-subcard p-4">
+                  <p className="text-xs text-[#A1A1AA]">Interest Rate</p>
+                  <p className="mt-1.5 font-mono text-base font-semibold text-white tabular-nums">
+                    {result.rate}% p.a.
+                  </p>
+                  <p className="mt-0.5 font-mono text-[11px] text-[#F5D76E] tabular-nums">
+                    ₹{(result.rate / 12).toFixed(2)}/mo per ₹100
+                  </p>
+                </div>
+                <div className="luxury-subcard p-4">
                   <p className="text-xs font-medium text-[#F5D76E]">Compound Interest</p>
-                  <p className="mt-1.5 font-mono text-lg font-semibold text-white tabular-nums">
+                  <p className="mt-1.5 font-mono text-base font-semibold text-white tabular-nums">
                     {formatINR(result.compoundInterest, 2)}
                   </p>
                 </div>
                 <div className="luxury-subcard p-4">
                   <p className="text-xs text-[#A1A1AA]">Effective Annual Rate</p>
-                  <p className="mt-1.5 font-mono text-lg font-semibold text-white tabular-nums">
+                  <p className="mt-1.5 font-mono text-base font-semibold text-white tabular-nums">
                     {result.effectiveAnnualRate.toFixed(2)}%
                   </p>
                 </div>
