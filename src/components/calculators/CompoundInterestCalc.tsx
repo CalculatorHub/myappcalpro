@@ -1,9 +1,9 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
 import { NumberInput } from '../ui/NumberInput';
 import { AnimatedNumber } from '../ui/AnimatedNumber';
 import { TiltCard3D } from '../ui/TiltCard3D';
 import { GrowthChart, type GrowthChartDatum } from '../ui/GrowthChart';
+import { MonthlyScheduleTable } from '../ui/MonthlyScheduleTable';
 import { FormulaAccordion } from '../ui/FormulaAccordion';
 import { CalcActionBar } from '../ui/CalcActionBar';
 import { ResultActionsBar, ResultEmptyState } from '../ui/ResultStateHeader';
@@ -31,7 +31,6 @@ export const CompoundInterestCalc: React.FC<CompoundInterestCalcProps> = ({ onSa
   const [rateStr, setRateStr] = useState<string>('0');
   const [yearsStr, setYearsStr] = useState<string>('0');
   const [frequency, setFrequency] = useState<CompoundingFrequency>('quarterly');
-  const [showSchedule, setShowSchedule] = useState<boolean>(true);
   const [touched, setTouched] = useState<Partial<Record<keyof CompoundErrors, boolean>>>({});
   const [submitted, setSubmitted] = useState<boolean>(false);
   const resultsRef = useRef<HTMLDivElement | null>(null);
@@ -72,23 +71,14 @@ export const CompoundInterestCalc: React.FC<CompoundInterestCalcProps> = ({ onSa
 
   const chartData = useMemo<GrowthChartDatum[]>(() => {
     if (!result) return [];
-    const points: GrowthChartDatum[] = [
-      {
-        label: 'Start',
-        principal: result.principal,
-        interestEarned: 0,
-        totalAmount: result.principal,
-      },
-    ];
-    result.yearlySchedule.forEach((row) => {
-      points.push({
-        label: `Yr ${row.year}`,
-        principal: result.principal,
-        interestEarned: row.cumulativeInterest,
-        totalAmount: row.closingBalance,
-      });
-    });
-    return points;
+    return result.monthlySchedule.map((row) => ({
+      label: row.label,
+      period: row.month,
+      principal: result.principal,
+      monthlyInterest: row.monthlyInterest,
+      interestEarned: row.accumulatedInterest,
+      totalAmount: row.closingBalance,
+    }));
   }, [result]);
 
   const handleLoadExample = (
@@ -142,14 +132,20 @@ export const CompoundInterestCalc: React.FC<CompoundInterestCalcProps> = ({ onSa
   const handleExportCsv = () => {
     if (!result) return;
     downloadCsvFile(
-      'calhub-compound-interest-schedule.csv',
-      ['Year', 'Opening Balance (INR)', 'Interest Earned (INR)', 'Closing Balance (INR)', 'Cumulative Interest (INR)'],
-      result.yearlySchedule.map((row) => [
-        row.year,
+      'calhub-compound-interest-monthly.csv',
+      [
+        'Month',
+        'Opening Balance (INR)',
+        'Monthly Interest (INR)',
+        'Accumulated Interest (INR)',
+        'Closing Balance (INR)',
+      ],
+      result.monthlySchedule.map((row) => [
+        row.label,
         row.openingBalance.toFixed(2),
-        row.interestEarned.toFixed(2),
+        row.monthlyInterest.toFixed(2),
+        row.accumulatedInterest.toFixed(2),
         row.closingBalance.toFixed(2),
-        row.cumulativeInterest.toFixed(2),
       ])
     );
   };
@@ -258,7 +254,7 @@ export const CompoundInterestCalc: React.FC<CompoundInterestCalcProps> = ({ onSa
           suffix="years"
           min={0}
           max={50}
-          step={0.5}
+          step="any"
           placeholder="0"
           value={yearsStr}
           onChange={(val) => {
@@ -347,61 +343,16 @@ export const CompoundInterestCalc: React.FC<CompoundInterestCalcProps> = ({ onSa
             </TiltCard3D>
 
             <GrowthChart
-              title="Compound Growth Over Time"
-              xAxisLabel="Tenure (Years)"
+              title="Monthly Compound Growth Progression"
+              xAxisLabel="Months"
               data={chartData}
             />
 
-            {result.yearlySchedule.length > 0 && (
-              <div className="luxury-card overflow-hidden">
-                <button
-                  type="button"
-                  aria-expanded={showSchedule}
-                  onClick={() => setShowSchedule((prev) => !prev)}
-                  className="flex w-full items-center justify-between border-b border-[#D4AF37]/15 px-5 py-4 text-left hover:bg-white/[0.03] cursor-pointer"
-                >
-                  <span className="text-sm font-semibold text-white">
-                    Year-by-Year Schedule ({result.yearlySchedule.length} periods)
-                  </span>
-                  {showSchedule ? (
-                    <ChevronUp className="h-4 w-4 text-[#F5D76E]" aria-hidden="true" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 text-[#A1A1AA]" aria-hidden="true" />
-                  )}
-                </button>
-
-                {showSchedule && (
-                  <div className="max-h-72 overflow-x-auto overflow-y-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="sticky top-0 bg-[#141416] text-[#A1A1AA]">
-                        <tr>
-                          <th className="px-4 py-3 font-medium">Period</th>
-                          <th className="px-4 py-3 font-medium text-right">Opening</th>
-                          <th className="px-4 py-3 font-medium text-right">Interest</th>
-                          <th className="px-4 py-3 font-medium text-right">Closing</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#D4AF37]/12 font-mono tabular-nums">
-                        {result.yearlySchedule.map((row) => (
-                          <tr key={row.year} className="hover:bg-white/[0.025]">
-                            <td className="px-4 py-3 text-[#A1A1AA]">Year {row.year}</td>
-                            <td className="px-4 py-3 text-right text-[#E4E4E7]">
-                              {formatINR(row.openingBalance, 0)}
-                            </td>
-                            <td className="px-4 py-3 text-right text-[#F5D76E]">
-                              +{formatINR(row.interestEarned, 0)}
-                            </td>
-                            <td className="px-4 py-3 text-right font-semibold text-white">
-                              {formatINR(row.closingBalance, 0)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            )}
+            <MonthlyScheduleTable
+              title="Monthly Compound Interest Breakdown"
+              subtitle={`Compounded ${COMPOUNDING_PERIODS[result.frequency].label.toLowerCase()} across ${result.totalMonths} ${result.totalMonths === 1 ? 'month' : 'months'}`}
+              rows={result.monthlySchedule}
+            />
 
             <FormulaAccordion formula={result.formula} steps={formulaSteps} />
           </>

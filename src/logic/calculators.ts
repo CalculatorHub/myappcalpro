@@ -6,8 +6,18 @@ export interface GrowthChartPoint {
   label: string;
   period: number;
   principal: number;
+  monthlyInterest?: number;
   interestEarned: number;
   totalAmount: number;
+}
+
+export interface MonthlyInterestRow {
+  month: number;
+  label: string;
+  openingBalance: number;
+  monthlyInterest: number;
+  accumulatedInterest: number;
+  closingBalance: number;
 }
 
 export interface SimpleInterestResult {
@@ -16,9 +26,11 @@ export interface SimpleInterestResult {
   timeValue: number;
   timeUnit: SimpleInterestTimeUnit;
   timeInYears: number;
+  totalMonths: number;
   simpleInterest: number;
   totalAmount: number;
   schedule: GrowthChartPoint[];
+  monthlySchedule: MonthlyInterestRow[];
   formula: string;
   steps: string[];
 }
@@ -38,35 +50,53 @@ export function calculateSimpleInterest(
   const simpleInterest = (p * r * timeInYears) / 100;
   const totalAmount = p + simpleInterest;
 
-  // Build evenly spaced points for responsive time-vs-amount chart
-  const pointCount = Math.min(12, Math.max(4, Math.ceil(rawT || 4)));
-  const shortUnit = timeUnit === 'years' ? 'Yr' : timeUnit === 'months' ? 'Mo' : 'Day';
+  const totalMonthsExact =
+    timeUnit === 'years'
+      ? rawT * 12
+      : timeUnit === 'months'
+      ? rawT
+      : (rawT / 365) * 12;
+  const monthCount = totalMonthsExact <= 0 ? 0 : Math.max(1, Math.ceil(totalMonthsExact - 1e-9));
+
+  const monthlySchedule: MonthlyInterestRow[] = [];
   const schedule: GrowthChartPoint[] = [];
 
-  for (let i = 0; i <= pointCount; i++) {
-    const fraction = rawT === 0 ? 0 : i / pointCount;
-    const periodVal = rawT * fraction;
-    const yearsAtPoint = periodVal / divisor;
-    const interestAtPoint = (p * r * yearsAtPoint) / 100;
-    const roundedPeriod =
-      Math.abs(periodVal - Math.round(periodVal)) < 0.05
-        ? Math.round(periodVal)
-        : Number(periodVal.toFixed(1));
+  for (let month = 1; month <= monthCount; month++) {
+    const prevYears = Math.min((month - 1) / 12, timeInYears);
+    const currYears = month === monthCount ? timeInYears : Math.min(month / 12, timeInYears);
+
+    const prevAccumulated = (p * r * prevYears) / 100;
+    const accumulatedInterest = (p * r * currYears) / 100;
+    const monthlyInterest = accumulatedInterest - prevAccumulated;
+    const openingBalance = p + prevAccumulated;
+    const closingBalance = p + accumulatedInterest;
+    const label = `Month ${month}`;
+
+    monthlySchedule.push({
+      month,
+      label,
+      openingBalance,
+      monthlyInterest,
+      accumulatedInterest,
+      closingBalance,
+    });
+
     schedule.push({
-      label: i === 0 ? 'Start' : `${shortUnit} ${roundedPeriod}`,
-      period: roundedPeriod,
+      label,
+      period: month,
       principal: p,
-      interestEarned: interestAtPoint,
-      totalAmount: p + interestAtPoint,
+      monthlyInterest,
+      interestEarned: accumulatedInterest,
+      totalAmount: closingBalance,
     });
   }
 
   const unitConversionText =
     timeUnit === 'years'
-      ? `${rawT} years`
+      ? `${rawT} years (${monthCount} ${monthCount === 1 ? 'month' : 'months'})`
       : timeUnit === 'months'
       ? `${rawT} months / 12 = ${timeInYears.toFixed(4)} years`
-      : `${rawT} days / 365 = ${timeInYears.toFixed(4)} years`;
+      : `${rawT} days / 365 = ${timeInYears.toFixed(4)} years (≈ ${totalMonthsExact.toFixed(2)} months)`;
 
   return {
     principal: p,
@@ -74,9 +104,11 @@ export function calculateSimpleInterest(
     timeValue: rawT,
     timeUnit,
     timeInYears,
+    totalMonths: monthCount,
     simpleInterest,
     totalAmount,
     schedule,
+    monthlySchedule,
     formula: 'SI = (P × R × T) / 100 and A = P + SI',
     steps: [
       `Convert time to years: T = ${unitConversionText}.`,
@@ -109,6 +141,7 @@ export interface CompoundInterestResult {
   principal: number;
   rate: number;
   years: number;
+  totalMonths: number;
   frequency: CompoundingFrequency;
   compoundingPeriodsPerYear: number;
   totalAmount: number;
@@ -117,6 +150,7 @@ export interface CompoundInterestResult {
   compoundingAdvantage: number;
   effectiveAnnualRate: number;
   yearlySchedule: CompoundYearRow[];
+  monthlySchedule: MonthlyInterestRow[];
   formula: string;
   assumptions: string[];
 }
@@ -167,10 +201,35 @@ export function calculateCompoundInterest(
     });
   }
 
+  const totalMonthsExact = t * 12;
+  const monthCount = totalMonthsExact <= 0 ? 0 : Math.max(1, Math.ceil(totalMonthsExact - 1e-9));
+  const monthlySchedule: MonthlyInterestRow[] = [];
+  let prevClosing = p;
+
+  for (let month = 1; month <= monthCount; month++) {
+    const currYears = month === monthCount ? t : Math.min(month / 12, t);
+    const closingBalance =
+      month === monthCount ? totalAmount : p * Math.pow(1 + decimalRate / n, n * currYears);
+    const monthlyInterest = closingBalance - prevClosing;
+    const accumulatedInterest = closingBalance - p;
+
+    monthlySchedule.push({
+      month,
+      label: `Month ${month}`,
+      openingBalance: prevClosing,
+      monthlyInterest,
+      accumulatedInterest,
+      closingBalance,
+    });
+
+    prevClosing = closingBalance;
+  }
+
   return {
     principal: p,
     rate: r,
     years: t,
+    totalMonths: monthCount,
     frequency,
     compoundingPeriodsPerYear: n,
     totalAmount,
@@ -179,6 +238,7 @@ export function calculateCompoundInterest(
     compoundingAdvantage,
     effectiveAnnualRate,
     yearlySchedule,
+    monthlySchedule,
     formula: 'A = P × (1 + r / n)^(n × t) and CI = A - P',
     assumptions: [
       `Nominal annual rate r = ${r}% divided equally across ${n} compounding periods per year.`,

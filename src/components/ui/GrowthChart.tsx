@@ -1,9 +1,11 @@
-import React, { useId, useState } from 'react';
+import React, { useId, useRef, useState } from 'react';
 import { formatINR, formatINRCompact } from '../../utils/formatters';
 
 export interface GrowthChartDatum {
   label: string;
+  period?: number;
   principal: number;
+  monthlyInterest?: number;
   interestEarned: number;
   totalAmount: number;
 }
@@ -12,31 +14,98 @@ interface GrowthChartProps {
   title: string;
   xAxisLabel?: string;
   data: GrowthChartDatum[];
-  heightClass?: string;
+}
+
+function buildSmoothSvgPath(points: Array<{ x: number; y: number }>): string {
+  if (points.length === 0) return '';
+  if (points.length === 1) return `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
+  if (points.length === 2) {
+    return `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)} L ${points[1].x.toFixed(1)} ${points[1].y.toFixed(1)}`;
+  }
+
+  let path = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
+  const tension = 0.2;
+
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[Math.max(0, i - 1)];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[Math.min(points.length - 1, i + 2)];
+
+    const cp1x = p1.x + (p2.x - p0.x) * tension;
+    const cp1y = p1.y + (p2.y - p0.y) * tension;
+    const cp2x = p2.x - (p3.x - p1.x) * tension;
+    const cp2y = p2.y - (p3.y - p1.y) * tension;
+
+    path += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+  }
+
+  return path;
+}
+
+function selectReadableMonthIndices(total: number, getX: (idx: number) => number): Set<number> {
+  const chosen = new Set<number>();
+  if (total <= 0) return chosen;
+  if (total === 1) {
+    chosen.add(0);
+    return chosen;
+  }
+
+  chosen.add(0);
+  chosen.add(total - 1);
+
+  const candidates: number[] = [];
+  if (total <= 6) {
+    for (let i = 1; i < total - 1; i++) candidates.push(i);
+  } else if (total <= 12) {
+    for (let m = 3; m < total; m += 3) candidates.push(m - 1);
+  } else {
+    const interval =
+      total <= 60 ? 12 : total <= 144 ? 24 : total <= 240 ? 36 : total <= 360 ? 60 : 120;
+    for (let m = interval; m < total; m += interval) {
+      candidates.push(m - 1);
+    }
+  }
+
+  const minPixelGap = 72;
+  const startX = getX(0);
+  const endX = getX(total - 1);
+  let lastAcceptedX = startX;
+
+  for (const idx of candidates) {
+    const x = getX(idx);
+    if (x - lastAcceptedX >= minPixelGap && endX - x >= minPixelGap) {
+      chosen.add(idx);
+      lastAcceptedX = x;
+    }
+  }
+
+  return chosen;
 }
 
 export const GrowthChart: React.FC<GrowthChartProps> = ({
   title,
-  xAxisLabel = 'Time Horizon',
+  xAxisLabel = 'Months',
   data,
-  heightClass = 'h-56 sm:h-64',
 }) => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
   const uid = useId().replace(/:/g, '');
-  const areaGradId = `gold-area-${uid}`;
+  const totalAreaGradId = `gold-total-area-${uid}`;
+  const interestAreaGradId = `gold-interest-area-${uid}`;
 
   if (!data || data.length === 0) {
     return null;
   }
 
-  const svgWidth = 640;
-  const svgHeight = 260;
-  const pad = { top: 20, right: 20, bottom: 38, left: 74 };
+  const svgWidth = 680;
+  const svgHeight = 290;
+  const pad = { top: 22, right: 24, bottom: 40, left: 76 };
   const plotW = svgWidth - pad.left - pad.right;
   const plotH = svgHeight - pad.top - pad.bottom;
 
   const maxTotal = Math.max(...data.map((d) => d.totalAmount), 1);
-  const yMax = maxTotal * 1.08;
+  const yMax = maxTotal * 1.1;
 
   const getX = (index: number) => {
     if (data.length === 1) return pad.left + plotW / 2;
@@ -45,51 +114,89 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
 
   const getY = (val: number) => pad.top + plotH - (Math.max(0, val) / yMax) * plotH;
 
-  const totalPath = data
-    .map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i).toFixed(1)} ${getY(d.totalAmount).toFixed(1)}`)
-    .join(' ');
+  const totalPoints = data.map((d, i) => ({ x: getX(i), y: getY(d.totalAmount) }));
+  const interestPoints = data.map((d, i) => ({ x: getX(i), y: getY(d.interestEarned) }));
 
-  const principalPath = data
-    .map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i).toFixed(1)} ${getY(d.principal).toFixed(1)}`)
-    .join(' ');
+  const totalPath = buildSmoothSvgPath(totalPoints);
+  const interestPath = buildSmoothSvgPath(interestPoints);
 
-  const areaBetweenPath = [
-    ...data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i).toFixed(1)} ${getY(d.totalAmount).toFixed(1)}`),
-    ...data
-      .slice()
-      .reverse()
-      .map((d, revIdx) => {
-        const origIdx = data.length - 1 - revIdx;
-        return `L ${getX(origIdx).toFixed(1)} ${getY(d.principal).toFixed(1)}`;
-      }),
-    'Z',
-  ].join(' ');
+  const principalPath =
+    data.length === 1
+      ? `M ${pad.left} ${getY(data[0].principal).toFixed(1)} L ${(svgWidth - pad.right).toFixed(1)} ${getY(data[0].principal).toFixed(1)}`
+      : data
+          .map(
+            (d, i) =>
+              `${i === 0 ? 'M' : 'L'} ${getX(i).toFixed(1)} ${getY(d.principal).toFixed(1)}`
+          )
+          .join(' ');
+
+  const bottomY = getY(0);
+  const totalAreaPath =
+    data.length > 1
+      ? `${totalPath} L ${totalPoints[totalPoints.length - 1].x.toFixed(1)} ${bottomY.toFixed(1)} L ${totalPoints[0].x.toFixed(1)} ${bottomY.toFixed(1)} Z`
+      : '';
+
+  const interestAreaPath =
+    data.length > 1
+      ? `${interestPath} L ${interestPoints[interestPoints.length - 1].x.toFixed(1)} ${bottomY.toFixed(1)} L ${interestPoints[0].x.toFixed(1)} ${bottomY.toFixed(1)} Z`
+      : '';
 
   const yTicks = [0, 0.25, 0.5, 0.75, 1].map((ratio) => ({
     value: yMax * ratio,
     y: getY(yMax * ratio),
   }));
 
-  const maxXLabels = 5;
-  const step = Math.max(1, Math.ceil((data.length - 1) / (maxXLabels - 1)));
-  const selectedDatum = activeIndex !== null ? data[activeIndex] : data[data.length - 1];
+  const visibleXIndices = selectReadableMonthIndices(data.length, getX);
+  const selectedIdx = activeIndex !== null ? activeIndex : data.length - 1;
+  const selectedDatum = data[selectedIdx];
+  const monthlyGain = selectedDatum.monthlyInterest ?? 0;
+
+  const updatePointerIndex = (clientX: number) => {
+    const svg = svgRef.current;
+    if (!svg || data.length <= 1) {
+      setActiveIndex(0);
+      return;
+    }
+    const rect = svg.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    const svgX = ((clientX - rect.left) / rect.width) * svgWidth;
+    const clampedRatio = Math.max(0, Math.min(1, (svgX - pad.left) / plotW));
+    const nearest = Math.round(clampedRatio * (data.length - 1));
+    setActiveIndex(nearest);
+  };
+
+  // Floating tooltip geometry in SVG space (only shown when actively hovered/focused)
+  const tooltipW = 204;
+  const tooltipH = 104;
+  const activeX = activeIndex !== null ? getX(activeIndex) : 0;
+  const activeY = activeIndex !== null ? getY(data[activeIndex].totalAmount) : 0;
+  const tooltipX =
+    activeX + tooltipW + 16 <= svgWidth - pad.right
+      ? activeX + 12
+      : Math.max(pad.left + 4, activeX - tooltipW - 12);
+  const tooltipY = Math.max(
+    pad.top + 4,
+    Math.min(pad.top + plotH - tooltipH - 4, activeY - tooltipH / 2)
+  );
 
   return (
     <div className="luxury-card p-5 sm:p-6 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h4 className="text-sm font-semibold text-white">{title}</h4>
-          <p className="text-xs text-[#A1A1AA]">{xAxisLabel} vs Amount (₹)</p>
+          <p className="text-xs text-[#A1A1AA]">
+            {xAxisLabel} ({data.length} {data.length === 1 ? 'month' : 'months'}) vs Amount (₹)
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-4 text-xs text-[#A1A1AA]">
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-sm bg-zinc-500" />
+            <span className="h-0.5 w-3.5 border-t border-dashed border-zinc-400" />
             Principal
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-sm bg-[#D4AF37]/30 border border-[#D4AF37]" />
-            Interest Earned
+            <span className="h-0.5 w-3.5 bg-[#D4AF37]" />
+            Accumulated Interest
           </span>
           <span className="inline-flex items-center gap-1.5">
             <span className="h-0.5 w-3.5 bg-[#F5D76E]" />
@@ -100,7 +207,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
 
       <div className="luxury-subcard flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 text-xs tabular-nums">
         <span className="font-mono font-semibold text-[#F5D76E]">{selectedDatum.label}</span>
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
           <span className="text-[#A1A1AA]">
             Principal:{' '}
             <strong className="font-mono text-white">
@@ -108,32 +215,42 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
             </strong>
           </span>
           <span className="text-[#A1A1AA]">
-            Interest:{' '}
+            Monthly Interest:{' '}
+            <strong className="font-mono text-[#E8D18B]">
+              +{formatINR(monthlyGain, 2)}
+            </strong>
+          </span>
+          <span className="text-[#A1A1AA]">
+            Accumulated:{' '}
             <strong className="font-mono text-[#F5D76E]">
-              {formatINR(selectedDatum.interestEarned, 0)}
+              {formatINR(selectedDatum.interestEarned, 2)}
             </strong>
           </span>
           <span className="text-[#A1A1AA]">
             Total:{' '}
             <strong className="font-mono text-white">
-              {formatINR(selectedDatum.totalAmount, 0)}
+              {formatINR(selectedDatum.totalAmount, 2)}
             </strong>
           </span>
         </div>
       </div>
 
-      <div className={`relative w-full ${heightClass}`}>
+      <div className="relative w-full">
         <svg
+          ref={svgRef}
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-          preserveAspectRatio="none"
-          className="h-full w-full overflow-visible"
+          className="h-auto w-full select-none overflow-visible"
           role="img"
-          aria-label={`${title} showing Principal, Interest Earned, and Total Amount in Indian Rupees`}
+          aria-label={`${title} showing Principal, Monthly Interest, Accumulated Interest, and Total Amount across ${data.length} months`}
         >
           <defs>
-            <linearGradient id={areaGradId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#D4AF37" stopOpacity="0.34" />
-              <stop offset="100%" stopColor="#D4AF37" stopOpacity="0.03" />
+            <linearGradient id={totalAreaGradId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#F5D76E" stopOpacity="0.24" />
+              <stop offset="100%" stopColor="#D4AF37" stopOpacity="0.02" />
+            </linearGradient>
+            <linearGradient id={interestAreaGradId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#D4AF37" stopOpacity="0.22" />
+              <stop offset="100%" stopColor="#D4AF37" stopOpacity="0.01" />
             </linearGradient>
           </defs>
 
@@ -160,34 +277,55 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
             </g>
           ))}
 
-          <path d={areaBetweenPath} fill={`url(#${areaGradId})`} />
+          {totalAreaPath && <path d={totalAreaPath} fill={`url(#${totalAreaGradId})`} />}
+          {interestAreaPath && <path d={interestAreaPath} fill={`url(#${interestAreaGradId})`} />}
 
           <path
             d={principalPath}
             fill="none"
             stroke="#71717A"
-            strokeWidth="2"
+            strokeWidth="1.75"
             strokeDasharray="5 4"
           />
 
-          <path
-            d={totalPath}
-            fill="none"
-            stroke="#F5D76E"
-            strokeWidth="2.75"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          {data.length > 1 && (
+            <path
+              d={interestPath}
+              fill="none"
+              stroke="#D4AF37"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
+
+          {data.length > 1 && (
+            <path
+              d={totalPath}
+              fill="none"
+              stroke="#F5D76E"
+              strokeWidth="2.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
 
           {data.map((d, i) => {
-            const showLabel = i === 0 || i === data.length - 1 || i % step === 0;
-            if (!showLabel) return null;
+            if (!visibleXIndices.has(i)) return null;
             return (
               <text
                 key={`x-${d.label}-${i}`}
                 x={getX(i)}
                 y={svgHeight - 10}
-                textAnchor={i === 0 ? 'start' : i === data.length - 1 ? 'end' : 'middle'}
+                textAnchor={
+                  data.length === 1
+                    ? 'middle'
+                    : i === 0
+                    ? 'start'
+                    : i === data.length - 1
+                    ? 'end'
+                    : 'middle'
+                }
                 fill="#A1A1AA"
                 fontSize="11"
                 fontFamily="JetBrains Mono, ui-monospace, monospace"
@@ -197,48 +335,164 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
             );
           })}
 
-          {activeIndex !== null && (
-            <line
-              x1={getX(activeIndex)}
-              y1={pad.top}
-              x2={getX(activeIndex)}
-              y2={pad.top + plotH}
-              stroke="rgba(245, 215, 110, 0.5)"
-              strokeWidth="1"
-            />
-          )}
-
+          {/* Markers on concise series or labeled ticks */}
           {data.map((d, i) => {
+            const showDot = data.length <= 24 || visibleXIndices.has(i);
+            if (!showDot) return null;
             const cx = getX(i);
-            const cyTotal = getY(d.totalAmount);
-            const isSelected = activeIndex === i;
             return (
-              <g key={`pt-${i}`}>
-                <circle
-                  cx={cx}
-                  cy={cyTotal}
-                  r={isSelected ? 5.5 : 3.5}
-                  fill={isSelected ? '#F5D76E' : '#050505'}
-                  stroke={isSelected ? '#FFFFFF' : '#D4AF37'}
-                  strokeWidth="2"
-                />
-                <rect
-                  x={cx - Math.max(10, plotW / Math.max(data.length, 4) / 2)}
-                  y={pad.top}
-                  width={Math.max(20, plotW / Math.max(data.length, 4))}
-                  height={plotH}
-                  fill="transparent"
-                  className="cursor-pointer"
-                  tabIndex={0}
-                  aria-label={`${d.label}: Principal ${formatINR(d.principal)}, Interest ${formatINR(d.interestEarned)}, Total ${formatINR(d.totalAmount)}`}
-                  onMouseEnter={() => setActiveIndex(i)}
-                  onMouseLeave={() => setActiveIndex(null)}
-                  onFocus={() => setActiveIndex(i)}
-                  onBlur={() => setActiveIndex(null)}
-                />
-              </g>
+              <circle
+                key={`dot-${i}`}
+                cx={cx}
+                cy={getY(d.totalAmount)}
+                r={data.length <= 12 ? 3.8 : 3}
+                fill="#050505"
+                stroke="#F5D76E"
+                strokeWidth="1.75"
+              />
             );
           })}
+
+          {activeIndex !== null && (
+            <g>
+              <line
+                x1={activeX}
+                y1={pad.top}
+                x2={activeX}
+                y2={pad.top + plotH}
+                stroke="rgba(245, 215, 110, 0.55)"
+                strokeWidth="1"
+                strokeDasharray="3 3"
+              />
+              <circle
+                cx={activeX}
+                cy={getY(data[activeIndex].interestEarned)}
+                r={4.5}
+                fill="#D4AF37"
+                stroke="#FFFFFF"
+                strokeWidth="1.5"
+              />
+              <circle
+                cx={activeX}
+                cy={activeY}
+                r={5.5}
+                fill="#F5D76E"
+                stroke="#FFFFFF"
+                strokeWidth="2"
+              />
+
+              <g transform={`translate(${tooltipX.toFixed(1)}, ${tooltipY.toFixed(1)})`}>
+                <rect
+                  width={tooltipW}
+                  height={tooltipH}
+                  rx="12"
+                  fill="rgba(12, 12, 14, 0.94)"
+                  stroke="rgba(245, 215, 110, 0.48)"
+                  strokeWidth="1"
+                />
+                <text
+                  x="12"
+                  y="20"
+                  fill="#F5D76E"
+                  fontSize="11.5"
+                  fontWeight="700"
+                  fontFamily="JetBrains Mono, ui-monospace, monospace"
+                >
+                  {data[activeIndex].label}
+                </text>
+                <text x="12" y="39" fill="#A1A1AA" fontSize="10.5">
+                  Principal:
+                </text>
+                <text
+                  x={tooltipW - 12}
+                  y="39"
+                  textAnchor="end"
+                  fill="#FFFFFF"
+                  fontSize="10.5"
+                  fontFamily="JetBrains Mono, ui-monospace, monospace"
+                >
+                  {formatINR(data[activeIndex].principal, 0)}
+                </text>
+
+                <text x="12" y="56" fill="#A1A1AA" fontSize="10.5">
+                  Monthly Int.:
+                </text>
+                <text
+                  x={tooltipW - 12}
+                  y="56"
+                  textAnchor="end"
+                  fill="#E8D18B"
+                  fontSize="10.5"
+                  fontFamily="JetBrains Mono, ui-monospace, monospace"
+                >
+                  +{formatINR(data[activeIndex].monthlyInterest ?? 0, 2)}
+                </text>
+
+                <text x="12" y="73" fill="#A1A1AA" fontSize="10.5">
+                  Accumulated:
+                </text>
+                <text
+                  x={tooltipW - 12}
+                  y="73"
+                  textAnchor="end"
+                  fill="#F5D76E"
+                  fontSize="10.5"
+                  fontFamily="JetBrains Mono, ui-monospace, monospace"
+                >
+                  {formatINR(data[activeIndex].interestEarned, 2)}
+                </text>
+
+                <text x="12" y="91" fill="#E4E4E7" fontSize="10.5" fontWeight="600">
+                  Total:
+                </text>
+                <text
+                  x={tooltipW - 12}
+                  y="91"
+                  textAnchor="end"
+                  fill="#FFFFFF"
+                  fontSize="11"
+                  fontWeight="700"
+                  fontFamily="JetBrains Mono, ui-monospace, monospace"
+                >
+                  {formatINR(data[activeIndex].totalAmount, 2)}
+                </text>
+              </g>
+            </g>
+          )}
+
+          {/* Full plot pointer interaction zone for smooth month scrubbing */}
+          <rect
+            x={pad.left}
+            y={pad.top}
+            width={plotW}
+            height={plotH}
+            fill="transparent"
+            className="cursor-crosshair"
+            tabIndex={0}
+            aria-label={`Interactive monthly chart overlay for ${title}. Use arrow keys or hover to inspect monthly values.`}
+            onMouseMove={(e) => updatePointerIndex(e.clientX)}
+            onMouseLeave={() => setActiveIndex(null)}
+            onTouchStart={(e) => {
+              if (e.touches[0]) updatePointerIndex(e.touches[0].clientX);
+            }}
+            onTouchMove={(e) => {
+              if (e.touches[0]) updatePointerIndex(e.touches[0].clientX);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                setActiveIndex((prev) =>
+                  prev === null ? 0 : Math.min(data.length - 1, prev + 1)
+                );
+              } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                setActiveIndex((prev) =>
+                  prev === null ? data.length - 1 : Math.max(0, prev - 1)
+                );
+              }
+            }}
+            onBlur={() => setActiveIndex(null)}
+          />
         </svg>
       </div>
     </div>

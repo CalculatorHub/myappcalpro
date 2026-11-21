@@ -3,6 +3,7 @@ import { NumberInput } from '../ui/NumberInput';
 import { AnimatedNumber } from '../ui/AnimatedNumber';
 import { TiltCard3D } from '../ui/TiltCard3D';
 import { GrowthChart } from '../ui/GrowthChart';
+import { MonthlyScheduleTable } from '../ui/MonthlyScheduleTable';
 import { FormulaAccordion } from '../ui/FormulaAccordion';
 import { CalcActionBar } from '../ui/CalcActionBar';
 import { ResultActionsBar, ResultEmptyState } from '../ui/ResultStateHeader';
@@ -113,13 +114,20 @@ export const SimpleInterestCalc: React.FC<SimpleInterestCalcProps> = ({ onSaveHi
   const handleExportCsv = () => {
     if (!result) return;
     downloadCsvFile(
-      'calhub-simple-interest.csv',
-      ['Period', 'Principal (INR)', 'Interest Earned (INR)', 'Total Amount (INR)'],
-      result.schedule.map((pt) => [
-        pt.label,
-        pt.principal.toFixed(2),
-        pt.interestEarned.toFixed(2),
-        pt.totalAmount.toFixed(2),
+      'calhub-simple-interest-monthly.csv',
+      [
+        'Month',
+        'Opening Balance (INR)',
+        'Monthly Interest (INR)',
+        'Accumulated Interest (INR)',
+        'Closing Balance (INR)',
+      ],
+      result.monthlySchedule.map((row) => [
+        row.label,
+        row.openingBalance.toFixed(2),
+        row.monthlyInterest.toFixed(2),
+        row.accumulatedInterest.toFixed(2),
+        row.closingBalance.toFixed(2),
       ])
     );
   };
@@ -300,18 +308,27 @@ export const SimpleInterestCalc: React.FC<SimpleInterestCalcProps> = ({ onSaveHi
                   </p>
                 </div>
                 <div className="luxury-subcard p-4">
-                  <p className="text-xs text-[#A1A1AA]">Equivalent Years</p>
+                  <p className="text-xs text-[#A1A1AA]">Monthly Duration</p>
                   <p className="mt-1.5 font-mono text-base font-semibold text-white tabular-nums">
-                    {result.timeInYears.toFixed(2)} yrs
+                    {result.totalMonths} {result.totalMonths === 1 ? 'month' : 'months'}
+                  </p>
+                  <p className="mt-0.5 font-mono text-[11px] text-[#A1A1AA] tabular-nums">
+                    {result.timeInYears.toFixed(2)} yrs total
                   </p>
                 </div>
               </div>
             </TiltCard3D>
 
             <GrowthChart
-              title="Simple Interest Growth Over Time"
-              xAxisLabel={`Duration (${result.timeUnit})`}
+              title="Monthly Simple Interest Progression"
+              xAxisLabel="Months"
               data={result.schedule}
+            />
+
+            <MonthlyScheduleTable
+              title="Monthly Simple Interest Breakdown"
+              subtitle="Monthly interest calculated linearly on original principal"
+              rows={result.monthlySchedule}
             />
 
             <FormulaAccordion formula={result.formula} steps={result.steps} />
