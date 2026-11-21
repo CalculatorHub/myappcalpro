@@ -11,13 +11,11 @@ import { MAIN_NAV_ITEMS, type MainNavSection } from '../ui/Header';
 const SimpleInterestCalc = lazy(() => import('./SimpleInterestCalc'));
 const CompoundInterestCalc = lazy(() => import('./CompoundInterestCalc'));
 const LoanEmiCalc = lazy(() => import('./LoanEmiCalc'));
-const PercentageRupeeCalc = lazy(() => import('./PercentageRupeeCalc'));
 const IncomeTaxCalc = lazy(() => import('./IncomeTaxCalc'));
 
 interface CalculatorWorkspaceProps {
   activeNavSection: MainNavSection;
   activeCalc: CalculatorId;
-  onSelectNavSection: (section: MainNavSection) => void;
   onSelectCalc: (id: CalculatorId) => void;
   favorites: CalculatorId[];
   onToggleFavorite: (id: CalculatorId) => void;
@@ -37,7 +35,6 @@ const CalculatorSkeleton: React.FC = () => (
 export const CalculatorWorkspace: React.FC<CalculatorWorkspaceProps> = ({
   activeNavSection,
   activeCalc,
-  onSelectNavSection,
   onSelectCalc,
   favorites,
   onToggleFavorite,
@@ -59,78 +56,41 @@ export const CalculatorWorkspace: React.FC<CalculatorWorkspaceProps> = ({
       transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
       className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16"
     >
-      {/* Top Workspace Header + 4-Section Pill Switcher */}
-      <div className="flex flex-wrap items-end justify-between gap-4 pb-6 border-b border-[#D4AF37]/18">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-[#D4AF37]">
-            <Calculator className="h-4 w-4" aria-hidden="true" />
-            <span>Interactive Calculator Workspace · {activeMeta.categoryLabel}</span>
-          </div>
-          <div className="mt-1.5 flex items-center gap-3">
-            <h2 className="heading-3 text-white">{sectionTitle}</h2>
-            <button
-              type="button"
-              onClick={() => onToggleFavorite(activeMeta.id)}
-              aria-label={
-                isFavorited
-                  ? `Remove ${activeMeta.title} from favorites`
-                  : `Pin ${activeMeta.title} to favorites`
-              }
-              aria-pressed={isFavorited}
-              className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors cursor-pointer ${
-                isFavorited
-                  ? 'border-[#F5D76E]/55 bg-[#D4AF37]/18 text-[#F5D76E]'
-                  : 'border-[#D4AF37]/25 bg-white/[0.04] text-[#A1A1AA] hover:border-[#D4AF37] hover:text-white'
-              }`}
-            >
-              <Star
-                className={`h-3.5 w-3.5 ${isFavorited ? 'fill-current' : ''}`}
-                aria-hidden="true"
-              />
-              <span>{isFavorited ? 'Pinned' : 'Pin'}</span>
-            </button>
-          </div>
+      {/* Section Heading */}
+      <div>
+        <div className="flex items-center gap-2 text-xs font-semibold text-[#D4AF37]">
+          <Calculator className="h-4 w-4" aria-hidden="true" />
+          <span>Interactive Calculator Workspace · {activeMeta.categoryLabel}</span>
         </div>
-
-        {/* 4 Main Section Switcher */}
-        <div
-          role="tablist"
-          aria-label="Calculator sections"
-          className="flex flex-wrap gap-1 rounded-full border border-[#D4AF37]/22 bg-[#0B0B0E]/85 backdrop-blur-md p-1"
-        >
-          {MAIN_NAV_ITEMS.map((item) => {
-            const isSelected = item.id === activeNavSection;
-            return (
-              <button
-                key={item.id}
-                role="tab"
-                aria-selected={isSelected}
-                type="button"
-                onClick={() => onSelectNavSection(item.id)}
-                className={`relative rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors whitespace-nowrap cursor-pointer focus-visible:outline-2 focus-visible:outline-[#D4AF37] ${
-                  isSelected
-                    ? 'text-[#050505] font-semibold'
-                    : 'text-[#A1A1AA] hover:text-[#F5D76E]'
-                }`}
-              >
-                {isSelected && (
-                  <motion.span
-                    layoutId="workspace-section-pill"
-                    transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-                    className="absolute inset-0 rounded-full bg-gradient-to-r from-[#F5D76E] to-[#D4AF37] shadow-[0_4px_18px_-4px_rgba(212,175,55,0.6)]"
-                    aria-hidden="true"
-                  />
-                )}
-                <span className="relative z-10">{item.label}</span>
-              </button>
-            );
-          })}
+        <div className="mt-1.5 flex items-center gap-3">
+          <h2 className="heading-3 text-white">{sectionTitle}</h2>
+          <button
+            type="button"
+            onClick={() => onToggleFavorite(activeMeta.id)}
+            aria-label={
+              isFavorited
+                ? `Remove ${activeMeta.title} from favorites`
+                : `Pin ${activeMeta.title} to favorites`
+            }
+            aria-pressed={isFavorited}
+            className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors cursor-pointer ${
+              isFavorited
+                ? 'border-[#F5D76E]/55 bg-[#D4AF37]/18 text-[#F5D76E]'
+                : 'border-[#D4AF37]/25 bg-white/[0.04] text-[#A1A1AA] hover:border-[#D4AF37] hover:text-white'
+            }`}
+          >
+            <Star
+              className={`h-3.5 w-3.5 ${isFavorited ? 'fill-current' : ''}`}
+              aria-hidden="true"
+            />
+            <span>{isFavorited ? 'Pinned' : 'Pin'}</span>
+          </button>
         </div>
       </div>
 
       {/* Sub-Tabs Inside Interest Calculator: Simple Interest | Compound Interest */}
       {activeNavSection === 'interest' && (
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
           <div
             role="tablist"
             aria-label="Interest calculation type"
@@ -195,9 +155,6 @@ export const CalculatorWorkspace: React.FC<CalculatorWorkspaceProps> = ({
               <CompoundInterestCalc onSaveHistory={onSaveHistory} />
             )}
             {activeCalc === 'loan-emi' && <LoanEmiCalc onSaveHistory={onSaveHistory} />}
-            {activeCalc === 'percentage-rupee' && (
-              <PercentageRupeeCalc onSaveHistory={onSaveHistory} />
-            )}
             {activeCalc === 'income-tax' && <IncomeTaxCalc onSaveHistory={onSaveHistory} />}
           </Suspense>
         </motion.div>

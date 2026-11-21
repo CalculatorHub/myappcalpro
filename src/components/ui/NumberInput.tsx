@@ -7,7 +7,7 @@ interface NumberInputProps {
   value: string;
   onChange: (value: string) => void;
   prefix?: string;
-  suffix?: string;
+  suffix?: React.ReactNode;
   min?: number;
   max?: number;
   step?: number | string;
@@ -107,10 +107,10 @@ export const NumberInput: React.FC<NumberInputProps> = ({
                 : raw;
             onChange(normalized);
           }}
-          className="w-full bg-transparent font-mono text-base font-medium text-white tabular-nums placeholder:text-[#A1A1AA]/55 focus:outline-none disabled:cursor-not-allowed"
+          className="min-w-0 w-full bg-transparent font-mono text-base font-medium text-white tabular-nums placeholder:text-[#A1A1AA]/55 focus:outline-none disabled:cursor-not-allowed"
         />
         {suffix && (
-          <span className="ml-2 select-none font-mono text-xs font-medium text-[#A1A1AA] whitespace-nowrap">
+          <span className="ml-2 shrink-0 select-none font-mono text-xs font-medium text-[#A1A1AA] whitespace-nowrap">
             {suffix}
           </span>
         )}

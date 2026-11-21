@@ -117,8 +117,7 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
             <p className="text-sm font-semibold text-white">No saved calculations yet</p>
             <p className="text-xs text-[#A1A1AA] max-w-md mx-auto">
               Whenever you press Calculate in Simple Interest, Compound Interest, Home Loan EMI,
-              Ratio Converter, or Income Tax, your result summary will appear here for quick recall
-              or CSV export.
+              or Income Tax, your result summary will appear here for quick recall or CSV export.
             </p>
           </div>
         ) : (

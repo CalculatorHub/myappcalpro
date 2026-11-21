@@ -4,7 +4,6 @@ export type CalculatorSlug =
   | 'simple-interest'
   | 'compound-interest'
   | 'loan-emi'
-  | 'percentage-rupee'
   | 'income-tax';
 
 export interface CalculationHistoryItem {
@@ -21,7 +20,6 @@ const VALID_CALCULATORS = new Set<string>([
   'simple-interest',
   'compound-interest',
   'loan-emi',
-  'percentage-rupee',
   'income-tax',
 ]);
 

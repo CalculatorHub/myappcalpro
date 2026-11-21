@@ -1,5 +1,4 @@
 import {
-  ArrowLeftRight,
   Coins,
   Home,
   Scale,
@@ -14,7 +13,6 @@ export type CalculatorCategory =
   | 'all'
   | 'interest'
   | 'loans'
-  | 'conversion'
   | 'tax';
 
 export interface CalculatorMeta {
@@ -33,7 +31,6 @@ export const CATEGORY_TABS: { id: CalculatorCategory; label: string }[] = [
   { id: 'all', label: 'All Tools' },
   { id: 'interest', label: 'Interest & Growth' },
   { id: 'loans', label: 'Loans & EMI' },
-  { id: 'conversion', label: 'Ratios & %' },
   { id: 'tax', label: 'Income Tax' },
 ];
 
@@ -43,9 +40,9 @@ export const CALCULATOR_CARDS: CalculatorMeta[] = [
     title: 'Simple Interest',
     category: 'interest',
     categoryLabel: 'Interest & Growth',
-    shortDesc: 'Compute interest across years, months, or days with growth chart and steps.',
+    shortDesc: 'Compute interest across years, months, or days with monthly ₹/100 preview and steps.',
     formulaTag: 'SI = PRT / 100',
-    keywords: ['simple interest', 'si', 'principal', 'rate', 'days', 'months', 'years', 'fd'],
+    keywords: ['simple interest', 'si', 'principal', 'rate', 'days', 'months', 'years', 'fd', 'rupee'],
     icon: Coins,
   },
   {
@@ -53,9 +50,9 @@ export const CALCULATOR_CARDS: CalculatorMeta[] = [
     title: 'Compound Interest',
     category: 'interest',
     categoryLabel: 'Interest & Growth',
-    shortDesc: 'Annual to daily compounding with effective yield and simple-interest comparison.',
+    shortDesc: 'Annual to daily compounding with effective yield and monthly ₹/100 preview.',
     formulaTag: 'A = P(1 + r/n)^nt',
-    keywords: ['compound interest', 'ci', 'ear', 'effective annual rate', 'quarterly', 'monthly', 'maturity'],
+    keywords: ['compound interest', 'ci', 'ear', 'effective annual rate', 'quarterly', 'monthly', 'maturity', 'rupee'],
     popular: true,
     icon: TrendingUp,
   },
@@ -71,21 +68,11 @@ export const CALCULATOR_CARDS: CalculatorMeta[] = [
     icon: Home,
   },
   {
-    id: 'percentage-rupee',
-    title: 'Percentage & Rupee Conversion',
-    category: 'conversion',
-    categoryLabel: 'Ratios & %',
-    shortDesc: 'Percentage tools and two-way custom rupee ratio converter (₹1 = 12% default).',
-    formulaTag: '₹ ↔ % Ratio',
-    keywords: ['percentage', 'rupee', 'ratio', 'convert', '12%', 'change', 'share', 'proportion'],
-    icon: ArrowLeftRight,
-  },
-  {
     id: 'income-tax',
     title: 'Income Tax',
     category: 'tax',
     categoryLabel: 'Income Tax',
-    shortDesc: 'FY 2024–27 New vs Old regime educational estimates with 87A & 4% cess.',
+    shortDesc: 'FY 2024–27 New vs Old regime educational estimates with 87A & post-tax income.',
     formulaTag: 'Sec 115BAC',
     keywords: ['income tax', '87a', '115bac', 'new regime', 'old regime', 'slab', 'tds', 'cess', 'fy 2025', 'fy 2026'],
     popular: true,

@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { Menu, X } from 'lucide-react';
 import { GoldCrestMark } from './GoldCrestMark';
 
-export type MainNavSection = 'interest' | 'loan-emi' | 'percentage-rupee' | 'income-tax';
+export type MainNavSection = 'interest' | 'loan-emi' | 'income-tax';
 
 interface HeaderProps {
   activeNavSection: MainNavSection;
@@ -14,7 +14,6 @@ interface HeaderProps {
 export const MAIN_NAV_ITEMS: { id: MainNavSection; label: string; shortLabel: string }[] = [
   { id: 'interest', label: 'Interest Calculator', shortLabel: 'Interest' },
   { id: 'loan-emi', label: 'Home Loan EMI', shortLabel: 'Loan EMI' },
-  { id: 'percentage-rupee', label: 'Percentage & Rupee Conversion', shortLabel: '₹ & %' },
   { id: 'income-tax', label: 'Income Tax', shortLabel: 'Tax' },
 ];
 

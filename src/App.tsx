@@ -39,7 +39,6 @@ function pathForRoute(route: AppRoute): string {
 function sectionForCalculator(id: CalculatorId): MainNavSection {
   if (id === 'simple-interest' || id === 'compound-interest') return 'interest';
   if (id === 'loan-emi') return 'loan-emi';
-  if (id === 'percentage-rupee') return 'percentage-rupee';
   return 'income-tax';
 }
 
@@ -110,8 +109,6 @@ export default function App() {
         ? lastInterestCalc
         : section === 'loan-emi'
         ? 'loan-emi'
-        : section === 'percentage-rupee'
-        ? 'percentage-rupee'
         : 'income-tax';
     handleSelectCalculator(targetCalc);
     handleNavigateSection('calculators');
@@ -176,7 +173,6 @@ export default function App() {
               <CalculatorWorkspace
                 activeNavSection={activeNavSection}
                 activeCalc={activeCalc}
-                onSelectNavSection={handleSelectNavSection}
                 onSelectCalc={handleSelectCalculator}
                 favorites={favorites}
                 onToggleFavorite={handleToggleFavorite}

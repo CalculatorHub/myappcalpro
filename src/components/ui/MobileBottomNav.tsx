@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeftRight, Home, Scale, TrendingUp } from 'lucide-react';
+import { Home, Scale, TrendingUp } from 'lucide-react';
 import type { MainNavSection } from './Header';
 
 interface MobileBottomNavProps {
@@ -10,7 +10,6 @@ interface MobileBottomNavProps {
 const ITEMS: { id: MainNavSection; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'interest', label: 'Interest', icon: TrendingUp },
   { id: 'loan-emi', label: 'Loan EMI', icon: Home },
-  { id: 'percentage-rupee', label: '₹ & %', icon: ArrowLeftRight },
   { id: 'income-tax', label: 'Income Tax', icon: Scale },
 ];
 
@@ -23,7 +22,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       aria-label="Mobile calculator navigation"
       className="fixed bottom-0 inset-x-0 z-40 lg:hidden border-t border-[#D4AF37]/25 bg-[#08080A]/90 backdrop-blur-xl no-print"
     >
-      <div className="mx-auto grid max-w-lg grid-cols-4 h-14">
+      <div className="mx-auto grid max-w-md grid-cols-3 h-14">
         {ITEMS.map((item) => {
           const Icon = item.icon;
           const isCurrent = activeNavSection === item.id;

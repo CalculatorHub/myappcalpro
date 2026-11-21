@@ -36,6 +36,8 @@ export const SimpleInterestCalc: React.FC<SimpleInterestCalcProps> = ({ onSaveHi
   const principalNum = principalStr.trim() === '' ? NaN : Number(principalStr);
   const rateNum = rateStr.trim() === '' ? NaN : Number(rateStr);
   const timeNum = timeStr.trim() === '' ? NaN : Number(timeStr);
+  const monthlyRupeePerHundred =
+    rateStr.trim() !== '' && Number.isFinite(rateNum) && rateNum >= 0 ? rateNum / 12 : 0;
 
   const errors = useMemo<SimpleInterestErrors>(() => {
     const next: SimpleInterestErrors = {};
@@ -171,8 +173,15 @@ export const SimpleInterestCalc: React.FC<SimpleInterestCalcProps> = ({ onSaveHi
 
         <NumberInput
           id="si-rate"
-          label="Annual Interest Rate"
-          suffix="% p.a."
+          label="Annual Interest Rate (%)"
+          suffix={
+            <span
+              title="Monthly interest per ₹100 principal (Annual Rate ÷ 12)"
+              className="font-mono text-xs font-semibold text-[#F5D76E] tabular-nums"
+            >
+              ₹{monthlyRupeePerHundred.toFixed(2)}/month
+            </span>
+          }
           min={0}
           max={100}
           step={0.1}
@@ -183,7 +192,7 @@ export const SimpleInterestCalc: React.FC<SimpleInterestCalcProps> = ({ onSaveHi
             setTouched((prev) => ({ ...prev, rate: true }));
           }}
           error={showFieldError('rate')}
-          tooltip="Yearly nominal percentage rate applied linearly."
+          tooltip="Yearly nominal percentage rate applied linearly. Monthly equivalent per ₹100 = Annual Rate ÷ 12."
         />
 
         <div className="space-y-2">

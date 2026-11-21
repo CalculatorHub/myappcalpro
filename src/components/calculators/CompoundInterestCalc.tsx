@@ -39,6 +39,8 @@ export const CompoundInterestCalc: React.FC<CompoundInterestCalcProps> = ({ onSa
   const principalNum = principalStr.trim() === '' ? NaN : Number(principalStr);
   const rateNum = rateStr.trim() === '' ? NaN : Number(rateStr);
   const yearsNum = yearsStr.trim() === '' ? NaN : Number(yearsStr);
+  const monthlyRupeePerHundred =
+    rateStr.trim() !== '' && Number.isFinite(rateNum) && rateNum >= 0 ? rateNum / 12 : 0;
 
   const errors = useMemo<CompoundErrors>(() => {
     const next: CompoundErrors = {};
@@ -213,8 +215,15 @@ export const CompoundInterestCalc: React.FC<CompoundInterestCalcProps> = ({ onSa
 
         <NumberInput
           id="ci-rate"
-          label="Annual Interest Rate"
-          suffix="% p.a."
+          label="Annual Interest Rate (%)"
+          suffix={
+            <span
+              title="Monthly interest per ₹100 principal (Annual Rate ÷ 12)"
+              className="font-mono text-xs font-semibold text-[#F5D76E] tabular-nums"
+            >
+              ₹{monthlyRupeePerHundred.toFixed(2)}/month
+            </span>
+          }
           min={0}
           max={100}
           step={0.1}
@@ -225,6 +234,7 @@ export const CompoundInterestCalc: React.FC<CompoundInterestCalcProps> = ({ onSa
             setTouched((prev) => ({ ...prev, rate: true }));
           }}
           error={showFieldError('rate')}
+          tooltip="Yearly nominal percentage rate. Monthly equivalent per ₹100 = Annual Rate ÷ 12."
         />
 
         <NumberInput

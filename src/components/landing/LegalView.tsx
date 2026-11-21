@@ -31,7 +31,7 @@ export const LegalView: React.FC<LegalViewProps> = ({ mode, onBackHome }) => {
         <div className="luxury-card mt-8 p-8 space-y-5">
           <h1 className="text-2xl font-bold text-white">Privacy Policy</h1>
           <p className="text-sm leading-relaxed text-[#A1A1AA]">
-            CalHub FinCalc Pro processes all calculator inputs, loan schedules, ratio conversions,
+            CalHub FinCalc Pro processes all calculator inputs, interest rates, loan schedules,
             and educational tax estimates directly inside your browser. No salary figures, loan
             principals, or tax numbers are transmitted to external servers.
           </p>
