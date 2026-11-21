@@ -1,0 +1,32 @@
+{
+  "id": "/",
+  "name": "CalHub — FinCalc Pro Indian Finance & Tax Calculators",
+  "short_name": "CalHub FinCalc",
+  "description": "Luxury Indian finance, tax, loan EMI, compound interest, and rupee-percentage calculators with 3D visualization and step-by-step breakdowns.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#D4AF37",
+  "background_color": "#050505",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

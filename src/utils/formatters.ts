@@ -1,88 +1,36 @@
-export function formatINR(value: number, decimals = 2): string {
-  if (!Number.isFinite(value)) return '₹0.00';
-  const clean = Math.abs(value) < 1e-9 ? 0 : value;
-  const isNegative = clean < 0;
-  const absFormatted = new Intl.NumberFormat('en-IN', {
+export function formatINR(amount: number, decimals = 0): string {
+  if (!Number.isFinite(amount)) return '₹0';
+  const absFormatted = Math.abs(amount).toLocaleString('en-IN', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
-  }).format(Math.abs(clean));
-  return `${isNegative ? '-' : ''}₹${absFormatted}`;
+  });
+  return amount < 0 ? `-₹${absFormatted}` : `₹${absFormatted}`;
 }
 
-export function formatINRCompact(value: number): string | null {
-  if (!Number.isFinite(value)) return null;
-  const abs = Math.abs(value);
-  const sign = value < 0 ? '-' : '';
-  if (abs >= 1e7) {
-    return `${sign}₹${(abs / 1e7).toFixed(2)} Crore`;
+export function formatINRCompact(amount: number): string {
+  if (!Number.isFinite(amount)) return '₹0';
+  const abs = Math.abs(amount);
+  const sign = amount < 0 ? '-' : '';
+  if (abs >= 10000000) {
+    return `${sign}₹${(abs / 10000000).toFixed(2)} Cr`;
   }
-  if (abs >= 1e5) {
-    return `${sign}₹${(abs / 1e5).toFixed(2)} Lakh`;
+  if (abs >= 100000) {
+    return `${sign}₹${(abs / 100000).toFixed(2)} L`;
   }
-  return null;
+  return formatINR(amount, 0);
 }
 
-export function formatNumberIN(value: number, maxDecimals = 4): string {
+export function formatNumber(value: number, maxDecimals = 2): string {
   if (!Number.isFinite(value)) return '0';
-  const clean = Math.abs(value) < 1e-9 ? 0 : value;
-  return new Intl.NumberFormat('en-IN', {
+  return value.toLocaleString('en-IN', {
     minimumFractionDigits: 0,
     maximumFractionDigits: maxDecimals,
-  }).format(clean);
+  });
 }
 
-export function formatPercent(value: number, decimals = 2): string {
-  if (!Number.isFinite(value)) return '0%';
-  const clean = Math.abs(value) < 1e-9 ? 0 : value;
-  return `${clean.toFixed(decimals)}%`;
+export function parsePositiveNumber(raw: string): number {
+  const cleaned = raw.replace(/,/g, '').trim();
+  if (cleaned === '') return 0;
+  const parsed = Number(cleaned);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
 }
-
-export async function copyTextToClipboard(text: string): Promise<boolean> {
-  try {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(text);
-      return true;
-    }
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.style.position = 'fixed';
-    textarea.style.left = '-9999px';
-    document.body.appendChild(textarea);
-    textarea.focus();
-    textarea.select();
-    const ok = document.execCommand('copy');
-    document.body.removeChild(textarea);
-    return ok;
-  } catch {
-    return false;
-  }
-}
-
-export function downloadCSV(
-  filename: string,
-  headers: string[],
-  rows: (string | number)[][]
-): void {
-  const escapeCell = (val: string | number) => {
-    const str = String(val);
-    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-      return `"${str.replace(/"/g, '""')}"`;
-    }
-    return str;
-  };
-  const csvContent = [
-    headers.map(escapeCell).join(','),
-    ...rows.map((row) => row.map(escapeCell).join(',')),
-  ].join('\n');
-
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.setAttribute('download', filename);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
-

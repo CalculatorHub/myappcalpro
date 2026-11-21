@@ -1,152 +1,208 @@
-import { useMemo, useState } from 'react';
-import { calculateSimpleInterest, SimpleTimeUnit } from '../../logic/simpleInterest';
-import { formatINR, formatNumberIN, formatPercent } from '../../utils/formatters';
-import { parseNumericInput } from '../../utils/validators';
-import { InputField } from '../ui/InputField';
-import { EmptyState } from '../ui/EmptyState';
-import { ResultActions } from '../ui/ResultActions';
+import React, { useMemo, useRef, useState } from 'react';
+import { NumberInput } from '../ui/NumberInput';
+import { AnimatedNumber } from '../ui/AnimatedNumber';
+import { TiltCard3D } from '../ui/TiltCard3D';
+import { GrowthChart } from '../ui/GrowthChart';
+import { FormulaAccordion } from '../ui/FormulaAccordion';
+import { CalcActionBar } from '../ui/CalcActionBar';
+import { ResultActionsBar, ResultEmptyState } from '../ui/ResultStateHeader';
+import {
+  calculateSimpleInterest,
+  type SimpleInterestTimeUnit,
+} from '../../logic/calculators';
+import { formatINR } from '../../utils/formatters';
+import { downloadCsvFile } from '../../utils/exportUtils';
+import type { CalculationHistoryItem } from '../../utils/storage';
 
-export function SimpleInterestCalc() {
-  const [principalRaw, setPrincipalRaw] = useState('');
-  const [rateRaw, setRateRaw] = useState('');
-  const [timeRaw, setTimeRaw] = useState('');
-  const [timeUnit, setTimeUnit] = useState<SimpleTimeUnit>('years');
-  const [daysInYear, setDaysInYear] = useState<365 | 360>(365);
+interface SimpleInterestErrors {
+  principal?: string;
+  rate?: string;
+  timeValue?: string;
+}
 
-  const parsedPrincipal = parseNumericInput(principalRaw, 'Principal Amount', {
-    required: true,
-    exclusiveMin: 0,
-  });
-  const parsedRate = parseNumericInput(rateRaw, 'Annual Interest Rate', {
-    required: true,
-    min: 0,
-    max: 1000,
-  });
-  const parsedTime = parseNumericInput(timeRaw, 'Time Duration', {
-    required: true,
-    exclusiveMin: 0,
-    max: 100000,
-  });
+interface SimpleInterestCalcProps {
+  onSaveHistory?: (entry: Omit<CalculationHistoryItem, 'id' | 'timestamp'>) => void;
+}
 
-  const hasAnyError = Boolean(
-    parsedPrincipal.error || parsedRate.error || parsedTime.error
-  );
-  const isReady =
-    !hasAnyError &&
-    parsedPrincipal.value !== null &&
-    parsedRate.value !== null &&
-    parsedTime.value !== null;
+export const SimpleInterestCalc: React.FC<SimpleInterestCalcProps> = ({ onSaveHistory }) => {
+  const [principalStr, setPrincipalStr] = useState<string>('0');
+  const [rateStr, setRateStr] = useState<string>('0');
+  const [timeStr, setTimeStr] = useState<string>('0');
+  const [timeUnit, setTimeUnit] = useState<SimpleInterestTimeUnit>('years');
+  const [touched, setTouched] = useState<Partial<Record<keyof SimpleInterestErrors, boolean>>>({});
+  const [submitted, setSubmitted] = useState<boolean>(false);
+  const resultsRef = useRef<HTMLDivElement | null>(null);
+
+  const principalNum = principalStr.trim() === '' ? NaN : Number(principalStr);
+  const rateNum = rateStr.trim() === '' ? NaN : Number(rateStr);
+  const timeNum = timeStr.trim() === '' ? NaN : Number(timeStr);
+
+  const errors = useMemo<SimpleInterestErrors>(() => {
+    const next: SimpleInterestErrors = {};
+    if (principalStr.trim() === '' || !Number.isFinite(principalNum) || principalNum <= 0) {
+      next.principal = 'Enter a principal amount greater than ₹0.';
+    }
+    if (rateStr.trim() === '' || !Number.isFinite(rateNum) || rateNum < 0 || rateNum > 100) {
+      next.rate = 'Enter an annual interest rate between 0% and 100%.';
+    }
+    if (timeStr.trim() === '' || !Number.isFinite(timeNum) || timeNum <= 0) {
+      next.timeValue = `Enter a valid duration in ${timeUnit} greater than 0.`;
+    }
+    return next;
+  }, [principalStr, principalNum, rateStr, rateNum, timeStr, timeNum, timeUnit]);
+
+  const isEmpty =
+    principalStr.trim() === '' && rateStr.trim() === '' && timeStr.trim() === '';
+  const isValid = Object.keys(errors).length === 0;
 
   const result = useMemo(() => {
-    if (!isReady) return null;
-    return calculateSimpleInterest({
-      principal: parsedPrincipal.value!,
-      annualRate: parsedRate.value!,
-      timeValue: parsedTime.value!,
-      timeUnit,
-      daysInYear,
-    });
-  }, [isReady, parsedPrincipal.value, parsedRate.value, parsedTime.value, timeUnit, daysInYear]);
+    if (!isValid) return null;
+    return calculateSimpleInterest(principalNum, rateNum, timeNum, timeUnit);
+  }, [isValid, principalNum, rateNum, timeNum, timeUnit]);
 
-  const handleReset = () => {
-    setPrincipalRaw('');
-    setRateRaw('');
-    setTimeRaw('');
-    setTimeUnit('years');
-    setDaysInYear(365);
+  const handleLoadExample = (p: string, r: string, t: string, u: SimpleInterestTimeUnit) => {
+    setPrincipalStr(p);
+    setRateStr(r);
+    setTimeStr(t);
+    setTimeUnit(u);
+    setTouched({});
+    setSubmitted(false);
   };
 
-  const summaryText = result
-    ? [
-        'FinCalc Pro — Simple Interest Summary',
-        `Principal: ${formatINR(result.principal)}`,
-        `Annual Rate: ${result.annualRate}% p.a.`,
-        `Duration: ${formatNumberIN(result.timeValue)} ${result.timeUnit} (${formatNumberIN(result.timeInYears, 4)} years)`,
-        `Simple Interest: ${formatINR(result.simpleInterest)}`,
-        `Total Maturity Amount: ${formatINR(result.totalAmount)}`,
-        `Formula: ${result.formula}`,
-      ].join('\n')
-    : null;
+  const handleCalculate = () => {
+    setSubmitted(true);
+    if (result && onSaveHistory) {
+      onSaveHistory({
+        calculatorId: 'simple-interest',
+        calculatorTitle: 'Simple Interest',
+        primaryMetricLabel: 'Total Maturity Value',
+        primaryMetricValue: formatINR(result.totalAmount, 2),
+        summaryLine: `${formatINR(result.principal)} @ ${result.rate}% for ${result.timeValue} ${result.timeUnit} · SI ${formatINR(result.simpleInterest, 2)}`,
+      });
+    }
+    if (isValid && resultsRef.current && window.innerWidth < 1024) {
+      resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
-  const principalSharePct = result && result.totalAmount > 0
-    ? (result.principal / result.totalAmount) * 100
-    : 0;
-  const interestSharePct = result && result.totalAmount > 0
-    ? (result.simpleInterest / result.totalAmount) * 100
-    : 0;
+  const handleReset = () => {
+    setPrincipalStr('0');
+    setRateStr('0');
+    setTimeStr('0');
+    setTouched({});
+    setSubmitted(false);
+  };
+
+  const handleExportCsv = () => {
+    if (!result) return;
+    downloadCsvFile(
+      'calhub-simple-interest.csv',
+      ['Period', 'Principal (INR)', 'Interest Earned (INR)', 'Total Amount (INR)'],
+      result.schedule.map((pt) => [
+        pt.label,
+        pt.principal.toFixed(2),
+        pt.interestEarned.toFixed(2),
+        pt.totalAmount.toFixed(2),
+      ])
+    );
+  };
+
+  const copySummary = result
+    ? [
+        'Simple Interest Summary — CalHub FinCalc Pro',
+        `Principal: ${formatINR(result.principal)}`,
+        `Rate: ${result.rate}% p.a.`,
+        `Duration: ${result.timeValue} ${result.timeUnit} (${result.timeInYears.toFixed(4)} years)`,
+        `Simple Interest: ${formatINR(result.simpleInterest, 2)}`,
+        `Total Maturity Value: ${formatINR(result.totalAmount, 2)}`,
+      ].join('\n')
+    : '';
+
+  const showFieldError = (key: keyof SimpleInterestErrors) =>
+    submitted || touched[key] ? errors[key] : undefined;
+
+  const hasVisibleErrors =
+    !isEmpty &&
+    !isValid &&
+    (submitted || Boolean(touched.principal || touched.rate || touched.timeValue));
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-      {/* Input Column */}
-      <div className="rounded-xl card p-5 sm:p-6 lg:col-span-5">
-        <div className="mb-5 border-b border-border-subtle pb-4">
-          <h2 className="heading-5 text-primary">
-            Simple Interest Inputs
-          </h2>
-          <p className="mt-1 caption-5 text-secondary">
-            Supports years, months, or exact day counts for deposits and short-term bills.
+    <div className="grid gap-6 lg:grid-cols-12 items-start">
+      <div className="luxury-card p-6 space-y-5 lg:col-span-5">
+        <div>
+          <h3 className="text-lg font-semibold text-white">Simple Interest Inputs</h3>
+          <p className="mt-1 text-sm text-[#A1A1AA]">
+            Linear interest calculation across years, months, or days.
           </p>
         </div>
 
-        <div className="space-y-4">
-          <InputField
-            id="si-principal"
-            label="Principal Amount"
-            value={principalRaw}
-            onChange={setPrincipalRaw}
-            placeholder="e.g. 250000"
-            prefix="₹"
-            showIndianScale
-            error={parsedPrincipal.error}
-            tooltip="Initial sum invested or borrowed on which simple interest is calculated without compounding."
-            quickChips={[
-              { label: '₹50K', value: '50000' },
-              { label: '₹1L', value: '100000' },
-              { label: '₹2.5L', value: '250000' },
-              { label: '₹10L', value: '1000000' },
-            ]}
-          />
+        <div className="flex flex-wrap items-center gap-2 border-b border-[#D4AF37]/15 pb-4">
+          <span className="text-xs font-medium text-[#A1A1AA]">Examples:</span>
+          <button
+            type="button"
+            onClick={() => handleLoadExample('100000', '8.5', '3', 'years')}
+            className="rounded-xl border border-[#D4AF37]/25 bg-white/[0.03] px-2.5 py-1 text-xs font-medium text-[#E4E4E7] transition-colors hover:border-[#F5D76E] hover:text-[#F5D76E] cursor-pointer"
+          >
+            ₹1L @ 8.5% · 3 yrs
+          </button>
+          <button
+            type="button"
+            onClick={() => handleLoadExample('250000', '7.2', '180', 'days')}
+            className="rounded-xl border border-[#D4AF37]/25 bg-white/[0.03] px-2.5 py-1 text-xs font-medium text-[#E4E4E7] transition-colors hover:border-[#F5D76E] hover:text-[#F5D76E] cursor-pointer"
+          >
+            ₹2.5L @ 7.2% · 180 days
+          </button>
+        </div>
 
-          <InputField
-            id="si-rate"
-            label="Annual Interest Rate"
-            value={rateRaw}
-            onChange={setRateRaw}
-            placeholder="e.g. 7.5"
-            suffix="% p.a."
-            error={parsedRate.error}
-            tooltip="Nominal annual interest rate expressed as a percentage per annum."
-            slider={{ min: 0, max: 24, step: 0.25 }}
-            quickChips={[
-              { label: '6.5%', value: '6.5' },
-              { label: '7.25%', value: '7.25' },
-              { label: '9%', value: '9' },
-              { label: '12%', value: '12' },
-            ]}
-          />
+        <NumberInput
+          id="si-principal"
+          label="Principal Amount"
+          prefix="₹"
+          min={0}
+          placeholder="0"
+          value={principalStr}
+          onChange={(val) => {
+            setPrincipalStr(val);
+            setTouched((prev) => ({ ...prev, principal: true }));
+          }}
+          error={showFieldError('principal')}
+          tooltip="Initial deposit or loan principal on which simple interest accrues."
+        />
 
-          <div className="space-y-1.5">
-            <InputField
-              id="si-time"
-              label="Time Period"
-              value={timeRaw}
-              onChange={setTimeRaw}
-              placeholder={timeUnit === 'years' ? 'e.g. 3' : timeUnit === 'months' ? 'e.g. 18' : 'e.g. 90'}
-              suffix={timeUnit}
-              error={parsedTime.error}
-              tooltip="Duration of the deposit or loan. Months divide by 12; days divide by 365 (standard) or 360 (commercial)."
-            />
+        <NumberInput
+          id="si-rate"
+          label="Annual Interest Rate"
+          suffix="% p.a."
+          min={0}
+          max={100}
+          step={0.1}
+          placeholder="0"
+          value={rateStr}
+          onChange={(val) => {
+            setRateStr(val);
+            setTouched((prev) => ({ ...prev, rate: true }));
+          }}
+          error={showFieldError('rate')}
+          tooltip="Yearly nominal percentage rate applied linearly."
+        />
 
-            <div className="grid grid-cols-3 gap-1.5 rounded-lg border border-border-subtle bg-bg-raised p-1">
-              {(['years', 'months', 'days'] as SimpleTimeUnit[]).map((unit) => (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm font-medium text-white">Duration Unit</span>
+            <div
+              role="group"
+              aria-label="Simple interest time unit"
+              className="flex rounded-xl border border-[#D4AF37]/20 bg-[#0B0B0D] p-0.5"
+            >
+              {(['years', 'months', 'days'] as SimpleInterestTimeUnit[]).map((unit) => (
                 <button
                   key={unit}
                   type="button"
                   onClick={() => setTimeUnit(unit)}
-                  className={`min-h-[36px] rounded-md px-3 py-1.5 caption-4 capitalize transition-colors whitespace-nowrap ${
+                  className={`rounded-lg px-2.5 py-1 text-xs font-medium capitalize transition-colors cursor-pointer ${
                     timeUnit === unit
-                      ? 'bg-accent-gold text-bg-main font-semibold'
-                      : 'text-secondary hover:text-primary'
+                      ? 'bg-[#D4AF37] text-[#050505] font-semibold'
+                      : 'text-[#A1A1AA] hover:text-white'
                   }`}
                 >
                   {unit}
@@ -155,150 +211,82 @@ export function SimpleInterestCalc() {
             </div>
           </div>
 
-          {timeUnit === 'days' && (
-            <div className="space-y-1.5">
-              <span className="block caption-4 text-primary">
-                Day-Count Convention
-              </span>
-              <div className="grid grid-cols-2 gap-1.5 rounded-lg border border-border-subtle bg-bg-raised p-1">
-                {[365, 360].map((basis) => (
-                  <button
-                    key={basis}
-                    type="button"
-                    onClick={() => setDaysInYear(basis as 365 | 360)}
-                    className={`min-h-[36px] rounded-md px-3 py-1.5 caption-4 transition-colors whitespace-nowrap ${
-                      daysInYear === basis
-                        ? 'bg-bg-card gold-accent border border-accent-gold/40'
-                        : 'text-secondary hover:text-primary'
-                    }`}
-                  >
-                    {basis} Days / Yr
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="pt-2">
-            <ResultActions onReset={handleReset} summaryText={summaryText} />
-          </div>
+          <NumberInput
+            id="si-time"
+            label={`Time Period (${timeUnit})`}
+            suffix={timeUnit}
+            min={0}
+            step="any"
+            placeholder="0"
+            value={timeStr}
+            onChange={(val) => {
+              setTimeStr(val);
+              setTouched((prev) => ({ ...prev, timeValue: true }));
+            }}
+            error={showFieldError('timeValue')}
+          />
         </div>
+
+        <CalcActionBar onCalculate={handleCalculate} onReset={handleReset} />
       </div>
 
-      {/* Results Column */}
-      <div className="space-y-5 lg:col-span-7">
+      <div ref={resultsRef} className="space-y-5 lg:col-span-7">
         {!result ? (
-          <EmptyState
-            title="Enter Principal, Rate, and Time"
-            description="Simple interest accrues strictly on the original principal. Enter valid positive numbers on the left or try a CA curriculum example below."
-            presets={[
-              {
-                label: 'Fixed Deposit · 18 Months',
-                description: '₹2,50,000 at 7.25% p.a. for 18 months',
-                onSelect: () => {
-                  setPrincipalRaw('250000');
-                  setRateRaw('7.25');
-                  setTimeRaw('18');
-                  setTimeUnit('months');
-                },
-              },
-              {
-                label: 'Short-Term Bill · 90 Days',
-                description: '₹1,00,000 at 12% p.a. for 90 days (365-day)',
-                onSelect: () => {
-                  setPrincipalRaw('100000');
-                  setRateRaw('12');
-                  setTimeRaw('90');
-                  setTimeUnit('days');
-                  setDaysInYear(365);
-                },
-              },
-            ]}
+          <ResultEmptyState
+            hasErrors={hasVisibleErrors}
+            onLoadExample={() => handleLoadExample('100000', '8.5', '3', 'years')}
           />
         ) : (
           <>
-            {/* Spotlight Output + Supporting KPIs */}
-            <div className="rounded-xl border border-accent-gold/40 bg-bg-card p-5 sm:p-6">
-              <div className="flex flex-wrap items-start justify-between gap-4">
+            <TiltCard3D className="luxury-card-accent p-6 space-y-5" maxTiltDeg={2.5}>
+              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#D4AF37]/20 pb-4">
                 <div>
-                  <span className="caption-4 gold-accent">
-                    Simple Interest Earned
-                  </span>
-                  <div className="font-mono-num mt-1 text-3xl font-semibold tracking-tight text-primary">
-                    {formatINR(result.simpleInterest)}
-                  </div>
-                  <p className="mt-1 caption-5 text-secondary">
-                    Over {formatNumberIN(result.timeValue)} {result.timeUnit} (
-                    {formatNumberIN(result.timeInYears, 4)} yrs) at {result.annualRate}% p.a.
+                  <p className="text-xs font-semibold text-[#F5D76E]">Total Maturity Value</p>
+                  <p className="mt-1 font-mono text-3xl font-bold text-white tabular-nums sm:text-4xl">
+                    <AnimatedNumber value={result.totalAmount} format={(n) => formatINR(n, 2)} />
                   </p>
                 </div>
-
-                <div className="grid grid-cols-2 gap-4 sm:text-right">
-                  <div>
-                    <span className="caption-5 text-muted">Principal (P)</span>
-                    <div className="font-mono-num mt-0.5 title-2 text-primary">
-                      {formatINR(result.principal)}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="caption-5 text-muted">Maturity Value (A)</span>
-                    <div className="font-mono-num mt-0.5 title-2 gold-accent">
-                      {formatINR(result.totalAmount)}
-                    </div>
-                  </div>
-                </div>
+                <ResultActionsBar
+                  shareTitle="Simple Interest Result — CalHub FinCalc Pro"
+                  summaryText={copySummary}
+                  onExportCsv={handleExportCsv}
+                />
               </div>
 
-              {/* Principal vs Interest Share Bar */}
-              <div className="mt-5 border-t border-border-subtle pt-4">
-                <div className="mb-1.5 flex items-center justify-between caption-5">
-                  <span className="text-secondary">
-                    Principal ({formatPercent(principalSharePct, 1)})
-                  </span>
-                  <span className="gold-accent">
-                    Interest ({formatPercent(interestSharePct, 1)})
-                  </span>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="luxury-subcard p-4">
+                  <p className="text-xs text-[#A1A1AA]">Principal Amount</p>
+                  <p className="mt-1.5 font-mono text-lg font-semibold text-white tabular-nums">
+                    {formatINR(result.principal)}
+                  </p>
                 </div>
-                <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-bg-raised">
-                  <div
-                    className="h-full bg-muted transition-all duration-200"
-                    style={{ width: `${principalSharePct}%` }}
-                  />
-                  <div
-                    className="h-full bg-accent-gold transition-all duration-200"
-                    style={{ width: `${interestSharePct}%` }}
-                  />
+                <div className="luxury-subcard p-4">
+                  <p className="text-xs font-medium text-[#F5D76E]">Simple Interest</p>
+                  <p className="mt-1.5 font-mono text-lg font-semibold text-white tabular-nums">
+                    {formatINR(result.simpleInterest, 2)}
+                  </p>
+                </div>
+                <div className="luxury-subcard p-4">
+                  <p className="text-xs text-[#A1A1AA]">Equivalent Years</p>
+                  <p className="mt-1.5 font-mono text-lg font-semibold text-white tabular-nums">
+                    {result.timeInYears.toFixed(2)} yrs
+                  </p>
                 </div>
               </div>
-            </div>
+            </TiltCard3D>
 
-            {/* Formula & Step-by-Step Breakdown */}
-            <div className="card p-5 sm:p-6">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-border-subtle pb-3">
-                <h3 className="title-3 text-primary">
-                  Formula & Calculation Steps
-                </h3>
-                <code className="font-mono-num rounded bg-bg-raised px-2.5 py-1 caption-5 gold-accent">
-                  {result.formula}
-                </code>
-              </div>
+            <GrowthChart
+              title="Simple Interest Growth Over Time"
+              xAxisLabel={`Duration (${result.timeUnit})`}
+              data={result.schedule}
+            />
 
-              <ol className="space-y-2.5 text-sm text-secondary">
-                {result.steps.map((step, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <span className="font-mono-num mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-accent-gold/30 bg-accent-gold/10 caption-4 gold-accent">
-                      {i + 1}
-                    </span>
-                    <span className="font-mono-num caption-2 leading-relaxed text-secondary">
-                      {step}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            </div>
+            <FormulaAccordion formula={result.formula} steps={result.steps} />
           </>
         )}
       </div>
     </div>
   );
-}
+};
+
+export default SimpleInterestCalc;

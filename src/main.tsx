@@ -1,10 +1,19 @@
+import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ThemeProvider } from './utils/theme.tsx';
+import { registerSW } from 'virtual:pwa-register';
 import App from './App.tsx';
 import './index.css';
 
+if (typeof document !== 'undefined') {
+  document.documentElement.classList.add('dark');
+}
+
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+  registerSW({ immediate: true });
+}
+
 createRoot(document.getElementById('root')!).render(
-  <ThemeProvider>
+  <StrictMode>
     <App />
-  </ThemeProvider>
+  </StrictMode>
 );

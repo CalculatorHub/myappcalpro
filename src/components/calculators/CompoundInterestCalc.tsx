@@ -1,373 +1,380 @@
-import { useMemo, useState } from 'react';
-import { DownloadSimple } from '@phosphor-icons/react';
+import React, { useMemo, useRef, useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { NumberInput } from '../ui/NumberInput';
+import { AnimatedNumber } from '../ui/AnimatedNumber';
+import { TiltCard3D } from '../ui/TiltCard3D';
+import { GrowthChart, type GrowthChartDatum } from '../ui/GrowthChart';
+import { FormulaAccordion } from '../ui/FormulaAccordion';
+import { CalcActionBar } from '../ui/CalcActionBar';
+import { ResultActionsBar, ResultEmptyState } from '../ui/ResultStateHeader';
 import {
+  COMPOUNDING_PERIODS,
   calculateCompoundInterest,
-  COMPOUNDING_PERIODS_PER_YEAR,
-  CompoundingFrequency,
-  CompoundTimeUnit,
-} from '../../logic/compoundInterest';
-import {
-  downloadCSV,
-  formatINR,
-  formatNumberIN,
-  formatPercent,
-} from '../../utils/formatters';
-import { parseNumericInput } from '../../utils/validators';
-import { InputField } from '../ui/InputField';
-import { EmptyState } from '../ui/EmptyState';
-import { ResultActions } from '../ui/ResultActions';
-import { CompoundGrowthChart } from '../ui/Charts';
+  type CompoundingFrequency,
+} from '../../logic/calculators';
+import { formatINR } from '../../utils/formatters';
+import { downloadCsvFile } from '../../utils/exportUtils';
+import type { CalculationHistoryItem } from '../../utils/storage';
 
-const FREQUENCIES: CompoundingFrequency[] = [
-  'annually',
-  'half-yearly',
-  'quarterly',
-  'monthly',
-  'daily',
-];
+interface CompoundErrors {
+  principal?: string;
+  rate?: string;
+  years?: string;
+}
 
-export function CompoundInterestCalc() {
-  const [principalRaw, setPrincipalRaw] = useState('');
-  const [rateRaw, setRateRaw] = useState('');
-  const [timeRaw, setTimeRaw] = useState('');
-  const [timeUnit, setTimeUnit] = useState<CompoundTimeUnit>('years');
+interface CompoundInterestCalcProps {
+  onSaveHistory?: (entry: Omit<CalculationHistoryItem, 'id' | 'timestamp'>) => void;
+}
+
+export const CompoundInterestCalc: React.FC<CompoundInterestCalcProps> = ({ onSaveHistory }) => {
+  const [principalStr, setPrincipalStr] = useState<string>('0');
+  const [rateStr, setRateStr] = useState<string>('0');
+  const [yearsStr, setYearsStr] = useState<string>('0');
   const [frequency, setFrequency] = useState<CompoundingFrequency>('quarterly');
+  const [showSchedule, setShowSchedule] = useState<boolean>(true);
+  const [touched, setTouched] = useState<Partial<Record<keyof CompoundErrors, boolean>>>({});
+  const [submitted, setSubmitted] = useState<boolean>(false);
+  const resultsRef = useRef<HTMLDivElement | null>(null);
 
-  const parsedPrincipal = parseNumericInput(principalRaw, 'Principal Amount', {
-    required: true,
-    exclusiveMin: 0,
-  });
-  const parsedRate = parseNumericInput(rateRaw, 'Annual Interest Rate', {
-    required: true,
-    min: 0,
-    max: 500,
-  });
-  const parsedTime = parseNumericInput(timeRaw, 'Time Duration', {
-    required: true,
-    exclusiveMin: 0,
-    max: timeUnit === 'years' ? 100 : 1200,
-  });
+  const principalNum = principalStr.trim() === '' ? NaN : Number(principalStr);
+  const rateNum = rateStr.trim() === '' ? NaN : Number(rateStr);
+  const yearsNum = yearsStr.trim() === '' ? NaN : Number(yearsStr);
 
-  const hasError = Boolean(
-    parsedPrincipal.error || parsedRate.error || parsedTime.error
-  );
-  const isReady =
-    !hasError &&
-    parsedPrincipal.value !== null &&
-    parsedRate.value !== null &&
-    parsedTime.value !== null;
+  const errors = useMemo<CompoundErrors>(() => {
+    const next: CompoundErrors = {};
+    if (principalStr.trim() === '' || !Number.isFinite(principalNum) || principalNum <= 0) {
+      next.principal = 'Enter a principal amount greater than ₹0.';
+    }
+    if (rateStr.trim() === '' || !Number.isFinite(rateNum) || rateNum < 0 || rateNum > 100) {
+      next.rate = 'Enter an annual rate between 0% and 100%.';
+    }
+    if (yearsStr.trim() === '' || !Number.isFinite(yearsNum) || yearsNum <= 0 || yearsNum > 50) {
+      next.years = 'Enter a tenure between 0.1 and 50 years.';
+    }
+    return next;
+  }, [principalStr, principalNum, rateStr, rateNum, yearsStr, yearsNum]);
+
+  const isEmpty =
+    principalStr.trim() === '' && rateStr.trim() === '' && yearsStr.trim() === '';
+  const isValid = Object.keys(errors).length === 0;
 
   const result = useMemo(() => {
-    if (!isReady) return null;
-    return calculateCompoundInterest({
-      principal: parsedPrincipal.value!,
-      annualRate: parsedRate.value!,
-      timeValue: parsedTime.value!,
-      timeUnit,
-      frequency,
-    });
-  }, [isReady, parsedPrincipal.value, parsedRate.value, parsedTime.value, timeUnit, frequency]);
+    if (!isValid) return null;
+    return calculateCompoundInterest(principalNum, rateNum, yearsNum, frequency);
+  }, [isValid, principalNum, rateNum, yearsNum, frequency]);
 
-  const handleReset = () => {
-    setPrincipalRaw('');
-    setRateRaw('');
-    setTimeRaw('');
-    setTimeUnit('years');
-    setFrequency('quarterly');
+  const chartData = useMemo<GrowthChartDatum[]>(() => {
+    if (!result) return [];
+    const points: GrowthChartDatum[] = [
+      {
+        label: 'Start',
+        principal: result.principal,
+        interestEarned: 0,
+        totalAmount: result.principal,
+      },
+    ];
+    result.yearlySchedule.forEach((row) => {
+      points.push({
+        label: `Yr ${row.year}`,
+        principal: result.principal,
+        interestEarned: row.cumulativeInterest,
+        totalAmount: row.closingBalance,
+      });
+    });
+    return points;
+  }, [result]);
+
+  const handleLoadExample = (
+    p: string,
+    r: string,
+    y: string,
+    freq: CompoundingFrequency
+  ) => {
+    setPrincipalStr(p);
+    setRateStr(r);
+    setYearsStr(y);
+    setFrequency(freq);
+    setTouched({});
+    setSubmitted(false);
   };
 
-  const handleDownloadCSV = () => {
+  const handleCalculate = () => {
+    setSubmitted(true);
+    if (result && onSaveHistory) {
+      onSaveHistory({
+        calculatorId: 'compound-interest',
+        calculatorTitle: 'Compound Interest',
+        primaryMetricLabel: 'Maturity Value',
+        primaryMetricValue: formatINR(result.totalAmount, 2),
+        summaryLine: `${formatINR(result.principal)} @ ${result.rate}% (${result.frequency}) for ${result.years} yrs · EAR ${result.effectiveAnnualRate.toFixed(2)}%`,
+      });
+    }
+    if (isValid && resultsRef.current && window.innerWidth < 1024) {
+      resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handleReset = () => {
+    setPrincipalStr('0');
+    setRateStr('0');
+    setYearsStr('0');
+    setTouched({});
+    setSubmitted(false);
+  };
+
+  const handleExportCsv = () => {
     if (!result) return;
-    downloadCSV(
-      'fincalc-compound-interest-schedule.csv',
-      ['Period', 'Opening Balance (INR)', 'Interest Earned (INR)', 'Cumulative Interest (INR)', 'Closing Balance (INR)'],
-      result.yearlySchedule.map((r) => [
-        r.periodLabel,
-        r.openingBalance.toFixed(2),
-        r.interestEarned.toFixed(2),
-        r.cumulativeInterest.toFixed(2),
-        r.closingBalance.toFixed(2),
+    downloadCsvFile(
+      'calhub-compound-interest-schedule.csv',
+      ['Year', 'Opening Balance (INR)', 'Interest Earned (INR)', 'Closing Balance (INR)', 'Cumulative Interest (INR)'],
+      result.yearlySchedule.map((row) => [
+        row.year,
+        row.openingBalance.toFixed(2),
+        row.interestEarned.toFixed(2),
+        row.closingBalance.toFixed(2),
+        row.cumulativeInterest.toFixed(2),
       ])
     );
   };
 
-  const summaryText = result
+  const copySummary = result
     ? [
-        'FinCalc Pro — Compound Interest Summary',
+        'Compound Interest Summary — CalHub FinCalc Pro',
         `Principal: ${formatINR(result.principal)}`,
-        `Nominal Rate: ${result.annualRate}% p.a. (${COMPOUNDING_PERIODS_PER_YEAR[result.frequency].label})`,
-        `Effective Annual Rate (EAR): ${formatPercent(result.effectiveAnnualRate)}`,
-        `Duration: ${formatNumberIN(result.timeInYears, 4)} years`,
-        `Compound Interest Earned: ${formatINR(result.compoundInterest)}`,
-        `Total Maturity Amount: ${formatINR(result.totalAmount)}`,
+        `Annual Rate: ${result.rate}% p.a. (${COMPOUNDING_PERIODS[result.frequency].label})`,
+        `Tenure: ${result.years} years`,
+        `Compound Interest: ${formatINR(result.compoundInterest, 2)}`,
+        `Compounding Gain vs Simple Interest: +${formatINR(result.compoundingAdvantage, 2)}`,
+        `Maturity Value: ${formatINR(result.totalAmount, 2)}`,
+        `Effective Annual Rate (EAR): ${result.effectiveAnnualRate.toFixed(2)}%`,
       ].join('\n')
-    : null;
+    : '';
 
-  const wealthMultiplier = result ? result.totalAmount / result.principal : 1;
+  const formulaSteps = result
+    ? [
+        `Convert nominal rate to decimal: r = ${result.rate}% / 100 = ${(result.rate / 100).toFixed(4)}.`,
+        `Compounding frequency (${COMPOUNDING_PERIODS[result.frequency].label}): n = ${result.compoundingPeriodsPerYear} periods/year.`,
+        `Total compounding intervals: n × t = ${result.compoundingPeriodsPerYear} × ${result.years} = ${(result.compoundingPeriodsPerYear * result.years).toFixed(2)}.`,
+        `Substitute A = ${formatINR(result.principal)} × (1 + ${(result.rate / 100).toFixed(4)} / ${result.compoundingPeriodsPerYear})^${(result.compoundingPeriodsPerYear * result.years).toFixed(2)} = ${formatINR(result.totalAmount, 2)}.`,
+        `Compound Interest CI = ${formatINR(result.totalAmount, 2)} − ${formatINR(result.principal)} = ${formatINR(result.compoundInterest, 2)} (+${formatINR(result.compoundingAdvantage, 2)} extra over Simple Interest).`,
+      ]
+    : [];
+
+  const showFieldError = (key: keyof CompoundErrors) =>
+    submitted || touched[key] ? errors[key] : undefined;
+
+  const hasVisibleErrors =
+    !isEmpty &&
+    !isValid &&
+    (submitted || Boolean(touched.principal || touched.rate || touched.years));
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-      {/* Inputs */}
-      <div className="card p-5 sm:p-6 lg:col-span-5">
-        <div className="mb-5 border-b border-border-subtle pb-4">
-          <h2 className="heading-5 text-primary">
-            Compound Interest Inputs
-          </h2>
-          <p className="mt-1 caption-5 text-secondary">
-            Supports annual, half-yearly, quarterly, monthly, and daily compounding.
+    <div className="grid gap-6 lg:grid-cols-12 items-start">
+      <div className="luxury-card p-6 space-y-5 lg:col-span-5">
+        <div>
+          <h3 className="text-lg font-semibold text-white">Compound Interest Inputs</h3>
+          <p className="mt-1 text-sm text-[#A1A1AA]">
+            Compare annual, half-yearly, quarterly, monthly, and daily compounding.
           </p>
         </div>
 
-        <div className="space-y-4">
-          <InputField
-            id="ci-principal"
-            label="Principal Amount"
-            value={principalRaw}
-            onChange={setPrincipalRaw}
-            placeholder="e.g. 500000"
-            prefix="₹"
-            showIndianScale
-            error={parsedPrincipal.error}
-            tooltip="Initial capital invested on which interest compounds over each compounding period."
-            quickChips={[
-              { label: '₹1L', value: '100000' },
-              { label: '₹5L', value: '500000' },
-              { label: '₹10L', value: '1000000' },
-              { label: '₹25L', value: '2500000' },
-            ]}
-          />
-
-          <InputField
-            id="ci-rate"
-            label="Annual Nominal Rate"
-            value={rateRaw}
-            onChange={setRateRaw}
-            placeholder="e.g. 8.5"
-            suffix="% p.a."
-            error={parsedRate.error}
-            tooltip="Annual stated interest rate before adjusting for intra-year compounding frequency."
-            slider={{ min: 0, max: 25, step: 0.25 }}
-          />
-
-          <div className="space-y-1.5">
-            <InputField
-              id="ci-time"
-              label="Time Period"
-              value={timeRaw}
-              onChange={setTimeRaw}
-              placeholder={timeUnit === 'years' ? 'e.g. 5' : 'e.g. 36'}
-              suffix={timeUnit}
-              error={parsedTime.error}
-              tooltip="Investment duration. Up to 100 years supported."
-              slider={
-                timeUnit === 'years'
-                  ? { min: 1, max: 30, step: 1 }
-                  : { min: 3, max: 120, step: 3 }
-              }
-            />
-            <div className="grid grid-cols-2 gap-1.5 rounded-lg border border-border-subtle bg-bg-raised p-1">
-              {(['years', 'months'] as CompoundTimeUnit[]).map((unit) => (
-                <button
-                  key={unit}
-                  type="button"
-                  onClick={() => setTimeUnit(unit)}
-                  className={`min-h-[36px] rounded-md px-3 py-1.5 caption-4 capitalize transition-colors whitespace-nowrap ${
-                    timeUnit === unit
-                      ? 'bg-accent-gold text-bg-main font-semibold'
-                      : 'text-secondary hover:text-primary'
-                  }`}
-                >
-                  {unit}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label
-              htmlFor="ci-frequency"
-              className="block caption-4 text-primary"
-            >
-              Compounding Frequency
-            </label>
-            <select
-              id="ci-frequency"
-              value={frequency}
-              onChange={(e) => setFrequency(e.target.value as CompoundingFrequency)}
-              className="min-h-[44px] w-full rounded-lg border border-border-subtle bg-bg-raised px-3 py-2.5 text-sm text-primary focus:border-accent-gold focus:outline-none"
-            >
-              {FREQUENCIES.map((freq) => (
-                <option key={freq} value={freq}>
-                  {COMPOUNDING_PERIODS_PER_YEAR[freq].label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="pt-2">
-            <ResultActions onReset={handleReset} summaryText={summaryText} />
-          </div>
+        <div className="flex flex-wrap items-center gap-2 border-b border-[#D4AF37]/15 pb-4">
+          <span className="text-xs font-medium text-[#A1A1AA]">Examples:</span>
+          <button
+            type="button"
+            onClick={() => handleLoadExample('200000', '10', '5', 'quarterly')}
+            className="rounded-xl border border-[#D4AF37]/25 bg-white/[0.03] px-2.5 py-1 text-xs font-medium text-[#E4E4E7] transition-colors hover:border-[#F5D76E] hover:text-[#F5D76E] cursor-pointer"
+          >
+            ₹2L @ 10% · 5 yrs
+          </button>
+          <button
+            type="button"
+            onClick={() => handleLoadExample('500000', '12', '10', 'monthly')}
+            className="rounded-xl border border-[#D4AF37]/25 bg-white/[0.03] px-2.5 py-1 text-xs font-medium text-[#E4E4E7] transition-colors hover:border-[#F5D76E] hover:text-[#F5D76E] cursor-pointer"
+          >
+            ₹5L @ 12% · 10 yrs
+          </button>
         </div>
+
+        <NumberInput
+          id="ci-principal"
+          label="Principal Amount"
+          prefix="₹"
+          min={0}
+          placeholder="0"
+          value={principalStr}
+          onChange={(val) => {
+            setPrincipalStr(val);
+            setTouched((prev) => ({ ...prev, principal: true }));
+          }}
+          error={showFieldError('principal')}
+          tooltip="Initial invested lump sum before compounding."
+        />
+
+        <NumberInput
+          id="ci-rate"
+          label="Annual Interest Rate"
+          suffix="% p.a."
+          min={0}
+          max={100}
+          step={0.1}
+          placeholder="0"
+          value={rateStr}
+          onChange={(val) => {
+            setRateStr(val);
+            setTouched((prev) => ({ ...prev, rate: true }));
+          }}
+          error={showFieldError('rate')}
+        />
+
+        <NumberInput
+          id="ci-years"
+          label="Investment Tenure"
+          suffix="years"
+          min={0}
+          max={50}
+          step={0.5}
+          placeholder="0"
+          value={yearsStr}
+          onChange={(val) => {
+            setYearsStr(val);
+            setTouched((prev) => ({ ...prev, years: true }));
+          }}
+          error={showFieldError('years')}
+        />
+
+        <div className="space-y-1.5">
+          <label htmlFor="ci-frequency" className="block text-sm font-medium text-white">
+            Compounding Frequency
+          </label>
+          <select
+            id="ci-frequency"
+            value={frequency}
+            onChange={(e) => setFrequency(e.target.value as CompoundingFrequency)}
+            className="luxury-input w-full px-3.5 py-2.5 text-sm font-medium text-white focus:outline-none cursor-pointer"
+          >
+            {(Object.keys(COMPOUNDING_PERIODS) as CompoundingFrequency[]).map((key) => (
+              <option key={key} value={key} className="bg-[#111111] text-white">
+                {COMPOUNDING_PERIODS[key].label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <CalcActionBar onCalculate={handleCalculate} onReset={handleReset} />
       </div>
 
-      {/* Outputs */}
-      <div className="space-y-5 lg:col-span-7">
+      <div ref={resultsRef} className="space-y-5 lg:col-span-7">
         {!result ? (
-          <EmptyState
-            title="Enter Principal, Rate, Tenure & Compounding"
-            description="Analyze compound growth, Effective Annual Rate (EAR), and year-by-year accumulation tables. Enter values or load a sample scenario."
-            presets={[
-              {
-                label: 'Bank FD · Quarterly Compounding',
-                description: '₹5,00,000 at 7.5% p.a. for 5 years (Quarterly)',
-                onSelect: () => {
-                  setPrincipalRaw('500000');
-                  setRateRaw('7.5');
-                  setTimeRaw('5');
-                  setTimeUnit('years');
-                  setFrequency('quarterly');
-                },
-              },
-              {
-                label: 'Long-Term Corpus · 10 Years',
-                description: '₹2,00,000 at 12% p.a. for 10 years (Annually)',
-                onSelect: () => {
-                  setPrincipalRaw('200000');
-                  setRateRaw('12');
-                  setTimeRaw('10');
-                  setTimeUnit('years');
-                  setFrequency('annually');
-                },
-              },
-            ]}
+          <ResultEmptyState
+            hasErrors={hasVisibleErrors}
+            onLoadExample={() => handleLoadExample('200000', '10', '5', 'quarterly')}
           />
         ) : (
           <>
-            {/* Spotlight Maturity Card + Supporting KPIs */}
-            <div className="rounded-xl border border-accent-gold/40 bg-bg-card p-5 sm:p-6">
-              <div className="flex flex-wrap items-start justify-between gap-4">
+            <TiltCard3D className="luxury-card-accent p-6 space-y-5" maxTiltDeg={2.5}>
+              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#D4AF37]/20 pb-4">
                 <div>
-                  <span className="caption-4 gold-accent">
-                    Total Maturity Value
-                  </span>
-                  <div className="font-mono-num mt-1 text-3xl font-semibold tracking-tight text-primary">
-                    {formatINR(result.totalAmount)}
-                  </div>
-                  <p className="mt-1 caption-5 text-secondary">
-                    {formatNumberIN(result.totalPeriods, 2)} periods ·{' '}
-                    <span className="font-mono-num gold-accent">
-                      {wealthMultiplier.toFixed(2)}×
-                    </span>{' '}
-                    initial capital
+                  <p className="text-xs font-semibold text-[#F5D76E]">Maturity Value</p>
+                  <p className="mt-1 font-mono text-3xl font-bold text-white tabular-nums sm:text-4xl">
+                    <AnimatedNumber value={result.totalAmount} format={(n) => formatINR(n, 2)} />
+                  </p>
+                  <p className="mt-1 text-xs text-[#A1A1AA] tabular-nums">
+                    Compounding gain over Simple Interest: +{formatINR(result.compoundingAdvantage, 2)}
                   </p>
                 </div>
+                <ResultActionsBar
+                  shareTitle="Compound Interest Result — CalHub FinCalc Pro"
+                  summaryText={copySummary}
+                  onExportCsv={handleExportCsv}
+                />
+              </div>
 
-                <div className="grid grid-cols-2 gap-4 sm:text-right">
-                  <div>
-                    <span className="caption-5 text-muted">Compound Interest</span>
-                    <div className="font-mono-num mt-0.5 title-2 text-primary">
-                      {formatINR(result.compoundInterest)}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="caption-5 text-muted">Effective Rate (EAR)</span>
-                    <div className="font-mono-num mt-0.5 title-2 gold-accent">
-                      {formatPercent(result.effectiveAnnualRate, 2)}
-                    </div>
-                  </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="luxury-subcard p-4">
+                  <p className="text-xs text-[#A1A1AA]">Principal Invested</p>
+                  <p className="mt-1.5 font-mono text-lg font-semibold text-white tabular-nums">
+                    {formatINR(result.principal)}
+                  </p>
+                </div>
+                <div className="luxury-subcard p-4">
+                  <p className="text-xs font-medium text-[#F5D76E]">Compound Interest</p>
+                  <p className="mt-1.5 font-mono text-lg font-semibold text-white tabular-nums">
+                    {formatINR(result.compoundInterest, 2)}
+                  </p>
+                </div>
+                <div className="luxury-subcard p-4">
+                  <p className="text-xs text-[#A1A1AA]">Effective Annual Rate</p>
+                  <p className="mt-1.5 font-mono text-lg font-semibold text-white tabular-nums">
+                    {result.effectiveAnnualRate.toFixed(2)}%
+                  </p>
                 </div>
               </div>
-            </div>
+            </TiltCard3D>
 
-            {/* Chart */}
-            <CompoundGrowthChart
-              principal={result.principal}
-              rows={result.yearlySchedule}
+            <GrowthChart
+              title="Compound Growth Over Time"
+              xAxisLabel="Tenure (Years)"
+              data={chartData}
             />
 
-            {/* Formula & Assumptions */}
-            <div className="card p-5">
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-border-subtle pb-3">
-                <h3 className="title-3 text-primary">
-                  Formula, Steps & Assumptions
-                </h3>
-                <code className="font-mono-num rounded bg-bg-raised px-2.5 py-1 caption-5 gold-accent">
-                  {result.formula}
-                </code>
-              </div>
-
-              <ol className="mb-4 space-y-2 caption-5 text-secondary">
-                {result.steps.map((step, i) => (
-                  <li key={i} className="font-mono-num flex items-start gap-2.5">
-                    <span className="gold-accent">{i + 1}.</span>
-                    <span>{step}</span>
-                  </li>
-                ))}
-              </ol>
-
-              <div className="border-t border-border-subtle pt-3">
-                <p className="mb-1.5 caption-4 text-primary">Assumptions</p>
-                <ul className="list-disc space-y-1 pl-4 caption-5 text-secondary">
-                  {result.assumptions.map((a, i) => (
-                    <li key={i}>{a}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* Year-by-Year Growth Table */}
-            <div className="overflow-hidden card">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border-subtle px-5 py-3.5">
-                <h3 className="title-3 text-primary">
-                  Year-by-Year Growth Schedule
-                </h3>
+            {result.yearlySchedule.length > 0 && (
+              <div className="luxury-card overflow-hidden">
                 <button
                   type="button"
-                  onClick={handleDownloadCSV}
-                  className="button-sm inline-flex min-h-[34px] items-center gap-1.5 rounded-lg border border-border-subtle bg-bg-raised px-3 py-1.5 text-secondary transition-colors hover:border-accent-gold/50 hover:text-accent-gold whitespace-nowrap"
+                  aria-expanded={showSchedule}
+                  onClick={() => setShowSchedule((prev) => !prev)}
+                  className="flex w-full items-center justify-between border-b border-[#D4AF37]/15 px-5 py-4 text-left hover:bg-white/[0.03] cursor-pointer"
                 >
-                  <DownloadSimple size={14} weight="bold" aria-hidden="true" />
-                  <span>Download CSV</span>
+                  <span className="text-sm font-semibold text-white">
+                    Year-by-Year Schedule ({result.yearlySchedule.length} periods)
+                  </span>
+                  {showSchedule ? (
+                    <ChevronUp className="h-4 w-4 text-[#F5D76E]" aria-hidden="true" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-[#A1A1AA]" aria-hidden="true" />
+                  )}
                 </button>
+
+                {showSchedule && (
+                  <div className="max-h-72 overflow-x-auto overflow-y-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="sticky top-0 bg-[#141416] text-[#A1A1AA]">
+                        <tr>
+                          <th className="px-4 py-3 font-medium">Period</th>
+                          <th className="px-4 py-3 font-medium text-right">Opening</th>
+                          <th className="px-4 py-3 font-medium text-right">Interest</th>
+                          <th className="px-4 py-3 font-medium text-right">Closing</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#D4AF37]/12 font-mono tabular-nums">
+                        {result.yearlySchedule.map((row) => (
+                          <tr key={row.year} className="hover:bg-white/[0.025]">
+                            <td className="px-4 py-3 text-[#A1A1AA]">Year {row.year}</td>
+                            <td className="px-4 py-3 text-right text-[#E4E4E7]">
+                              {formatINR(row.openingBalance, 0)}
+                            </td>
+                            <td className="px-4 py-3 text-right text-[#F5D76E]">
+                              +{formatINR(row.interestEarned, 0)}
+                            </td>
+                            <td className="px-4 py-3 text-right font-semibold text-white">
+                              {formatINR(row.closingBalance, 0)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
-              <div className="max-h-80 overflow-x-auto overflow-y-auto">
-                <table className="w-full text-left caption-2">
-                  <thead className="sticky top-0 bg-bg-raised text-secondary">
-                    <tr className="border-b border-border-subtle">
-                      <th className="px-4 py-2.5 font-medium">Period</th>
-                      <th className="px-4 py-2.5 text-right font-medium">Opening Balance</th>
-                      <th className="px-4 py-2.5 text-right font-medium">Interest Earned</th>
-                      <th className="px-4 py-2.5 text-right font-medium">Cumulative Int.</th>
-                      <th className="px-4 py-2.5 text-right font-medium">Closing Balance</th>
-                    </tr>
-                  </thead>
-                  <tbody className="font-mono-num divide-y divide-border-subtle">
-                    {result.yearlySchedule.map((row) => (
-                      <tr key={row.periodLabel} className="hover:bg-bg-raised/50">
-                        <td className="px-4 py-2.5 font-sans font-medium text-primary">
-                          {row.periodLabel}
-                        </td>
-                        <td className="px-4 py-2.5 text-right text-secondary">
-                          {formatINR(row.openingBalance)}
-                        </td>
-                        <td className="px-4 py-2.5 text-right gold-accent">
-                          +{formatINR(row.interestEarned)}
-                        </td>
-                        <td className="px-4 py-2.5 text-right text-muted">
-                          {formatINR(row.cumulativeInterest)}
-                        </td>
-                        <td className="px-4 py-2.5 text-right font-semibold text-primary">
-                          {formatINR(row.closingBalance)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            )}
+
+            <FormulaAccordion formula={result.formula} steps={formulaSteps} />
           </>
         )}
       </div>
     </div>
   );
-}
+};
+
+export default CompoundInterestCalc;

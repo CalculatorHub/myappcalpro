@@ -1,603 +1,530 @@
-import { useMemo, useState } from 'react';
-import { CheckCircle, DownloadSimple, Info, Scales, Warning } from '@phosphor-icons/react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
-  AgeCategory,
-  CONFIGURABLE_TAX_RULES,
-  FINANCIAL_YEAR_OPTIONS,
-  FinancialYearKey,
-  TaxRegime,
+  INDIAN_TAX_RULES,
+  type FinancialYearId,
+  type TaxRegimeId,
 } from '../../data/taxRules';
-import { calculateIncomeTaxWithComparison } from '../../logic/incomeTax';
-import { downloadCSV, formatINR, formatPercent } from '../../utils/formatters';
-import { parseNumericInput } from '../../utils/validators';
-import { InputField } from '../ui/InputField';
-import { EmptyState } from '../ui/EmptyState';
-import { ResultActions } from '../ui/ResultActions';
-import { TaxVisualBreakdown } from '../ui/Charts';
+import {
+  calculateIndianIncomeTax,
+  type TaxAgeCategory,
+} from '../../logic/calculators';
+import { NumberInput } from '../ui/NumberInput';
+import { AnimatedNumber } from '../ui/AnimatedNumber';
+import { TiltCard3D } from '../ui/TiltCard3D';
+import { FormulaAccordion } from '../ui/FormulaAccordion';
+import { CalcActionBar } from '../ui/CalcActionBar';
+import { ResultActionsBar, ResultEmptyState } from '../ui/ResultStateHeader';
+import { formatINR } from '../../utils/formatters';
+import { downloadCsvFile } from '../../utils/exportUtils';
+import type { CalculationHistoryItem } from '../../utils/storage';
 
-interface IncomeTaxCalcProps {
-  selectedFY: FinancialYearKey;
-  onChangeFY: (fy: FinancialYearKey) => void;
+interface TaxErrors {
+  salaryIncome?: string;
+  otherIncome?: string;
+  eligibleDeductions?: string;
+  tdsAndCredits?: string;
 }
 
-export function IncomeTaxCalc({ selectedFY, onChangeFY }: IncomeTaxCalcProps) {
-  const [regime, setRegime] = useState<TaxRegime>('new');
-  const [ageCategory, setAgeCategory] = useState<AgeCategory>('below60');
-  const [salaryRaw, setSalaryRaw] = useState('');
-  const [otherRaw, setOtherRaw] = useState('');
-  const [deductionsRaw, setDeductionsRaw] = useState('');
-  const [tdsRaw, setTdsRaw] = useState('');
+const AGE_CATEGORY_LABELS: { id: TaxAgeCategory; label: string }[] = [
+  { id: 'below-60', label: 'Below 60 yrs' },
+  { id: 'senior-60-79', label: 'Senior (60–79)' },
+  { id: 'super-senior-80', label: '80+ yrs' },
+];
 
-  const rules = CONFIGURABLE_TAX_RULES[selectedFY];
+interface IncomeTaxCalcProps {
+  onSaveHistory?: (entry: Omit<CalculationHistoryItem, 'id' | 'timestamp'>) => void;
+}
 
-  const parsedSalary = parseNumericInput(salaryRaw, 'Salary Income', { min: 0 });
-  const parsedOther = parseNumericInput(otherRaw, 'Other Income', { min: 0 });
-  const parsedDeductions = parseNumericInput(deductionsRaw, 'Eligible Deductions', {
-    min: 0,
-  });
-  const parsedTds = parseNumericInput(tdsRaw, 'Tax Credits / TDS', { min: 0 });
+export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) => {
+  const [financialYear, setFinancialYear] = useState<FinancialYearId>('fy-2025-26');
+  const [regime, setRegime] = useState<TaxRegimeId>('new');
+  const [ageCategory, setAgeCategory] = useState<TaxAgeCategory>('below-60');
+  const [salaryStr, setSalaryStr] = useState<string>('0');
+  const [otherStr, setOtherStr] = useState<string>('0');
+  const [deductionsStr, setDeductionsStr] = useState<string>('0');
+  const [tdsStr, setTdsStr] = useState<string>('0');
+  const [touched, setTouched] = useState<Partial<Record<keyof TaxErrors, boolean>>>({});
+  const [submitted, setSubmitted] = useState<boolean>(false);
+  const resultsRef = useRef<HTMLDivElement | null>(null);
 
-  const hasError = Boolean(
-    parsedSalary.error ||
-      parsedOther.error ||
-      parsedDeductions.error ||
-      parsedTds.error
-  );
+  const fyConfig = INDIAN_TAX_RULES[financialYear];
+  const regimeConfig = fyConfig.regimes[regime];
 
-  // Require at least one income input to be non-empty before showing results
-  const hasAnyIncomeInput = salaryRaw.trim() !== '' || otherRaw.trim() !== '';
-  const isReady =
-    !hasError &&
-    hasAnyIncomeInput &&
-    parsedSalary.value !== null &&
-    parsedOther.value !== null &&
-    parsedDeductions.value !== null &&
-    parsedTds.value !== null;
+  const salaryNum = salaryStr.trim() === '' ? NaN : Number(salaryStr);
+  const otherNum = otherStr.trim() === '' ? 0 : Number(otherStr);
+  const deductionsNum = deductionsStr.trim() === '' ? 0 : Number(deductionsStr);
+  const tdsNum = tdsStr.trim() === '' ? 0 : Number(tdsStr);
 
-  const comparison = useMemo(() => {
-    if (!isReady) return null;
-    return calculateIncomeTaxWithComparison(
-      {
-        salaryIncome: parsedSalary.value!,
-        otherIncome: parsedOther.value!,
-        eligibleDeductions: parsedDeductions.value!,
-        tdsAndCredits: parsedTds.value!,
-        regime,
-        ageCategory,
-      },
-      rules
-    );
-  }, [
-    isReady,
-    parsedSalary.value,
-    parsedOther.value,
-    parsedDeductions.value,
-    parsedTds.value,
-    regime,
-    ageCategory,
-    rules,
-  ]);
+  const errors = useMemo<TaxErrors>(() => {
+    const next: TaxErrors = {};
+    if (salaryStr.trim() === '' && otherStr.trim() === '') {
+      next.salaryIncome = 'Enter gross salary or other income (₹0 or above).';
+    } else if (salaryStr.trim() !== '' && (!Number.isFinite(salaryNum) || salaryNum < 0)) {
+      next.salaryIncome = 'Gross salary cannot be negative.';
+    }
+    if (otherStr.trim() !== '' && (!Number.isFinite(otherNum) || otherNum < 0)) {
+      next.otherIncome = 'Other income cannot be negative.';
+    }
+    if (deductionsStr.trim() !== '' && (!Number.isFinite(deductionsNum) || deductionsNum < 0)) {
+      next.eligibleDeductions = 'Deductions cannot be negative.';
+    }
+    if (tdsStr.trim() !== '' && (!Number.isFinite(tdsNum) || tdsNum < 0)) {
+      next.tdsAndCredits = 'TDS / advance tax credits cannot be negative.';
+    }
+    return next;
+  }, [salaryStr, salaryNum, otherStr, otherNum, deductionsStr, deductionsNum, tdsStr, tdsNum]);
+
+  const isDefaultAllZero =
+    !submitted &&
+    salaryStr.trim() === '0' &&
+    otherStr.trim() === '0' &&
+    deductionsStr.trim() === '0' &&
+    tdsStr.trim() === '0';
+  const isEmpty = salaryStr.trim() === '' && otherStr.trim() === '';
+  const isValid = Object.keys(errors).length === 0;
+
+  const result = useMemo(() => {
+    if (!isValid || isDefaultAllZero) return null;
+    return calculateIndianIncomeTax({
+      financialYear,
+      regime,
+      ageCategory,
+      salaryIncome: Number.isFinite(salaryNum) ? salaryNum : 0,
+      otherIncome: Number.isFinite(otherNum) ? otherNum : 0,
+      eligibleDeductions: Number.isFinite(deductionsNum) ? deductionsNum : 0,
+      tdsAndCredits: Number.isFinite(tdsNum) ? tdsNum : 0,
+    });
+  }, [isValid, isDefaultAllZero, financialYear, regime, ageCategory, salaryNum, otherNum, deductionsNum, tdsNum]);
+
+  const handleLoadExample = (
+    fy: FinancialYearId,
+    reg: TaxRegimeId,
+    sal: string,
+    oth: string,
+    ded: string,
+    tds: string,
+    age: TaxAgeCategory = 'below-60'
+  ) => {
+    setFinancialYear(fy);
+    setRegime(reg);
+    setAgeCategory(age);
+    setSalaryStr(sal);
+    setOtherStr(oth);
+    setDeductionsStr(ded);
+    setTdsStr(tds);
+    setTouched({});
+    setSubmitted(false);
+  };
+
+  const handleCalculate = () => {
+    setSubmitted(true);
+    if (result && onSaveHistory) {
+      const refund = result.balancePayableOrRefund < 0;
+      onSaveHistory({
+        calculatorId: 'income-tax',
+        calculatorTitle: 'Income Tax',
+        primaryMetricLabel: refund ? 'Estimated Tax Refund' : 'Estimated Net Tax Payable',
+        primaryMetricValue: formatINR(Math.abs(result.balancePayableOrRefund)),
+        summaryLine: `${fyConfig.label} · ${regime === 'new' ? 'New Regime' : 'Old Regime'} · Gross ${formatINR(result.grossTotalIncome)} · Tax ${formatINR(result.totalTaxLiability)}`,
+      });
+    }
+    if (isValid && resultsRef.current && window.innerWidth < 1024) {
+      resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   const handleReset = () => {
-    setSalaryRaw('');
-    setOtherRaw('');
-    setDeductionsRaw('');
-    setTdsRaw('');
+    setSalaryStr('0');
+    setOtherStr('0');
+    setDeductionsStr('0');
+    setTdsStr('0');
+    setTouched({});
+    setSubmitted(false);
   };
 
-  const result = comparison?.selected ?? null;
-
-  const handleDownloadTaxCSV = () => {
+  const handleExportCsv = () => {
     if (!result) return;
-    downloadCSV(
-      `fincalc-income-tax-${result.financialYear}-${result.regime}.csv`,
-      ['Income Slab', 'Rate (%)', 'Taxable Income in Slab (INR)', 'Slab Tax (INR)'],
-      result.slabBreakdown.map((s) => [
-        s.label,
-        s.rate,
-        s.taxableInSlab.toFixed(0),
-        s.taxAmount.toFixed(0),
-      ])
+    downloadCsvFile(
+      `calhub-income-tax-${financialYear}-${regime}.csv`,
+      ['Income Slab', 'Rate (%)', 'Taxable Slice (INR)', 'Slab Tax (INR)'],
+      [
+        ...result.slabBreakdown.map((row) => [
+          row.label,
+          `${row.rate}%`,
+          row.taxableSlice.toFixed(2),
+          row.taxAmount.toFixed(2),
+        ]),
+        ['Slab Tax Before Rebate', '', '', result.taxBeforeRebate.toFixed(2)],
+        ['Section 87A Rebate', '', '', (-result.rebate87A).toFixed(2)],
+        ['87A Marginal Relief', '', '', (-result.marginalRelief).toFixed(2)],
+        ['Surcharge', '', '', result.surcharge.toFixed(2)],
+        ['Health & Education Cess (4%)', '', '', result.cessAmount.toFixed(2)],
+        ['Total Estimated Tax Liability', '', '', result.totalTaxLiability.toFixed(2)],
+        ['TDS / Advance Tax Credits', '', '', (-result.tdsAndCredits).toFixed(2)],
+        [
+          result.balancePayableOrRefund < 0 ? 'Estimated Refund' : 'Net Tax Payable',
+          '',
+          '',
+          Math.abs(result.balancePayableOrRefund).toFixed(2),
+        ],
+      ]
     );
   };
 
-  const summaryText = result
+  const isRefund = result ? result.balancePayableOrRefund < 0 : false;
+  const postTaxIncome = result
+    ? Math.max(0, result.grossTotalIncome - result.totalTaxLiability)
+    : 0;
+
+  const copySummary = result
     ? [
-        `FinCalc Pro — Indian Income Tax Estimate (${result.financialYear} / ${result.assessmentYear})`,
-        `Regime: ${result.regimeName}`,
-        `Gross Total Income: ${formatINR(result.grossTotalIncome, 0)}`,
-        `Standard Deduction: ${formatINR(result.standardDeductionApplied, 0)}`,
-        `Eligible Deductions Applied: ${formatINR(result.userDeductionsApplied, 0)}`,
-        `Net Taxable Income: ${formatINR(result.netTaxableIncome, 0)}`,
-        `Tax Before Rebate: ${formatINR(result.taxBeforeRebate, 0)}`,
-        `Sec 87A Rebate: ${formatINR(result.rebate87A, 0)}`,
-        result.marginalRelief87A > 0
-          ? `Sec 87A Marginal Relief: ${formatINR(result.marginalRelief87A, 0)}`
-          : null,
-        result.surchargeApplied > 0
-          ? `Surcharge (${result.surchargeRate}%): ${formatINR(result.surchargeApplied, 0)}`
-          : null,
-        `Health & Education Cess (4%): ${formatINR(result.healthAndEducationCess, 0)}`,
-        `Total Estimated Tax Liability: ${formatINR(result.totalTaxLiability, 0)}`,
-        `Less Tax Credits / TDS: ${formatINR(result.tdsAndCredits, 0)}`,
-        result.balanceStatus === 'payable'
-          ? `Estimated Balance Payable: ${formatINR(result.netBalance, 0)}`
-          : result.balanceStatus === 'refund'
-          ? `Estimated Refund Due: ${formatINR(Math.abs(result.netBalance), 0)}`
-          : 'Estimated Balance Payable: ₹0',
-        'Disclaimer: Educational estimate for CA students, not professional tax advice.',
+        `Indian Income Tax Estimate (${fyConfig.label}, ${regimeConfig.label}) — CalHub FinCalc Pro`,
+        `Gross Total Income: ${formatINR(result.grossTotalIncome)}`,
+        `Standard Deduction: ${formatINR(result.standardDeduction)}`,
+        `Chapter VI-A Deductions Applied: ${formatINR(result.eligibleDeductionsApplied)}`,
+        `Taxable Income: ${formatINR(result.taxableIncome)}`,
+        `Slab Tax Before Rebate: ${formatINR(result.taxBeforeRebate)}`,
+        result.rebate87A > 0 ? `Section 87A Rebate: -${formatINR(result.rebate87A)}` : null,
+        result.marginalRelief > 0 ? `87A Marginal Relief: -${formatINR(result.marginalRelief)}` : null,
+        result.surcharge > 0 ? `Surcharge: ${formatINR(result.surcharge)}` : null,
+        `Health & Education Cess (4%): ${formatINR(result.cessAmount)}`,
+        `Estimated Total Tax Liability: ${formatINR(result.totalTaxLiability)}`,
+        `Estimated Post-Tax Income: ${formatINR(postTaxIncome)}`,
+        `Less TDS / Credits: ${formatINR(result.tdsAndCredits)}`,
+        `${isRefund ? 'Estimated Refund' : 'Estimated Balance Payable'}: ${formatINR(Math.abs(result.balancePayableOrRefund))}`,
+        'Note: Educational estimate only.',
       ]
         .filter(Boolean)
         .join('\n')
-    : null;
+    : '';
 
-  const newRegimeData =
-    comparison?.selected.regime === 'new' ? comparison.selected : comparison?.alternate;
-  const oldRegimeData =
-    comparison?.selected.regime === 'old' ? comparison.selected : comparison?.alternate;
+  const formulaSteps = result
+    ? [
+        `Gross Total Income = Salary (${formatINR(result.salaryIncome)}) + Other Income (${formatINR(result.otherIncome)}) = ${formatINR(result.grossTotalIncome)}.`,
+        `Subtract Standard Deduction (${formatINR(result.standardDeduction)}) and Eligible Deductions (${formatINR(result.eligibleDeductionsApplied)}) → Taxable Income = ${formatINR(result.taxableIncome)}.`,
+        `Compute progressive slab tax (${regimeConfig.sectionReference}): ${formatINR(result.taxBeforeRebate)}.`,
+        result.rebate87A > 0 || result.marginalRelief > 0
+          ? `Apply Section 87A Rebate (${formatINR(result.rebate87A)}) and Marginal Relief (${formatINR(result.marginalRelief)}).`
+          : `Section 87A Rebate: ₹0 (taxable income above ₹${regimeConfig.rebate87ALimit.toLocaleString('en-IN')} threshold or tax is nil).`,
+        `Add Surcharge (${formatINR(result.surcharge)}) and 4% Health & Education Cess (${formatINR(result.cessAmount)}) = ${formatINR(result.totalTaxLiability)}.`,
+        `Subtract TDS / Advance Tax (${formatINR(result.tdsAndCredits)}) = ${isRefund ? 'Estimated Refund ' : 'Balance Payable '}${formatINR(Math.abs(result.balancePayableOrRefund))}.`,
+      ]
+    : [];
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-      {/* Left Input Column */}
-      <div className="rounded-xl border border-white/[0.08] bg-bg-2 p-5 sm:p-6 lg:col-span-5">
-        <div className="mb-4 border-b border-white/[0.08] pb-4">
-          <h2 className="font-display text-lg font-semibold text-text-0">
-            Taxpayer & Income Profile
-          </h2>
-          <p className="mt-1 text-xs text-text-4">
-            Educational Indian income tax estimator with configurable FY slabs and regime comparison.
+    <div className="grid gap-6 lg:grid-cols-12 items-start">
+      <div className="luxury-card p-6 space-y-5 lg:col-span-5">
+        <div>
+          <h3 className="text-lg font-semibold text-white">Income Tax Inputs</h3>
+          <p className="mt-1 text-sm text-[#A1A1AA]">
+            Educational slab estimator across New &amp; Old regimes with 87A &amp; 4% cess.
           </p>
         </div>
 
-        <div className="space-y-4">
-          {/* Financial Year Selector */}
-          <div className="space-y-1.5">
-            <label
-              htmlFor="tax-fy"
-              className="block text-sm font-medium text-text-2"
-            >
-              Financial Year (FY)
-            </label>
-            <select
-              id="tax-fy"
-              value={selectedFY}
-              onChange={(e) => onChangeFY(e.target.value as FinancialYearKey)}
-              className="min-h-[44px] w-full rounded-lg border border-white/10 bg-bg-0 px-3 py-2.5 text-sm text-text-0 focus:border-gold focus:outline-none"
-            >
-              {FINANCIAL_YEAR_OPTIONS.map((fyKey) => {
-                const r = CONFIGURABLE_TAX_RULES[fyKey];
-                return (
-                  <option key={fyKey} value={fyKey}>
-                    {r.financialYear} ({r.assessmentYear})
-                    {!r.verified ? ' — Sample Estimate' : ''}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
+        <div className="flex flex-wrap items-center gap-2 border-b border-[#D4AF37]/15 pb-4">
+          <span className="text-xs font-medium text-[#A1A1AA]">Examples:</span>
+          <button
+            type="button"
+            onClick={() => handleLoadExample('fy-2025-26', 'new', '1350000', '50000', '150000', '40000')}
+            className="rounded-xl border border-[#D4AF37]/25 bg-white/[0.03] px-2.5 py-1 text-xs font-medium text-[#E4E4E7] transition-colors hover:border-[#F5D76E] hover:text-[#F5D76E] cursor-pointer"
+          >
+            Salaried ₹14L
+          </button>
+          <button
+            type="button"
+            onClick={() => handleLoadExample('fy-2025-26', 'new', '1275000', '0', '0', '0')}
+            className="rounded-xl border border-[#D4AF37]/25 bg-white/[0.03] px-2.5 py-1 text-xs font-medium text-[#E4E4E7] transition-colors hover:border-[#F5D76E] hover:text-[#F5D76E] cursor-pointer"
+          >
+            87A Edge ₹12.75L
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              handleLoadExample('fy-2025-26', 'old', '1800000', '120000', '350000', '180000', 'senior-60-79')
+            }
+            className="rounded-xl border border-[#D4AF37]/25 bg-white/[0.03] px-2.5 py-1 text-xs font-medium text-[#E4E4E7] transition-colors hover:border-[#F5D76E] hover:text-[#F5D76E] cursor-pointer"
+          >
+            Old Regime Senior
+          </button>
+        </div>
 
-          {/* Regime Selector */}
-          <div className="space-y-1.5">
-            <span className="block text-sm font-medium text-text-2">Tax Regime</span>
-            <div className="grid grid-cols-2 gap-1.5 rounded-lg border border-white/[0.08] bg-bg-1 p-1">
+        <div className="space-y-1.5">
+          <label htmlFor="tax-fy" className="block text-sm font-medium text-white">
+            Financial Year
+          </label>
+          <select
+            id="tax-fy"
+            value={financialYear}
+            onChange={(e) => setFinancialYear(e.target.value as FinancialYearId)}
+            className="luxury-input w-full px-3.5 py-2.5 text-sm font-medium text-white focus:outline-none cursor-pointer"
+          >
+            {(Object.keys(INDIAN_TAX_RULES) as FinancialYearId[]).map((fyKey) => (
+              <option key={fyKey} value={fyKey} className="bg-[#111111] text-white">
+                {INDIAN_TAX_RULES[fyKey].label} ({INDIAN_TAX_RULES[fyKey].assessmentYearLabel})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-1.5">
+          <span className="block text-sm font-medium text-white">Tax Regime</span>
+          <div
+            role="group"
+            aria-label="Tax regime selection"
+            className="flex rounded-xl border border-[#D4AF37]/20 bg-[#0B0B0D] p-1"
+          >
+            {(['new', 'old'] as TaxRegimeId[]).map((rKey) => (
               <button
+                key={rKey}
                 type="button"
-                onClick={() => setRegime('new')}
-                className={`min-h-[38px] rounded-md px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
-                  regime === 'new'
-                    ? 'bg-gold text-bg-0 font-semibold'
-                    : 'text-text-4 hover:text-text-0'
+                onClick={() => setRegime(rKey)}
+                className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                  regime === rKey
+                    ? 'bg-[#D4AF37] text-[#050505] font-semibold'
+                    : 'text-[#A1A1AA] hover:text-white'
                 }`}
               >
-                New Regime (115BAC)
+                {rKey === 'new' ? 'New Regime (115BAC)' : 'Old Regime'}
               </button>
-              <button
-                type="button"
-                onClick={() => setRegime('old')}
-                className={`min-h-[38px] rounded-md px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
-                  regime === 'old'
-                    ? 'bg-gold text-bg-0 font-semibold'
-                    : 'text-text-4 hover:text-text-0'
-                }`}
-              >
-                Old Regime
-              </button>
-            </div>
-          </div>
-
-          {/* Age Category (relevant for Old Regime) */}
-          <div className="space-y-1.5">
-            <label
-              htmlFor="tax-age"
-              className="block text-sm font-medium text-text-2"
-            >
-              Age Category{' '}
-              <span className="text-xs font-normal text-text-4">
-                (Old Regime exemption)
-              </span>
-            </label>
-            <select
-              id="tax-age"
-              value={ageCategory}
-              onChange={(e) => setAgeCategory(e.target.value as AgeCategory)}
-              className="min-h-[44px] w-full rounded-lg border border-white/10 bg-bg-0 px-3 py-2.5 text-sm text-text-0 focus:border-gold focus:outline-none"
-            >
-              <option value="below60">Resident Below 60 Years (₹2.5L exempt)</option>
-              <option value="senior60to79">Senior Citizen 60–79 Years (₹3L exempt)</option>
-              <option value="superSenior80plus">Super Senior 80+ Years (₹5L exempt)</option>
-            </select>
-          </div>
-
-          <InputField
-            id="tax-salary"
-            label="Gross Salary Income"
-            value={salaryRaw}
-            onChange={setSalaryRaw}
-            placeholder="e.g. 1275000"
-            prefix="₹"
-            showIndianScale
-            error={parsedSalary.error}
-            tooltip={`Standard deduction of ${formatINR(
-              regime === 'new'
-                ? rules.newRegime.standardDeductionSalaried
-                : rules.oldRegime.standardDeductionSalaried,
-              0
-            )} is automatically applied when gross salary > ₹0.`}
-            quickChips={[
-              { label: '₹7.5L', value: '750000' },
-              { label: '₹12.75L', value: '1275000' },
-              { label: '₹18L', value: '1800000' },
-              { label: '₹25L', value: '2500000' },
-            ]}
-          />
-
-          <InputField
-            id="tax-other"
-            label="Other Income"
-            value={otherRaw}
-            onChange={setOtherRaw}
-            placeholder="e.g. 85000"
-            prefix="₹"
-            showIndianScale
-            error={parsedOther.error}
-            tooltip="Bank interest, freelance/consultancy receipts, or taxable rental income taxed at slab rates."
-          />
-
-          <InputField
-            id="tax-deductions"
-            label="Eligible Deductions (Ch. VI-A)"
-            value={deductionsRaw}
-            onChange={setDeductionsRaw}
-            placeholder="e.g. 200000"
-            prefix="₹"
-            showIndianScale
-            error={parsedDeductions.error}
-            tooltip="Deductions like Sec 80C, 80D, 80CCD(1B), 80G. Applied under Old Regime; compared simultaneously against New Regime."
-            quickChips={[
-              { label: '₹1.5L (80C)', value: '150000' },
-              { label: '₹2.5L', value: '250000' },
-              { label: '₹3.5L', value: '350000' },
-            ]}
-          />
-
-          <InputField
-            id="tax-tds"
-            label="Tax Credits / TDS / Advance Tax"
-            value={tdsRaw}
-            onChange={setTdsRaw}
-            placeholder="e.g. 60000"
-            prefix="₹"
-            showIndianScale
-            error={parsedTds.error}
-            tooltip="Tax already deducted at source (Form 26AS / AIS) or paid via advance/self-assessment tax."
-          />
-
-          <div className="pt-2">
-            <ResultActions onReset={handleReset} summaryText={summaryText} />
+            ))}
           </div>
         </div>
+
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm font-medium text-white">Age Bracket</span>
+            {regime === 'new' && (
+              <span className="text-[11px] text-[#A1A1AA]">Uniform slabs under 115BAC</span>
+            )}
+          </div>
+          <div
+            role="group"
+            aria-label="Taxpayer age bracket"
+            className="grid grid-cols-3 gap-1 rounded-xl border border-[#D4AF37]/20 bg-[#0B0B0D] p-1"
+          >
+            {AGE_CATEGORY_LABELS.map((item) => {
+              const selected = (regime === 'new' ? 'below-60' : ageCategory) === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  disabled={regime === 'new'}
+                  onClick={() => setAgeCategory(item.id)}
+                  className={`rounded-lg px-2 py-1.5 text-xs font-medium transition-colors ${
+                    regime === 'new'
+                      ? 'opacity-45 cursor-not-allowed text-[#A1A1AA]'
+                      : selected
+                      ? 'bg-[#D4AF37] text-[#050505] font-semibold cursor-pointer'
+                      : 'text-[#A1A1AA] hover:text-white cursor-pointer'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <NumberInput
+          id="tax-salary"
+          label="Gross Salary Income"
+          prefix="₹"
+          min={0}
+          placeholder="0"
+          value={salaryStr}
+          onChange={(val) => {
+            setSalaryStr(val);
+            setTouched((prev) => ({ ...prev, salaryIncome: true }));
+          }}
+          error={submitted || touched.salaryIncome ? errors.salaryIncome : undefined}
+          helperText={
+            result
+              ? `Standard deduction applied automatically: ${formatINR(result.standardDeduction)}`
+              : `Standard deduction for salaried: ${formatINR(regimeConfig.standardDeductionSalaried)}`
+          }
+        />
+
+        <NumberInput
+          id="tax-other"
+          label="Other Income (Interest, Freelance)"
+          prefix="₹"
+          min={0}
+          placeholder="0"
+          value={otherStr}
+          onChange={(val) => {
+            setOtherStr(val);
+            setTouched((prev) => ({ ...prev, otherIncome: true }));
+          }}
+          error={submitted || touched.otherIncome ? errors.otherIncome : undefined}
+        />
+
+        <NumberInput
+          id="tax-deductions"
+          label="Chapter VI-A Deductions (80C, 80D, HRA)"
+          prefix="₹"
+          min={0}
+          placeholder="0"
+          disabled={!regimeConfig.allowsChapterVIADeductions}
+          value={deductionsStr}
+          onChange={(val) => {
+            setDeductionsStr(val);
+            setTouched((prev) => ({ ...prev, eligibleDeductions: true }));
+          }}
+          error={
+            submitted || touched.eligibleDeductions ? errors.eligibleDeductions : undefined
+          }
+          helperText={
+            regimeConfig.allowsChapterVIADeductions
+              ? 'Deducted from Gross Total Income under Old Regime.'
+              : 'Excluded under New Regime Section 115BAC.'
+          }
+        />
+
+        <NumberInput
+          id="tax-tds"
+          label="TDS / Advance Tax Credits Paid"
+          prefix="₹"
+          min={0}
+          placeholder="0"
+          value={tdsStr}
+          onChange={(val) => {
+            setTdsStr(val);
+            setTouched((prev) => ({ ...prev, tdsAndCredits: true }));
+          }}
+          error={submitted || touched.tdsAndCredits ? errors.tdsAndCredits : undefined}
+        />
+
+        <CalcActionBar onCalculate={handleCalculate} onReset={handleReset} />
       </div>
 
-      {/* Right Output Column */}
-      <div className="space-y-5 lg:col-span-7">
-        {!result || !comparison || !newRegimeData || !oldRegimeData ? (
-          <EmptyState
-            title="Enter Income Details to Compute Tax"
-            description="Select Financial Year and Regime, enter Salary or Other Income, and inspect slab-by-slab computation, Section 87A rebate, marginal relief, cess, and Old vs. New comparison."
-            presets={[
-              {
-                label: 'Salaried ₹12,75,000 (Sec 87A Sweet Spot)',
-                description: 'FY 2026-27 New Regime zero-tax example after ₹75k std deduction',
-                onSelect: () => {
-                  onChangeFY('FY2026-27');
-                  setRegime('new');
-                  setAgeCategory('below60');
-                  setSalaryRaw('1275000');
-                  setOtherRaw('0');
-                  setDeductionsRaw('0');
-                  setTdsRaw('0');
-                },
-              },
-              {
-                label: 'CA Professional ₹22L + ₹3.5L Deductions',
-                description: 'Compare New vs. Old Regime with ₹1,80,000 TDS credit',
-                onSelect: () => {
-                  onChangeFY('FY2026-27');
-                  setRegime('old');
-                  setAgeCategory('below60');
-                  setSalaryRaw('1800000');
-                  setOtherRaw('400000');
-                  setDeductionsRaw('350000');
-                  setTdsRaw('180000');
-                },
-              },
-              {
-                label: 'Marginal Relief Case ₹12,20,000',
-                description: 'Income ₹20k above ₹12L New Regime 87A threshold',
-                onSelect: () => {
-                  onChangeFY('FY2026-27');
-                  setRegime('new');
-                  setAgeCategory('below60');
-                  setSalaryRaw('0');
-                  setOtherRaw('1220000');
-                  setDeductionsRaw('0');
-                  setTdsRaw('0');
-                },
-              },
-            ]}
+      <div ref={resultsRef} className="space-y-5 lg:col-span-7">
+        {!result ? (
+          <ResultEmptyState
+            hasErrors={
+              !isEmpty &&
+              !isValid &&
+              (submitted ||
+                Boolean(
+                  touched.salaryIncome ||
+                    touched.otherIncome ||
+                    touched.eligibleDeductions ||
+                    touched.tdsAndCredits
+                ))
+            }
+            onLoadExample={() =>
+              handleLoadExample('fy-2025-26', 'new', '1350000', '50000', '150000', '40000')
+            }
           />
         ) : (
           <>
-            {/* Verification & Regime Context Banner */}
-            {!result.verified && (
-              <div className="flex items-start gap-3 rounded-xl border border-amber-500/40 bg-bg-card p-4 text-xs text-amber-200">
-                <Warning size={16} weight="fill" className="mt-0.5 shrink-0 text-amber-400" aria-hidden="true" />
-                <div>
-                  <span className="font-semibold">Sample Estimate Only:</span> Tax slabs for{' '}
-                  {result.financialYear} are displayed as illustrative estimates. Verify against official Income Tax Department of India notifications before filing.
-                </div>
-              </div>
-            )}
-
-            {result.disallowedDeductionWarning && (
-              <div className="flex items-start gap-3 rounded-xl border border-gold/35 bg-bg-0 p-4 text-xs text-text-2">
-                <Info size={16} weight="fill" className="mt-0.5 shrink-0 text-gold-hover" aria-hidden="true" />
-                <div>
-                  <span className="font-semibold text-gold-hover">New Regime Note:</span> You entered{' '}
-                  <span className="font-mono-num">{formatINR(result.userDeductionsEntered, 0)}</span> in Chapter VI-A deductions. Under the New Regime (Sec 115BAC), regular deductions like 80C/80D are not deducted (only Standard Deduction applies). See the side-by-side comparison below to evaluate tax savings.
-                </div>
-              </div>
-            )}
-
-            {/* Primary Balance / Liability Spotlight + Key Metrics */}
-            <div className="rounded-xl border border-gold/40 bg-bg-0 p-5 sm:p-6">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <span className="text-xs font-medium text-gold-hover">
-                    {result.balanceStatus === 'refund'
-                      ? 'Estimated Refund Due'
-                      : result.balanceStatus === 'settled'
-                      ? 'Net Tax Balance Settled'
-                      : 'Estimated Balance Tax Payable'}
-                  </span>
-                  <div className="font-mono-num mt-1 text-3xl font-bold tracking-tight text-text-0">
-                    {formatINR(Math.abs(result.netBalance), 0)}
-                  </div>
-                  <p className="mt-1 flex items-center gap-1.5 text-xs text-text-3">
-                    <CheckCircle size={14} weight="fill" className="text-gold" aria-hidden="true" />
-                    <span>
-                      {result.balanceStatus === 'refund'
-                        ? 'Excess TDS / credits refundable after assessment'
-                        : result.balanceStatus === 'settled'
-                        ? 'Tax liability fully covered by credits & TDS'
-                        : `Total liability ${formatINR(result.totalTaxLiability, 0)} minus ${formatINR(result.tdsAndCredits, 0)} TDS`}
-                    </span>
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4 sm:text-right">
-                  <div>
-                    <span className="text-xs text-text-4">Net Taxable</span>
-                    <div className="font-mono-num mt-0.5 text-sm font-semibold text-text-0">
-                      {formatINR(result.netTaxableIncome, 0)}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-xs text-text-4">Total Tax</span>
-                    <div className="font-mono-num mt-0.5 text-sm font-semibold text-gold-hover">
-                      {formatINR(result.totalTaxLiability, 0)}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-xs text-text-4">Eff. Rate</span>
-                    <div className="font-mono-num mt-0.5 text-sm font-semibold text-text-2">
-                      {formatPercent(result.effectiveTaxRatePercent)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Old vs New Regime Recommendation Banner */}
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-bg-2 px-5 py-3.5 text-xs">
-              <div className="flex items-center gap-2.5 text-text-2">
-                <Scales size={16} weight="regular" className="text-gold" aria-hidden="true" />
-                <span>
-                  {comparison.recommendedRegime === 'tie' ? (
-                    'Both New and Old Regimes result in the exact same estimated tax liability.'
-                  ) : (
-                    <>
-                      <strong className="text-gold-hover">
-                        {comparison.recommendedRegime === 'new' ? 'New Regime' : 'Old Regime'}
-                      </strong>{' '}
-                      saves{' '}
-                      <strong className="font-mono-num text-text-0">
-                        {formatINR(comparison.savingsAmount, 0)}
-                      </strong>{' '}
-                      compared to the{' '}
-                      {comparison.recommendedRegime === 'new' ? 'Old Regime' : 'New Regime'}.
-                    </>
-                  )}
+            <div className="luxury-card px-5 py-4 text-xs leading-relaxed text-[#A1A1AA]">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-semibold text-white">
+                  {fyConfig.label} ({fyConfig.assessmentYearLabel}) · {regimeConfig.label}
+                </span>
+                <span className="font-mono font-semibold text-[#F5D76E]">
+                  Educational Estimate ({fyConfig.regimeScopeNote})
                 </span>
               </div>
-              <span className="text-text-4">
-                {result.financialYear} · {result.assessmentYear}
-              </span>
+              <p className="mt-1.5">{fyConfig.statusNote}</p>
             </div>
 
-            {/* Visual Charts */}
-            <TaxVisualBreakdown
-              slabBreakdown={result.slabBreakdown}
-              selectedTotalTax={result.totalTaxLiability}
-              selectedLabel={result.regime === 'new' ? 'New Regime' : 'Old Regime'}
-              alternateTotalTax={comparison.alternate.totalTaxLiability}
-              alternateLabel={comparison.alternate.regime === 'new' ? 'New Regime' : 'Old Regime'}
-            />
+            <TiltCard3D className="luxury-card-accent p-6 space-y-5" maxTiltDeg={2.5}>
+              <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#D4AF37]/20 pb-4">
+                <div className="flex flex-wrap gap-x-8 gap-y-3">
+                  <div>
+                    <p className="text-xs font-semibold text-[#F5D76E]">
+                      {isRefund ? 'Estimated Tax Refund' : 'Estimated Net Tax Payable'}
+                    </p>
+                    <p className="mt-1 font-mono text-3xl font-bold text-white tabular-nums sm:text-4xl">
+                      <AnimatedNumber
+                        value={Math.abs(result.balancePayableOrRefund)}
+                        format={(n) => formatINR(n)}
+                      />
+                    </p>
+                    <p className="mt-1 font-mono text-xs text-[#A1A1AA] tabular-nums">
+                      Effective Rate on Gross Income: {result.effectiveTaxRate.toFixed(2)}%
+                    </p>
+                  </div>
 
-            {/* Side-by-Side Regime Comparison Matrix */}
-            <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-bg-2">
-              <div className="border-b border-white/[0.08] px-5 py-3.5">
-                <h3 className="font-display text-sm font-semibold text-text-0">
-                  Side-by-Side Regime Comparison ({result.financialYear})
-                </h3>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-bg-3 text-text-4">
-                    <tr className="border-b border-white/[0.08]">
-                      <th className="px-4 py-2.5 font-medium">Computation Line Item</th>
-                      <th
-                        className={`px-4 py-2.5 text-right font-medium ${
-                          result.regime === 'new' ? 'text-gold-hover' : ''
-                        }`}
-                      >
-                        New Regime {result.regime === 'new' ? '(Selected)' : ''}
-                      </th>
-                      <th
-                        className={`px-4 py-2.5 text-right font-medium ${
-                          result.regime === 'old' ? 'text-gold-hover' : ''
-                        }`}
-                      >
-                        Old Regime {result.regime === 'old' ? '(Selected)' : ''}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="font-mono-num divide-y divide-white/[0.05]">
-                    <tr>
-                      <td className="px-4 py-2 font-sans text-text-3">Gross Total Income</td>
-                      <td className="px-4 py-2 text-right text-text-2">
-                        {formatINR(newRegimeData.grossTotalIncome, 0)}
-                      </td>
-                      <td className="px-4 py-2 text-right text-text-2">
-                        {formatINR(oldRegimeData.grossTotalIncome, 0)}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-2 font-sans text-text-4">Standard Deduction</td>
-                      <td className="px-4 py-2 text-right text-text-3">
-                        −{formatINR(newRegimeData.standardDeductionApplied, 0)}
-                      </td>
-                      <td className="px-4 py-2 text-right text-text-3">
-                        −{formatINR(oldRegimeData.standardDeductionApplied, 0)}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-2 font-sans text-text-4">Ch. VI-A Deductions</td>
-                      <td className="px-4 py-2 text-right text-text-3">
-                        −{formatINR(newRegimeData.userDeductionsApplied, 0)}
-                      </td>
-                      <td className="px-4 py-2 text-right text-text-3">
-                        −{formatINR(oldRegimeData.userDeductionsApplied, 0)}
-                      </td>
-                    </tr>
-                    <tr className="bg-white/[0.02] font-semibold">
-                      <td className="px-4 py-2 font-sans text-text-0">Net Taxable Income</td>
-                      <td className="px-4 py-2 text-right text-text-0">
-                        {formatINR(newRegimeData.netTaxableIncome, 0)}
-                      </td>
-                      <td className="px-4 py-2 text-right text-text-0">
-                        {formatINR(oldRegimeData.netTaxableIncome, 0)}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-2 font-sans text-text-4">
-                        Rebate 87A + Marginal Relief
-                      </td>
-                      <td className="px-4 py-2 text-right text-gold-hover">
-                        −{formatINR(newRegimeData.rebate87A + newRegimeData.marginalRelief87A, 0)}
-                      </td>
-                      <td className="px-4 py-2 text-right text-gold-hover">
-                        −{formatINR(oldRegimeData.rebate87A + oldRegimeData.marginalRelief87A, 0)}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-2 font-sans text-text-4">Surcharge + 4% Cess</td>
-                      <td className="px-4 py-2 text-right text-text-3">
-                        +{formatINR(
-                          newRegimeData.surchargeApplied + newRegimeData.healthAndEducationCess,
-                          0
-                        )}
-                      </td>
-                      <td className="px-4 py-2 text-right text-text-3">
-                        +{formatINR(
-                          oldRegimeData.surchargeApplied + oldRegimeData.healthAndEducationCess,
-                          0
-                        )}
-                      </td>
-                    </tr>
-                    <tr className="bg-bg-0/60 font-bold">
-                      <td className="px-4 py-2.5 font-sans text-text-0">Total Tax Liability</td>
-                      <td className="px-4 py-2.5 text-right text-gold-hover">
-                        {formatINR(newRegimeData.totalTaxLiability, 0)}
-                      </td>
-                      <td className="px-4 py-2.5 text-right text-gold-hover">
-                        {formatINR(oldRegimeData.totalTaxLiability, 0)}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Slab-by-Slab & Tax Computation Table */}
-            <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-bg-2">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] px-5 py-3.5">
-                <div>
-                  <h3 className="font-display text-sm font-semibold text-text-0">
-                    Slab-by-Slab Computation ({result.financialYear})
-                  </h3>
-                  <p className="text-xs text-text-4">{result.regimeName}</p>
+                  <div className="sm:border-l sm:border-[#D4AF37]/20 sm:pl-6">
+                    <p className="text-xs font-semibold text-[#A1A1AA]">
+                      Estimated Post-Tax Income
+                    </p>
+                    <p className="mt-1 font-mono text-2xl font-bold text-[#F5D76E] tabular-nums sm:text-3xl">
+                      <AnimatedNumber value={postTaxIncome} format={(n) => formatINR(n)} />
+                    </p>
+                    <p className="mt-1 font-mono text-xs text-[#A1A1AA] tabular-nums">
+                      Gross {formatINR(result.grossTotalIncome)} − Tax {formatINR(result.totalTaxLiability)}
+                    </p>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleDownloadTaxCSV}
-                  className="inline-flex min-h-[32px] items-center gap-1.5 rounded-lg border border-white/15 bg-bg-3 px-3 py-1 text-xs font-medium text-text-2 transition-colors hover:border-gold/50 hover:text-gold-hover whitespace-nowrap"
-                >
-                  <DownloadSimple size={14} weight="bold" aria-hidden="true" />
-                  <span>Export CSV</span>
-                </button>
+
+                <ResultActionsBar
+                  shareTitle="Income Tax Estimate — CalHub FinCalc Pro"
+                  summaryText={copySummary}
+                  onExportCsv={handleExportCsv}
+                />
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="luxury-subcard p-3.5">
+                  <p className="text-xs text-[#A1A1AA]">Taxable Income</p>
+                  <p className="mt-1 font-mono text-base font-semibold text-white tabular-nums">
+                    {formatINR(result.taxableIncome)}
+                  </p>
+                </div>
+                <div className="luxury-subcard p-3.5">
+                  <p className="text-xs text-[#A1A1AA]">Total Tax + Cess</p>
+                  <p className="mt-1 font-mono text-base font-semibold text-white tabular-nums">
+                    {formatINR(result.totalTaxLiability)}
+                  </p>
+                </div>
+                <div className="luxury-subcard p-3.5">
+                  <p className="text-xs font-medium text-[#F5D76E]">Rebate / Relief</p>
+                  <p className="mt-1 font-mono text-base font-semibold text-white tabular-nums">
+                    {formatINR(result.rebate87A + result.marginalRelief)}
+                  </p>
+                </div>
+                <div className="luxury-subcard p-3.5">
+                  <p className="text-xs text-[#A1A1AA]">Less TDS / Credits</p>
+                  <p className="mt-1 font-mono text-base font-semibold text-white tabular-nums">
+                    {formatINR(result.tdsAndCredits)}
+                  </p>
+                </div>
+              </div>
+            </TiltCard3D>
+
+            <div className="luxury-card overflow-hidden">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#D4AF37]/15 px-5 py-4">
+                <h4 className="text-sm font-semibold text-white">
+                  Estimated Slab-by-Slab Computation
+                </h4>
+                <span className="font-mono text-xs text-[#A1A1AA]">
+                  {regimeConfig.sectionReference}
+                </span>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-bg-3 text-text-4">
-                    <tr className="border-b border-white/[0.08]">
-                      <th className="px-4 py-2.5 font-medium">Income Slab</th>
-                      <th className="px-4 py-2.5 text-right font-medium">Rate</th>
-                      <th className="px-4 py-2.5 text-right font-medium">Taxable Income in Slab</th>
-                      <th className="px-4 py-2.5 text-right font-medium">Slab Tax</th>
+                  <thead className="bg-[#141416] text-[#A1A1AA]">
+                    <tr>
+                      <th className="px-4 py-3 font-medium">Income Slab</th>
+                      <th className="px-4 py-3 font-medium text-right">Rate</th>
+                      <th className="px-4 py-3 font-medium text-right">Taxable Slice</th>
+                      <th className="px-4 py-3 font-medium text-right">Slab Tax</th>
                     </tr>
                   </thead>
-                  <tbody className="font-mono-num divide-y divide-white/[0.05]">
+                  <tbody className="divide-y divide-[#D4AF37]/12 font-mono tabular-nums">
                     {result.slabBreakdown.map((row) => (
-                      <tr key={row.label} className="hover:bg-white/[0.02]">
-                        <td className="px-4 py-2.5 font-sans text-text-2">{row.label}</td>
-                        <td className="px-4 py-2.5 text-right text-text-3">{row.rate}%</td>
-                        <td className="px-4 py-2.5 text-right text-text-3">
-                          {formatINR(row.taxableInSlab, 0)}
+                      <tr key={row.label} className="hover:bg-white/[0.025]">
+                        <td className="px-4 py-3 font-sans text-[#E4E4E7]">{row.label}</td>
+                        <td className="px-4 py-3 text-right text-[#A1A1AA]">{row.rate}%</td>
+                        <td className="px-4 py-3 text-right text-white">
+                          {formatINR(row.taxableSlice)}
                         </td>
-                        <td className="px-4 py-2.5 text-right font-medium text-text-0">
-                          {formatINR(row.taxAmount, 0)}
+                        <td className="px-4 py-3 text-right font-semibold text-[#F5D76E]">
+                          {formatINR(row.taxAmount)}
                         </td>
                       </tr>
                     ))}
@@ -605,78 +532,57 @@ export function IncomeTaxCalc({ selectedFY, onChangeFY }: IncomeTaxCalcProps) {
                 </table>
               </div>
 
-              {/* Stepwise Summary Ledger */}
-              <div className="border-t border-white/[0.08] bg-bg-0 px-5 py-4">
-                <dl className="space-y-2 text-xs">
-                  <div className="flex justify-between">
-                    <dt className="text-text-4">Tax on Slabs (Before Rebate)</dt>
-                    <dd className="font-mono-num text-text-2">
-                      {formatINR(result.taxBeforeRebate, 0)}
-                    </dd>
+              <div className="space-y-2 border-t border-[#D4AF37]/18 bg-white/[0.02] px-5 py-4 text-xs font-mono tabular-nums">
+                <div className="flex justify-between text-[#A1A1AA]">
+                  <span className="font-sans">Slab Tax Before Rebate</span>
+                  <span>{formatINR(result.taxBeforeRebate)}</span>
+                </div>
+                {result.rebate87A > 0 && (
+                  <div className="flex justify-between text-emerald-400">
+                    <span className="font-sans">Less: Section 87A Rebate</span>
+                    <span>-{formatINR(result.rebate87A)}</span>
                   </div>
-                  {result.rebate87A > 0 && (
-                    <div className="flex justify-between">
-                      <dt className="text-gold-hover">Less: Rebate u/s 87A</dt>
-                      <dd className="font-mono-num text-gold-hover">
-                        −{formatINR(result.rebate87A, 0)}
-                      </dd>
-                    </div>
-                  )}
-                  {result.marginalRelief87A > 0 && (
-                    <div className="flex justify-between">
-                      <dt className="text-gold-hover">Less: Sec 87A Marginal Relief</dt>
-                      <dd className="font-mono-num text-gold-hover">
-                        −{formatINR(result.marginalRelief87A, 0)}
-                      </dd>
-                    </div>
-                  )}
-                  {result.surchargeApplied > 0 && (
-                    <div className="flex justify-between">
-                      <dt className="text-text-4">
-                        Add: Surcharge ({result.surchargeRate}%
-                        {result.surchargeMarginalRelief > 0
-                          ? ` after ₹${Math.round(result.surchargeMarginalRelief).toLocaleString('en-IN')} marginal relief`
-                          : ''}
-                        )
-                      </dt>
-                      <dd className="font-mono-num text-text-2">
-                        +{formatINR(result.surchargeApplied, 0)}
-                      </dd>
-                    </div>
-                  )}
-                  <div className="flex justify-between">
-                    <dt className="text-text-4">
-                      Add: Health & Education Cess ({result.cessRatePercent}%)
-                    </dt>
-                    <dd className="font-mono-num text-text-2">
-                      +{formatINR(result.healthAndEducationCess, 0)}
-                    </dd>
+                )}
+                {result.marginalRelief > 0 && (
+                  <div className="flex justify-between text-emerald-400">
+                    <span className="font-sans">Less: Section 87A Marginal Relief</span>
+                    <span>-{formatINR(result.marginalRelief)}</span>
                   </div>
-                  <div className="flex justify-between border-t border-white/[0.08] pt-2 text-sm font-bold">
-                    <dt className="text-text-0">Total Estimated Tax Liability</dt>
-                    <dd className="font-mono-num text-gold-hover">
-                      {formatINR(result.totalTaxLiability, 0)}
-                    </dd>
+                )}
+                {result.surcharge > 0 && (
+                  <div className="flex justify-between text-[#A1A1AA]">
+                    <span className="font-sans">Add: Surcharge</span>
+                    <span>{formatINR(result.surcharge)}</span>
                   </div>
-                </dl>
+                )}
+                <div className="flex justify-between text-[#A1A1AA]">
+                  <span className="font-sans">Add: Health &amp; Education Cess (4%)</span>
+                  <span>{formatINR(result.cessAmount)}</span>
+                </div>
+                <div className="flex justify-between border-t border-[#D4AF37]/18 pt-2 text-sm font-semibold text-white">
+                  <span className="font-sans">Estimated Total Tax Liability</span>
+                  <span className="text-[#F5D76E]">{formatINR(result.totalTaxLiability)}</span>
+                </div>
               </div>
             </div>
 
-            {/* Assumptions & Educational Disclaimer */}
-            <div className="rounded-xl border border-white/[0.08] bg-bg-2 p-5 text-xs text-text-4">
-              <h4 className="font-display mb-2 text-sm font-semibold text-text-0">
-                Assumptions & Educational Disclaimer
+            <FormulaAccordion
+              formula="Total Tax = max(0, Slab Tax − 87A Rebate − Marginal Relief) + Surcharge + 4% Cess"
+              steps={formulaSteps}
+            />
+
+            <div className="luxury-card p-5 space-y-2">
+              <h4 className="text-xs font-semibold text-white">
+                Key Assumptions ({fyConfig.label} · {regimeConfig.label})
               </h4>
-              <p className="mb-2 text-xs text-text-5">
-                Verification Basis: {result.verificationSource}
-              </p>
-              <ul className="list-disc space-y-1 pl-4">
-                {result.assumptions.map((a, i) => (
-                  <li key={i}>{a}</li>
+              <ul className="space-y-1 text-xs text-[#A1A1AA]">
+                {regimeConfig.assumptions.map((note, idx) => (
+                  <li key={idx}>· {note}</li>
                 ))}
               </ul>
-              <p className="mt-3 border-t border-white/[0.08] pt-3 text-text-3">
-                <strong className="text-gold-hover">Educational Note:</strong> These calculations are educational estimates built for Indian CA students and conceptual illustration. They do not constitute professional tax, audit, or legal advice. Always verify against the latest Finance Act notifications on incometax.gov.in.
+              <p className="border-t border-[#D4AF37]/15 pt-2 text-xs text-[#A1A1AA]">
+                Educational Estimate Notice: Figures shown are educational estimates for CA exam
+                practice and planning, not formal tax or legal advice.
               </p>
             </div>
           </>
@@ -684,4 +590,6 @@ export function IncomeTaxCalc({ selectedFY, onChangeFY }: IncomeTaxCalcProps) {
       </div>
     </div>
   );
-}
+};
+
+export default IncomeTaxCalc;

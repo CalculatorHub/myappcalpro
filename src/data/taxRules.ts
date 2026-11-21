@@ -1,253 +1,214 @@
-// ============================================================================
-// CONFIGURABLE INDIAN INCOME TAX RULES DATA SECTION
-// ----------------------------------------------------------------------------
-// All tax slabs, standard deductions, Section 87A rebates, surcharge brackets,
-// and Health & Education Cess rates are isolated in this file so CA students
-// and educators can inspect, verify, or update rules for any financial year.
-// ============================================================================
-
-export type FinancialYearKey = 'FY2026-27' | 'FY2025-26' | 'FY2024-25';
-export type TaxRegime = 'new' | 'old';
-export type AgeCategory = 'below60' | 'senior60to79' | 'superSenior80plus';
+export type FinancialYearId = 'fy-2024-25' | 'fy-2025-26' | 'fy-2026-27';
+export type TaxRegimeId = 'new' | 'old';
 
 export interface TaxSlab {
-  upto: number | null; // null means no upper limit (infinity)
-  rate: number; // percentage e.g. 5 for 5%
-  label: string;
-}
-
-export interface SurchargeBracket {
-  minExclusive: number;
-  maxInclusive: number | null;
-  rate: number; // percentage e.g. 10 for 10%
+  min: number;
+  max: number | null;
+  rate: number; // percentage, e.g. 5 means 5%
   label: string;
 }
 
 export interface RegimeRuleConfig {
-  name: string;
+  label: string;
+  sectionReference: string;
   standardDeductionSalaried: number;
-  rebate87A: {
-    maxTaxableIncome: number;
-    maxRebateAmount: number;
-    marginalReliefApplicable: boolean;
-  };
-  surchargeBrackets: SurchargeBracket[];
-  cessRatePercent: number;
-  notes: string[];
-}
-
-export interface NewRegimeRuleConfig extends RegimeRuleConfig {
+  allowsChapterVIADeductions: boolean;
+  rebate87ALimit: number;
+  rebate87AMaxAmount: number;
+  has87AMarginalRelief: boolean;
+  cessRate: number;
+  maxSurchargeRate: number;
   slabs: TaxSlab[];
-}
-
-export interface OldRegimeRuleConfig extends RegimeRuleConfig {
-  slabsByAge: Record<AgeCategory, TaxSlab[]>;
-}
-
-export interface FinancialYearTaxRules {
-  key: FinancialYearKey;
-  financialYear: string;
-  assessmentYear: string;
-  verified: boolean;
-  verificationSource: string;
   assumptions: string[];
-  newRegime: NewRegimeRuleConfig;
-  oldRegime: OldRegimeRuleConfig;
 }
 
-const NEW_REGIME_SURCHARGE: SurchargeBracket[] = [
-  { minExclusive: 50_00_000, maxInclusive: 1_00_00_000, rate: 10, label: '₹50L – ₹1 Cr (10%)' },
-  { minExclusive: 1_00_00_000, maxInclusive: 2_00_00_000, rate: 15, label: '₹1 Cr – ₹2 Cr (15%)' },
-  { minExclusive: 2_00_00_000, maxInclusive: null, rate: 25, label: 'Above ₹2 Cr (Capped at 25%)' },
-];
+export interface FinancialYearConfig {
+  id: FinancialYearId;
+  label: string;
+  assessmentYearLabel: string;
+  regimeScopeNote: string;
+  statusNote: string;
+  regimes: Record<TaxRegimeId, RegimeRuleConfig>;
+}
 
-const OLD_REGIME_SURCHARGE: SurchargeBracket[] = [
-  { minExclusive: 50_00_000, maxInclusive: 1_00_00_000, rate: 10, label: '₹50L – ₹1 Cr (10%)' },
-  { minExclusive: 1_00_00_000, maxInclusive: 2_00_00_000, rate: 15, label: '₹1 Cr – ₹2 Cr (15%)' },
-  { minExclusive: 2_00_00_000, maxInclusive: 5_00_00_000, rate: 25, label: '₹2 Cr – ₹5 Cr (25%)' },
-  { minExclusive: 5_00_00_000, maxInclusive: null, rate: 37, label: 'Above ₹5 Cr (37%)' },
-];
-
-const OLD_REGIME_SLABS_BY_AGE: Record<AgeCategory, TaxSlab[]> = {
-  below60: [
-    { upto: 2_50_000, rate: 0, label: 'Up to ₹2,50,000' },
-    { upto: 5_00_000, rate: 5, label: '₹2,50,001 – ₹5,00,000' },
-    { upto: 10_00_000, rate: 20, label: '₹5,00,001 – ₹10,00,000' },
-    { upto: null, rate: 30, label: 'Above ₹10,00,000' },
-  ],
-  senior60to79: [
-    { upto: 3_00_000, rate: 0, label: 'Up to ₹3,00,000' },
-    { upto: 5_00_000, rate: 5, label: '₹3,00,001 – ₹5,00,000' },
-    { upto: 10_00_000, rate: 20, label: '₹5,00,001 – ₹10,00,000' },
-    { upto: null, rate: 30, label: 'Above ₹10,00,000' },
-  ],
-  superSenior80plus: [
-    { upto: 5_00_000, rate: 0, label: 'Up to ₹5,00,000' },
-    { upto: 10_00_000, rate: 20, label: '₹5,00,001 – ₹10,00,000' },
-    { upto: null, rate: 30, label: 'Above ₹10,00,000' },
-  ],
+/**
+ * Configurable Indian Income Tax Rules (Resident Individual below 60 years).
+ * Kept in a single data module for educational inspection by CA students.
+ */
+export const INDIAN_TAX_RULES: Record<FinancialYearId, FinancialYearConfig> = {
+  'fy-2026-27': {
+    id: 'fy-2026-27',
+    label: 'FY 2026–27',
+    assessmentYearLabel: 'AY 2027–28',
+    regimeScopeNote: 'Baseline Finance Act Slabs',
+    statusNote:
+      'Uses enacted Finance Act 2025 baseline slabs for New and Old regimes (subject to any subsequent Finance Act amendments). Educational estimate only.',
+    regimes: {
+      new: {
+        label: 'New Regime (Default)',
+        sectionReference: 'Section 115BAC(1A)',
+        standardDeductionSalaried: 75000,
+        allowsChapterVIADeductions: false,
+        rebate87ALimit: 1200000,
+        rebate87AMaxAmount: 60000,
+        has87AMarginalRelief: true,
+        cessRate: 4,
+        maxSurchargeRate: 25,
+        slabs: [
+          { min: 0, max: 400000, rate: 0, label: 'Up to ₹4,00,000' },
+          { min: 400000, max: 800000, rate: 5, label: '₹4,00,001 to ₹8,00,000' },
+          { min: 800000, max: 1200000, rate: 10, label: '₹8,00,001 to ₹12,00,000' },
+          { min: 1200000, max: 1600000, rate: 15, label: '₹12,00,001 to ₹16,00,000' },
+          { min: 1600000, max: 2000000, rate: 20, label: '₹16,00,001 to ₹20,00,000' },
+          { min: 2000000, max: 2400000, rate: 25, label: '₹20,00,001 to ₹24,00,000' },
+          { min: 2400000, max: null, rate: 30, label: 'Above ₹24,00,000' },
+        ],
+        assumptions: [
+          'Assumes resident individual taxpayer below 60 years of age.',
+          'Includes ₹75,000 standard deduction applied automatically against positive salary income.',
+          'Chapter VI-A deductions (such as 80C and 80D) are excluded under Section 115BAC.',
+          'Section 87A rebate eliminates normal tax up to ₹12,00,000 taxable income, with marginal relief just above ₹12,00,000.',
+          'Assumes ordinary slab rate income (excludes special rate capital gains).',
+        ],
+      },
+      old: {
+        label: 'Old Regime (Optional)',
+        sectionReference: 'General Slab Rates',
+        standardDeductionSalaried: 50000,
+        allowsChapterVIADeductions: true,
+        rebate87ALimit: 500000,
+        rebate87AMaxAmount: 12500,
+        has87AMarginalRelief: false,
+        cessRate: 4,
+        maxSurchargeRate: 37,
+        slabs: [
+          { min: 0, max: 250000, rate: 0, label: 'Up to ₹2,50,000' },
+          { min: 250000, max: 500000, rate: 5, label: '₹2,50,001 to ₹5,00,000' },
+          { min: 500000, max: 1000000, rate: 20, label: '₹5,00,001 to ₹10,00,000' },
+          { min: 1000000, max: null, rate: 30, label: 'Above ₹10,00,000' },
+        ],
+        assumptions: [
+          'Assumes resident individual below 60 years (basic exemption ₹2,50,000).',
+          'Includes ₹50,000 standard deduction against positive salary income.',
+          'Allows user entered eligible deductions (e.g., Sections 80C, 80D, 80CCD(1B), HRA).',
+          'Section 87A rebate up to ₹12,500 applies if taxable income does not exceed ₹5,00,000.',
+        ],
+      },
+    },
+  },
+  'fy-2025-26': {
+    id: 'fy-2025-26',
+    label: 'FY 2025–26',
+    assessmentYearLabel: 'AY 2026–27',
+    regimeScopeNote: 'Finance Act 2025 Estimate',
+    statusNote: 'Based on Finance Act 2025 slab rates, ₹75,000 standard deduction, and ₹12,00,000 Section 87A rebate limit under New Regime. Educational estimate only.',
+    regimes: {
+      new: {
+        label: 'New Regime (Default)',
+        sectionReference: 'Section 115BAC(1A)',
+        standardDeductionSalaried: 75000,
+        allowsChapterVIADeductions: false,
+        rebate87ALimit: 1200000,
+        rebate87AMaxAmount: 60000,
+        has87AMarginalRelief: true,
+        cessRate: 4,
+        maxSurchargeRate: 25,
+        slabs: [
+          { min: 0, max: 400000, rate: 0, label: 'Up to ₹4,00,000' },
+          { min: 400000, max: 800000, rate: 5, label: '₹4,00,001 to ₹8,00,000' },
+          { min: 800000, max: 1200000, rate: 10, label: '₹8,00,001 to ₹12,00,000' },
+          { min: 1200000, max: 1600000, rate: 15, label: '₹12,00,001 to ₹16,00,000' },
+          { min: 1600000, max: 2000000, rate: 20, label: '₹16,00,001 to ₹20,00,000' },
+          { min: 2000000, max: 2400000, rate: 25, label: '₹20,00,001 to ₹24,00,000' },
+          { min: 2400000, max: null, rate: 30, label: 'Above ₹24,00,000' },
+        ],
+        assumptions: [
+          'Assumes resident individual taxpayer below 60 years of age.',
+          'Includes ₹75,000 standard deduction applied automatically against positive salary income.',
+          'Chapter VI-A deductions are disallowed under Section 115BAC (except employer NPS u/s 80CCD(2), not modeled separately).',
+          'Section 87A rebate up to ₹60,000 applies for taxable income up to ₹12,00,000, with marginal relief above ₹12,00,000.',
+        ],
+      },
+      old: {
+        label: 'Old Regime (Optional)',
+        sectionReference: 'General Slab Rates',
+        standardDeductionSalaried: 50000,
+        allowsChapterVIADeductions: true,
+        rebate87ALimit: 500000,
+        rebate87AMaxAmount: 12500,
+        has87AMarginalRelief: false,
+        cessRate: 4,
+        maxSurchargeRate: 37,
+        slabs: [
+          { min: 0, max: 250000, rate: 0, label: 'Up to ₹2,50,000' },
+          { min: 250000, max: 500000, rate: 5, label: '₹2,50,001 to ₹5,00,000' },
+          { min: 500000, max: 1000000, rate: 20, label: '₹5,00,001 to ₹10,00,000' },
+          { min: 1000000, max: null, rate: 30, label: 'Above ₹10,00,000' },
+        ],
+        assumptions: [
+          'Assumes resident individual below 60 years (basic exemption ₹2,50,000).',
+          'Includes ₹50,000 standard deduction against positive salary income.',
+          'Allows eligible Chapter VI-A and housing deductions entered above.',
+          'Section 87A rebate up to ₹12,500 applies if taxable income does not exceed ₹5,00,000.',
+        ],
+      },
+    },
+  },
+  'fy-2024-25': {
+    id: 'fy-2024-25',
+    label: 'FY 2024–25',
+    assessmentYearLabel: 'AY 2025–26',
+    regimeScopeNote: 'Finance (No. 2) Act 2024 Estimate',
+    statusNote: 'Based on Finance (No. 2) Act 2024 slab rates, ₹75,000 standard deduction, and ₹7,00,000 Section 87A rebate limit under New Regime. Educational estimate only.',
+    regimes: {
+      new: {
+        label: 'New Regime (Default)',
+        sectionReference: 'Section 115BAC(1A)',
+        standardDeductionSalaried: 75000,
+        allowsChapterVIADeductions: false,
+        rebate87ALimit: 700000,
+        rebate87AMaxAmount: 25000,
+        has87AMarginalRelief: true,
+        cessRate: 4,
+        maxSurchargeRate: 25,
+        slabs: [
+          { min: 0, max: 300000, rate: 0, label: 'Up to ₹3,00,000' },
+          { min: 300000, max: 700000, rate: 5, label: '₹3,00,001 to ₹7,00,000' },
+          { min: 700000, max: 1000000, rate: 10, label: '₹7,00,001 to ₹10,00,000' },
+          { min: 1000000, max: 1200000, rate: 15, label: '₹10,00,001 to ₹12,00,000' },
+          { min: 1200000, max: 1500000, rate: 20, label: '₹12,00,001 to ₹15,00,000' },
+          { min: 1500000, max: null, rate: 30, label: 'Above ₹15,00,000' },
+        ],
+        assumptions: [
+          'Assumes resident individual taxpayer below 60 years of age.',
+          'Includes ₹75,000 standard deduction applied automatically against positive salary income.',
+          'Chapter VI A deductions are disallowed under Section 115BAC.',
+          'Section 87A rebate up to ₹25,000 applies for taxable income up to ₹7,00,000, with marginal relief above ₹7,00,000.',
+        ],
+      },
+      old: {
+        label: 'Old Regime (Optional)',
+        sectionReference: 'General Slab Rates',
+        standardDeductionSalaried: 50000,
+        allowsChapterVIADeductions: true,
+        rebate87ALimit: 500000,
+        rebate87AMaxAmount: 12500,
+        has87AMarginalRelief: false,
+        cessRate: 4,
+        maxSurchargeRate: 37,
+        slabs: [
+          { min: 0, max: 250000, rate: 0, label: 'Up to ₹2,50,000' },
+          { min: 250000, max: 500000, rate: 5, label: '₹2,50,001 to ₹5,00,000' },
+          { min: 500000, max: 1000000, rate: 20, label: '₹5,00,001 to ₹10,00,000' },
+          { min: 1000000, max: null, rate: 30, label: 'Above ₹10,00,000' },
+        ],
+        assumptions: [
+          'Assumes resident individual below 60 years (basic exemption ₹2,50,000).',
+          'Includes ₹50,000 standard deduction against positive salary income.',
+          'Allows eligible Chapter VI A and housing deductions entered above.',
+          'Section 87A rebate up to ₹12,500 applies if taxable income does not exceed ₹5,00,000.',
+        ],
+      },
+    },
+  },
 };
-
-const BUDGET_2025_NEW_SLABS: TaxSlab[] = [
-  { upto: 4_00_000, rate: 0, label: 'Up to ₹4,00,000' },
-  { upto: 8_00_000, rate: 5, label: '₹4,00,001 – ₹8,00,000' },
-  { upto: 12_00_000, rate: 10, label: '₹8,00,001 – ₹12,00,000' },
-  { upto: 16_00_000, rate: 15, label: '₹12,00,001 – ₹16,00,000' },
-  { upto: 20_00_000, rate: 20, label: '₹16,00,001 – ₹20,00,000' },
-  { upto: 24_00_000, rate: 25, label: '₹20,00,001 – ₹24,00,000' },
-  { upto: null, rate: 30, label: 'Above ₹24,00,000' },
-];
-
-const FY2024_25_NEW_SLABS: TaxSlab[] = [
-  { upto: 3_00_000, rate: 0, label: 'Up to ₹3,00,000' },
-  { upto: 7_00_000, rate: 5, label: '₹3,00,001 – ₹7,00,000' },
-  { upto: 10_00_000, rate: 10, label: '₹7,00,001 – ₹10,00,000' },
-  { upto: 12_00_000, rate: 15, label: '₹10,00,001 – ₹12,00,000' },
-  { upto: 15_00_000, rate: 20, label: '₹12,00,001 – ₹15,00,000' },
-  { upto: null, rate: 30, label: 'Above ₹15,00,000' },
-];
-
-export const CONFIGURABLE_TAX_RULES: Record<FinancialYearKey, FinancialYearTaxRules> = {
-  'FY2026-27': {
-    key: 'FY2026-27',
-    financialYear: 'FY 2026-27',
-    assessmentYear: 'AY 2027-28',
-    verified: true,
-    verificationSource: 'Union Budget 2025 / 2026 & Income Tax India Individual Slab Provisions',
-    assumptions: [
-      'Assumes Resident Individual taxpayer with normal slab-rate income (special-rate capital gains / VDA / lottery income excluded).',
-      'Standard Deduction of ₹75,000 (New Regime) or ₹50,000 (Old Regime) applies automatically to Gross Salary.',
-      'Section 87A rebate applies to resident individuals on normal income; marginal relief is applied where taxable income marginally crosses ₹12,00,000 under the New Regime.',
-      'Health & Education Cess at 4% is levied on (Income Tax after Rebate + Surcharge).',
-    ],
-    newRegime: {
-      name: 'New Tax Regime (Default — Sec 115BAC)',
-      slabs: BUDGET_2025_NEW_SLABS,
-      standardDeductionSalaried: 75_000,
-      rebate87A: {
-        maxTaxableIncome: 12_00_000,
-        maxRebateAmount: 60_000,
-        marginalReliefApplicable: true,
-      },
-      surchargeBrackets: NEW_REGIME_SURCHARGE,
-      cessRatePercent: 4,
-      notes: [
-        'Slabs are uniform across all age categories.',
-        'Most Chapter VI-A deductions (80C, 80D, HRA) are not eligible; employer NPS contribution u/s 80CCD(2) remains eligible.',
-        'Surcharge is capped at 25% for income exceeding ₹2 Crore.',
-      ],
-    },
-    oldRegime: {
-      name: 'Old Tax Regime (Optional)',
-      slabsByAge: OLD_REGIME_SLABS_BY_AGE,
-      standardDeductionSalaried: 50_000,
-      rebate87A: {
-        maxTaxableIncome: 5_00_000,
-        maxRebateAmount: 12_500,
-        marginalReliefApplicable: false,
-      },
-      surchargeBrackets: OLD_REGIME_SURCHARGE,
-      cessRatePercent: 4,
-      notes: [
-        'Basic exemption depends on age: ₹2.5L (<60 yrs), ₹3L (60–79 yrs), ₹5L (80+ yrs).',
-        'Supports eligible Chapter VI-A deductions (80C, 80D, 80CCD, 80G) and house property / HRA exemptions.',
-      ],
-    },
-  },
-  'FY2025-26': {
-    key: 'FY2025-26',
-    financialYear: 'FY 2025-26',
-    assessmentYear: 'AY 2026-27',
-    verified: true,
-    verificationSource: 'Union Budget 2025 & Finance Act 2025 Provisions',
-    assumptions: [
-      'Assumes Resident Individual taxpayer with normal slab-rate income (special-rate capital gains excluded).',
-      'Standard Deduction of ₹75,000 (New Regime) or ₹50,000 (Old Regime) applies to Gross Salary.',
-      'Section 87A rebate up to ₹60,000 eliminates tax on taxable income up to ₹12,00,000 under the New Regime (salaried effective zero-tax threshold ₹12,75,000), with marginal relief just above ₹12L.',
-      'Health & Education Cess at 4% applies on total tax plus surcharge.',
-    ],
-    newRegime: {
-      name: 'New Tax Regime (Default — Sec 115BAC)',
-      slabs: BUDGET_2025_NEW_SLABS,
-      standardDeductionSalaried: 75_000,
-      rebate87A: {
-        maxTaxableIncome: 12_00_000,
-        maxRebateAmount: 60_000,
-        marginalReliefApplicable: true,
-      },
-      surchargeBrackets: NEW_REGIME_SURCHARGE,
-      cessRatePercent: 4,
-      notes: [
-        'Updated Union Budget 2025 slabs with ₹4L basic exemption.',
-        'Surcharge capped at 25%.',
-      ],
-    },
-    oldRegime: {
-      name: 'Old Tax Regime (Optional)',
-      slabsByAge: OLD_REGIME_SLABS_BY_AGE,
-      standardDeductionSalaried: 50_000,
-      rebate87A: {
-        maxTaxableIncome: 5_00_000,
-        maxRebateAmount: 12_500,
-        marginalReliefApplicable: false,
-      },
-      surchargeBrackets: OLD_REGIME_SURCHARGE,
-      cessRatePercent: 4,
-      notes: [
-        'Age-based basic exemption limits apply.',
-        'Eligible Chapter VI-A deductions reduce taxable income.',
-      ],
-    },
-  },
-  'FY2024-25': {
-    key: 'FY2024-25',
-    financialYear: 'FY 2024-25',
-    assessmentYear: 'AY 2025-26',
-    verified: true,
-    verificationSource: 'Finance (No. 2) Act, 2024 (Union Budget July 2024)',
-    assumptions: [
-      'Assumes Resident Individual taxpayer with normal slab-rate income.',
-      'Standard Deduction increased to ₹75,000 under the New Regime (₹50,000 under Old Regime) for salaried taxpayers.',
-      'Section 87A rebate up to ₹25,000 applies for taxable income up to ₹7,00,000 under the New Regime, with marginal relief just above ₹7L.',
-      'Health & Education Cess at 4% applies on tax plus surcharge.',
-    ],
-    newRegime: {
-      name: 'New Tax Regime (Default — Sec 115BAC)',
-      slabs: FY2024_25_NEW_SLABS,
-      standardDeductionSalaried: 75_000,
-      rebate87A: {
-        maxTaxableIncome: 7_00_000,
-        maxRebateAmount: 25_000,
-        marginalReliefApplicable: true,
-      },
-      surchargeBrackets: NEW_REGIME_SURCHARGE,
-      cessRatePercent: 4,
-      notes: [
-        'Slabs revised by Budget July 2024 (₹3L–₹7L at 5%, ₹7L–₹10L at 10%).',
-        'Surcharge capped at 25%.',
-      ],
-    },
-    oldRegime: {
-      name: 'Old Tax Regime (Optional)',
-      slabsByAge: OLD_REGIME_SLABS_BY_AGE,
-      standardDeductionSalaried: 50_000,
-      rebate87A: {
-        maxTaxableIncome: 5_00_000,
-        maxRebateAmount: 12_500,
-        marginalReliefApplicable: false,
-      },
-      surchargeBrackets: OLD_REGIME_SURCHARGE,
-      cessRatePercent: 4,
-      notes: [
-        'Age-based basic exemption limits apply.',
-        'Eligible Chapter VI-A deductions reduce taxable income.',
-      ],
-    },
-  },
-};
-
-export const FINANCIAL_YEAR_OPTIONS: FinancialYearKey[] = [
-  'FY2026-27',
-  'FY2025-26',
-  'FY2024-25',
-];
