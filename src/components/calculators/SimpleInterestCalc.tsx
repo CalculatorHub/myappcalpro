@@ -153,27 +153,27 @@ export const SimpleInterestCalc: React.FC<SimpleInterestCalcProps> = ({ onSaveHi
 
   return (
     <div className="grid gap-6 lg:grid-cols-12 items-start">
-      <div className="luxury-card p-6 space-y-5 lg:col-span-5">
+      <div className="aurora-card p-6 space-y-5 lg:col-span-5">
         <div>
-          <h3 className="text-lg font-semibold text-white">Simple Interest Inputs</h3>
-          <p className="mt-1 text-sm text-[#A1A1AA]">
+          <h3 className="text-lg font-semibold text-[#F8FAFC]">Simple Interest Inputs</h3>
+          <p className="mt-1 text-sm text-[#94A3B8]">
             Linear interest calculation across years, months, or days.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 border-b border-[#D4AF37]/15 pb-4">
-          <span className="text-xs font-medium text-[#A1A1AA]">Examples:</span>
+        <div className="flex flex-wrap items-center gap-2 border-b border-[#6366F1]/18 pb-4">
+          <span className="text-xs font-medium text-[#94A3B8]">Examples:</span>
           <button
             type="button"
             onClick={() => handleLoadExample('100000', '8.5', '3', 'years')}
-            className="rounded-xl border border-[#D4AF37]/25 bg-white/[0.03] px-2.5 py-1 text-xs font-medium text-[#E4E4E7] transition-colors hover:border-[#F5D76E] hover:text-[#F5D76E] cursor-pointer"
+            className="rounded-xl border border-[#6366F1]/28 bg-[#0F172A]/60 px-2.5 py-1 text-xs font-medium text-[#E2E8F0] transition-colors hover:border-[#06B6D4] hover:text-[#38BDF8] cursor-pointer"
           >
             ₹1L @ 8.5% · 3 yrs
           </button>
           <button
             type="button"
             onClick={() => handleLoadExample('250000', '7.2', '180', 'days')}
-            className="rounded-xl border border-[#D4AF37]/25 bg-white/[0.03] px-2.5 py-1 text-xs font-medium text-[#E4E4E7] transition-colors hover:border-[#F5D76E] hover:text-[#F5D76E] cursor-pointer"
+            className="rounded-xl border border-[#6366F1]/28 bg-[#0F172A]/60 px-2.5 py-1 text-xs font-medium text-[#E2E8F0] transition-colors hover:border-[#06B6D4] hover:text-[#38BDF8] cursor-pointer"
           >
             ₹2.5L @ 7.2% · 180 days
           </button>
@@ -200,7 +200,7 @@ export const SimpleInterestCalc: React.FC<SimpleInterestCalcProps> = ({ onSaveHi
           suffix={
             <span
               title="Monthly interest per ₹100 principal (Annual Rate ÷ 12)"
-              className="font-mono text-xs font-semibold text-[#F5D76E] tabular-nums"
+              className="font-mono text-xs font-semibold text-[#38BDF8] tabular-nums"
             >
               ₹{monthlyRupeePerHundred.toFixed(2)}/month
             </span>
@@ -220,11 +220,11 @@ export const SimpleInterestCalc: React.FC<SimpleInterestCalcProps> = ({ onSaveHi
 
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-sm font-medium text-white">Duration Unit</span>
+            <span className="text-sm font-medium text-[#F8FAFC]">Duration Unit</span>
             <div
               role="group"
               aria-label="Simple interest time unit"
-              className="flex rounded-xl border border-[#D4AF37]/20 bg-[#0B0B0D] p-0.5"
+              className="flex rounded-xl border border-[#6366F1]/25 bg-[#080D1B] p-0.5"
             >
               {(['years', 'months', 'days'] as SimpleInterestTimeUnit[]).map((unit) => (
                 <button
@@ -233,8 +233,8 @@ export const SimpleInterestCalc: React.FC<SimpleInterestCalcProps> = ({ onSaveHi
                   onClick={() => setTimeUnit(unit)}
                   className={`rounded-lg px-2.5 py-1 text-xs font-medium capitalize transition-colors cursor-pointer ${
                     timeUnit === unit
-                      ? 'bg-[#D4AF37] text-[#050505] font-semibold'
-                      : 'text-[#A1A1AA] hover:text-white'
+                      ? 'bg-gradient-to-r from-[#2563EB] via-[#6366F1] to-[#8B5CF6] text-[#F8FAFC] font-semibold shadow-sm'
+                      : 'text-[#94A3B8] hover:text-[#F8FAFC]'
                   }`}
                 >
                   {unit}
@@ -270,11 +270,11 @@ export const SimpleInterestCalc: React.FC<SimpleInterestCalcProps> = ({ onSaveHi
           />
         ) : (
           <>
-            <TiltCard3D className="luxury-card-accent p-6 space-y-5" maxTiltDeg={2.5}>
-              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#D4AF37]/20 pb-4">
+            <TiltCard3D className="aurora-card-accent p-6 space-y-5" maxTiltDeg={2.5}>
+              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#6366F1]/22 pb-4">
                 <div>
-                  <p className="text-xs font-semibold text-[#F5D76E]">Total Maturity Value</p>
-                  <p className="mt-1 font-mono text-3xl font-bold text-white tabular-nums sm:text-4xl">
+                  <p className="text-xs font-semibold text-[#38BDF8]">Total Maturity Value</p>
+                  <p className="mt-1 font-mono text-3xl font-bold text-[#F8FAFC] tabular-nums sm:text-4xl">
                     <AnimatedNumber value={result.totalAmount} format={(n) => formatINR(n, 2)} />
                   </p>
                 </div>
@@ -286,33 +286,33 @@ export const SimpleInterestCalc: React.FC<SimpleInterestCalcProps> = ({ onSaveHi
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="luxury-subcard p-4">
-                  <p className="text-xs text-[#A1A1AA]">Principal Amount</p>
-                  <p className="mt-1.5 font-mono text-base font-semibold text-white tabular-nums">
+                <div className="aurora-subcard p-4">
+                  <p className="text-xs text-[#94A3B8]">Principal Amount</p>
+                  <p className="mt-1.5 font-mono text-base font-semibold text-[#F8FAFC] tabular-nums">
                     {formatINR(result.principal)}
                   </p>
                 </div>
-                <div className="luxury-subcard p-4">
-                  <p className="text-xs text-[#A1A1AA]">Interest Rate</p>
-                  <p className="mt-1.5 font-mono text-base font-semibold text-white tabular-nums">
+                <div className="aurora-subcard p-4">
+                  <p className="text-xs text-[#94A3B8]">Interest Rate</p>
+                  <p className="mt-1.5 font-mono text-base font-semibold text-[#F8FAFC] tabular-nums">
                     {result.rate}% p.a.
                   </p>
-                  <p className="mt-0.5 font-mono text-[11px] text-[#F5D76E] tabular-nums">
+                  <p className="mt-0.5 font-mono text-[11px] text-[#38BDF8] tabular-nums">
                     ₹{(result.rate / 12).toFixed(2)}/mo per ₹100
                   </p>
                 </div>
-                <div className="luxury-subcard p-4">
-                  <p className="text-xs font-medium text-[#F5D76E]">Simple Interest</p>
-                  <p className="mt-1.5 font-mono text-base font-semibold text-white tabular-nums">
+                <div className="aurora-subcard p-4">
+                  <p className="text-xs font-medium text-[#10B981]">Simple Interest</p>
+                  <p className="mt-1.5 font-mono text-base font-semibold text-[#F8FAFC] tabular-nums">
                     {formatINR(result.simpleInterest, 2)}
                   </p>
                 </div>
-                <div className="luxury-subcard p-4">
-                  <p className="text-xs text-[#A1A1AA]">Monthly Duration</p>
-                  <p className="mt-1.5 font-mono text-base font-semibold text-white tabular-nums">
+                <div className="aurora-subcard p-4">
+                  <p className="text-xs text-[#94A3B8]">Monthly Duration</p>
+                  <p className="mt-1.5 font-mono text-base font-semibold text-[#F8FAFC] tabular-nums">
                     {result.totalMonths} {result.totalMonths === 1 ? 'month' : 'months'}
                   </p>
-                  <p className="mt-0.5 font-mono text-[11px] text-[#A1A1AA] tabular-nums">
+                  <p className="mt-0.5 font-mono text-[11px] text-[#94A3B8] tabular-nums">
                     {result.timeInYears.toFixed(2)} yrs total
                   </p>
                 </div>

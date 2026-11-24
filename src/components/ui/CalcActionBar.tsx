@@ -17,7 +17,7 @@ export const CalcActionBar: React.FC<CalcActionBarProps> = ({
       <button
         type="button"
         onClick={onCalculate}
-        className="gold-shimmer-btn inline-flex flex-1 sm:flex-none items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold whitespace-nowrap cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F5D76E]"
+        className="aurora-btn-primary inline-flex flex-1 sm:flex-none items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold whitespace-nowrap cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#06B6D4]"
       >
         <Calculator className="h-4 w-4" aria-hidden="true" />
         <span>{calculateLabel}</span>
@@ -26,7 +26,7 @@ export const CalcActionBar: React.FC<CalcActionBarProps> = ({
       <button
         type="button"
         onClick={onReset}
-        className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#D4AF37]/25 bg-[#111111] px-3.5 py-2.5 text-sm font-medium text-[#A1A1AA] transition-colors hover:border-[#D4AF37]/60 hover:text-white whitespace-nowrap cursor-pointer focus-visible:outline-2 focus-visible:outline-[#D4AF37]"
+        className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#6366F1]/30 bg-[#0B1020] px-3.5 py-2.5 text-sm font-medium text-[#94A3B8] transition-colors hover:border-[#06B6D4]/60 hover:text-[#F8FAFC] whitespace-nowrap cursor-pointer focus-visible:outline-2 focus-visible:outline-[#06B6D4]"
       >
         <RotateCcw className="h-4 w-4" aria-hidden="true" />
         <span>Reset</span>

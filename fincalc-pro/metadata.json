@@ -1,6 +1,0 @@
-{
-  "name": "FinCalc Pro",
-  "description": "Precision financial, loan amortization, percentage-rupee ratio, and Indian income tax calculator suite tailored for Indian users and CA students.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

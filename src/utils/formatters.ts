@@ -28,25 +28,6 @@ export function formatNumber(value: number, maxDecimals = 2): string {
   });
 }
 
-export const formatNumberIN = formatNumber;
-
-export function formatPercent(value: number, maxDecimals = 2): string {
-  if (!Number.isFinite(value)) return '0%';
-  return `${value.toLocaleString('en-IN', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: maxDecimals,
-  })}%`;
-}
-
-export async function copyTextToClipboard(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 export function parsePositiveNumber(raw: string): number {
   const cleaned = raw.replace(/,/g, '').trim();
   if (cleaned === '') return 0;

@@ -183,27 +183,27 @@ export const CompoundInterestCalc: React.FC<CompoundInterestCalcProps> = ({ onSa
 
   return (
     <div className="grid gap-6 lg:grid-cols-12 items-start">
-      <div className="luxury-card p-6 space-y-5 lg:col-span-5">
+      <div className="aurora-card p-6 space-y-5 lg:col-span-5">
         <div>
-          <h3 className="text-lg font-semibold text-white">Compound Interest Inputs</h3>
-          <p className="mt-1 text-sm text-[#A1A1AA]">
+          <h3 className="text-lg font-semibold text-[#F8FAFC]">Compound Interest Inputs</h3>
+          <p className="mt-1 text-sm text-[#94A3B8]">
             Compare annual, half-yearly, quarterly, monthly, and daily compounding.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 border-b border-[#D4AF37]/15 pb-4">
-          <span className="text-xs font-medium text-[#A1A1AA]">Examples:</span>
+        <div className="flex flex-wrap items-center gap-2 border-b border-[#6366F1]/18 pb-4">
+          <span className="text-xs font-medium text-[#94A3B8]">Examples:</span>
           <button
             type="button"
             onClick={() => handleLoadExample('200000', '10', '5', 'quarterly')}
-            className="rounded-xl border border-[#D4AF37]/25 bg-white/[0.03] px-2.5 py-1 text-xs font-medium text-[#E4E4E7] transition-colors hover:border-[#F5D76E] hover:text-[#F5D76E] cursor-pointer"
+            className="rounded-xl border border-[#6366F1]/28 bg-[#0F172A]/60 px-2.5 py-1 text-xs font-medium text-[#E2E8F0] transition-colors hover:border-[#06B6D4] hover:text-[#38BDF8] cursor-pointer"
           >
             ₹2L @ 10% · 5 yrs
           </button>
           <button
             type="button"
             onClick={() => handleLoadExample('500000', '12', '10', 'monthly')}
-            className="rounded-xl border border-[#D4AF37]/25 bg-white/[0.03] px-2.5 py-1 text-xs font-medium text-[#E4E4E7] transition-colors hover:border-[#F5D76E] hover:text-[#F5D76E] cursor-pointer"
+            className="rounded-xl border border-[#6366F1]/28 bg-[#0F172A]/60 px-2.5 py-1 text-xs font-medium text-[#E2E8F0] transition-colors hover:border-[#06B6D4] hover:text-[#38BDF8] cursor-pointer"
           >
             ₹5L @ 12% · 10 yrs
           </button>
@@ -230,7 +230,7 @@ export const CompoundInterestCalc: React.FC<CompoundInterestCalcProps> = ({ onSa
           suffix={
             <span
               title="Monthly interest per ₹100 principal (Annual Rate ÷ 12)"
-              className="font-mono text-xs font-semibold text-[#F5D76E] tabular-nums"
+              className="font-mono text-xs font-semibold text-[#38BDF8] tabular-nums"
             >
               ₹{monthlyRupeePerHundred.toFixed(2)}/month
             </span>
@@ -265,17 +265,17 @@ export const CompoundInterestCalc: React.FC<CompoundInterestCalcProps> = ({ onSa
         />
 
         <div className="space-y-1.5">
-          <label htmlFor="ci-frequency" className="block text-sm font-medium text-white">
+          <label htmlFor="ci-frequency" className="block text-sm font-medium text-[#F8FAFC]">
             Compounding Frequency
           </label>
           <select
             id="ci-frequency"
             value={frequency}
             onChange={(e) => setFrequency(e.target.value as CompoundingFrequency)}
-            className="luxury-input w-full px-3.5 py-2.5 text-sm font-medium text-white focus:outline-none cursor-pointer"
+            className="aurora-input w-full px-3.5 py-2.5 text-sm font-medium text-[#F8FAFC] focus:outline-none cursor-pointer"
           >
             {(Object.keys(COMPOUNDING_PERIODS) as CompoundingFrequency[]).map((key) => (
-              <option key={key} value={key} className="bg-[#111111] text-white">
+              <option key={key} value={key} className="bg-[#0B1020] text-[#F8FAFC]">
                 {COMPOUNDING_PERIODS[key].label}
               </option>
             ))}
@@ -293,14 +293,14 @@ export const CompoundInterestCalc: React.FC<CompoundInterestCalcProps> = ({ onSa
           />
         ) : (
           <>
-            <TiltCard3D className="luxury-card-accent p-6 space-y-5" maxTiltDeg={2.5}>
-              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#D4AF37]/20 pb-4">
+            <TiltCard3D className="aurora-card-accent p-6 space-y-5" maxTiltDeg={2.5}>
+              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#6366F1]/22 pb-4">
                 <div>
-                  <p className="text-xs font-semibold text-[#F5D76E]">Maturity Value</p>
-                  <p className="mt-1 font-mono text-3xl font-bold text-white tabular-nums sm:text-4xl">
+                  <p className="text-xs font-semibold text-[#A855F7]">Maturity Value</p>
+                  <p className="mt-1 font-mono text-3xl font-bold text-[#F8FAFC] tabular-nums sm:text-4xl">
                     <AnimatedNumber value={result.totalAmount} format={(n) => formatINR(n, 2)} />
                   </p>
-                  <p className="mt-1 text-xs text-[#A1A1AA] tabular-nums">
+                  <p className="mt-1 text-xs text-[#10B981] tabular-nums">
                     Compounding gain over Simple Interest: +{formatINR(result.compoundingAdvantage, 2)}
                   </p>
                 </div>
@@ -312,30 +312,30 @@ export const CompoundInterestCalc: React.FC<CompoundInterestCalcProps> = ({ onSa
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="luxury-subcard p-4">
-                  <p className="text-xs text-[#A1A1AA]">Principal Invested</p>
-                  <p className="mt-1.5 font-mono text-base font-semibold text-white tabular-nums">
+                <div className="aurora-subcard p-4">
+                  <p className="text-xs text-[#94A3B8]">Principal Invested</p>
+                  <p className="mt-1.5 font-mono text-base font-semibold text-[#F8FAFC] tabular-nums">
                     {formatINR(result.principal)}
                   </p>
                 </div>
-                <div className="luxury-subcard p-4">
-                  <p className="text-xs text-[#A1A1AA]">Interest Rate</p>
-                  <p className="mt-1.5 font-mono text-base font-semibold text-white tabular-nums">
+                <div className="aurora-subcard p-4">
+                  <p className="text-xs text-[#94A3B8]">Interest Rate</p>
+                  <p className="mt-1.5 font-mono text-base font-semibold text-[#F8FAFC] tabular-nums">
                     {result.rate}% p.a.
                   </p>
-                  <p className="mt-0.5 font-mono text-[11px] text-[#F5D76E] tabular-nums">
+                  <p className="mt-0.5 font-mono text-[11px] text-[#38BDF8] tabular-nums">
                     ₹{(result.rate / 12).toFixed(2)}/mo per ₹100
                   </p>
                 </div>
-                <div className="luxury-subcard p-4">
-                  <p className="text-xs font-medium text-[#F5D76E]">Compound Interest</p>
-                  <p className="mt-1.5 font-mono text-base font-semibold text-white tabular-nums">
+                <div className="aurora-subcard p-4">
+                  <p className="text-xs font-medium text-[#10B981]">Compound Interest</p>
+                  <p className="mt-1.5 font-mono text-base font-semibold text-[#F8FAFC] tabular-nums">
                     {formatINR(result.compoundInterest, 2)}
                   </p>
                 </div>
-                <div className="luxury-subcard p-4">
-                  <p className="text-xs text-[#A1A1AA]">Effective Annual Rate</p>
-                  <p className="mt-1.5 font-mono text-base font-semibold text-white tabular-nums">
+                <div className="aurora-subcard p-4">
+                  <p className="text-xs text-[#94A3B8]">Effective Annual Rate</p>
+                  <p className="mt-1.5 font-mono text-base font-semibold text-[#C084FC] tabular-nums">
                     {result.effectiveAnnualRate.toFixed(2)}%
                   </p>
                 </div>

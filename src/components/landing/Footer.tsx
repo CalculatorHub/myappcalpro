@@ -14,7 +14,7 @@ export const Footer: React.FC<FooterProps> = ({
   onNavigateSection,
 }) => {
   return (
-    <footer className="border-t border-[#D4AF37]/20 bg-[#050505] no-print">
+    <footer className="relative z-10 border-t border-[#6366F1]/25 bg-[#080D1B]/75 backdrop-blur-md no-print">
       <div className="mx-auto flex max-w-6xl flex-col justify-between gap-6 px-4 py-10 sm:px-6 md:flex-row md:items-center">
         <div className="space-y-2">
           <a
@@ -23,32 +23,32 @@ export const Footer: React.FC<FooterProps> = ({
               e.preventDefault();
               onNavigateRoute('home');
             }}
-            className="inline-flex items-center gap-2.5 text-base font-bold tracking-tight text-white cursor-pointer focus-visible:outline-2 focus-visible:outline-[#D4AF37]"
+            className="inline-flex items-center gap-2.5 text-base font-bold tracking-tight text-[#F8FAFC] cursor-pointer focus-visible:outline-2 focus-visible:outline-[#06B6D4]"
           >
             <GoldCrestMark size={28} animate3D={false} />
             <span>
-              CalHub <span className="gold-text-gradient font-bold">FinCalc</span>
+              CalHub <span className="aurora-text-gradient font-bold">FinCalc</span>
             </span>
           </a>
-          <p className="max-w-md text-xs leading-relaxed text-[#A1A1AA]">
+          <p className="max-w-md text-xs leading-relaxed text-[#94A3B8]">
             Educational Indian finance and tax calculators. Results are estimates for study and
             planning purposes only—confirm statutory filings against Income Tax Department rules.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-6 text-xs font-medium text-[#A1A1AA]">
+        <div className="flex flex-wrap items-center gap-6 text-xs font-medium text-[#94A3B8]">
           <PWAInstallButton />
           <button
             type="button"
             onClick={() => onNavigateSection('calculators')}
-            className="gold-underline hover:text-[#F5D76E] transition-colors cursor-pointer"
+            className="aurora-underline hover:text-[#38BDF8] transition-colors cursor-pointer"
           >
             Calculators
           </button>
           <button
             type="button"
             onClick={() => onNavigateSection('history')}
-            className="gold-underline hover:text-[#F5D76E] transition-colors cursor-pointer"
+            className="aurora-underline hover:text-[#38BDF8] transition-colors cursor-pointer"
           >
             History
           </button>
@@ -58,7 +58,7 @@ export const Footer: React.FC<FooterProps> = ({
               e.preventDefault();
               onNavigateRoute('privacy');
             }}
-            className="gold-underline hover:text-[#F5D76E] transition-colors cursor-pointer"
+            className="aurora-underline hover:text-[#38BDF8] transition-colors cursor-pointer"
           >
             Privacy Policy
           </a>
@@ -68,7 +68,7 @@ export const Footer: React.FC<FooterProps> = ({
               e.preventDefault();
               onNavigateRoute('terms');
             }}
-            className="gold-underline hover:text-[#F5D76E] transition-colors cursor-pointer"
+            className="aurora-underline hover:text-[#38BDF8] transition-colors cursor-pointer"
           >
             Terms of Use
           </a>

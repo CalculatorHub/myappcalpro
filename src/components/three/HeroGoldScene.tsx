@@ -172,7 +172,7 @@ export const HeroGoldScene: React.FC = () => {
     canvas.addEventListener('webglcontextlost', handleContextLost);
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x050505, 0.04);
+    scene.fog = new THREE.FogExp2(0x080d1b, 0.04);
 
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     const envTexture = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
@@ -184,50 +184,54 @@ export const HeroGoldScene: React.FC = () => {
     const camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 40);
     camera.position.set(0, 0.1, 6.2);
 
-    // 3-Point Studio Lighting Rig
-    const hemiLight = new THREE.HemisphereLight(0xfef3c7, 0x111115, 0.65);
+    // 3-Point Aurora Studio Lighting Rig
+    const hemiLight = new THREE.HemisphereLight(0x38bdf8, 0x0b1020, 0.78);
     scene.add(hemiLight);
 
-    const keyLight = new THREE.DirectionalLight(0xfff1c2, 2.2);
+    const keyLight = new THREE.DirectionalLight(0xe0f2fe, 2.3);
     keyLight.position.set(4.5, 5.5, 5.2);
     scene.add(keyLight);
 
-    const rimLight = new THREE.PointLight(0xd4af37, 3.2, 16, 1.5);
+    const rimLight = new THREE.PointLight(0xa855f7, 3.8, 16, 1.4);
     rimLight.position.set(-4.2, -1.5, 3.6);
     scene.add(rimLight);
 
-    // Materials with calibrated metalness & roughness variance
+    // Aurora Metallic Materials (Electric Blue Bezel, Cyan-Violet Rupee, Indigo Orbital Rings)
     const brushedGoldMat = new THREE.MeshPhysicalMaterial({
-      color: 0xd4af37,
-      metalness: 0.96,
-      roughness: 0.2,
-      anisotropy: 0.85,
-      clearcoat: 0.45,
-      clearcoatRoughness: 0.18,
+      color: 0x2563eb,
+      metalness: 0.92,
+      roughness: 0.18,
+      anisotropy: 0.8,
+      clearcoat: 0.55,
+      clearcoatRoughness: 0.16,
+      emissive: 0x1e1b4b,
+      emissiveIntensity: 0.25,
     });
 
     const champagneGoldMat = new THREE.MeshPhysicalMaterial({
-      color: 0xf5d76e,
-      metalness: 1.0,
+      color: 0x06b6d4,
+      metalness: 0.96,
       roughness: 0.12,
       clearcoat: 0.85,
       clearcoatRoughness: 0.08,
-      emissive: 0x3b2a04,
-      emissiveIntensity: 0.35,
+      emissive: 0x3b0764,
+      emissiveIntensity: 0.32,
     });
 
     const obsidianInlayMat = new THREE.MeshStandardMaterial({
-      color: 0x0b0b0d,
-      metalness: 0.35,
-      roughness: 0.56,
+      color: 0x0b1020,
+      metalness: 0.4,
+      roughness: 0.5,
     });
 
     const ringMat = new THREE.MeshPhysicalMaterial({
-      color: 0xd4af37,
-      metalness: 0.94,
-      roughness: 0.26,
+      color: 0x8b5cf6,
+      metalness: 0.9,
+      roughness: 0.22,
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.88,
+      emissive: 0x312e81,
+      emissiveIntensity: 0.25,
     });
 
     // Composite Procedural 5-Part Emblem Group
@@ -266,15 +270,15 @@ export const HeroGoldScene: React.FC = () => {
     innerOrbitMesh.rotation.set(-0.55, 0.45, 0.2);
     emblemGroup.add(innerOrbitMesh);
 
-    // Part 5: Instanced Gold Dust Particles (scaled down on mobile)
+    // Part 5: Instanced Aurora Dust Particles (scaled down on mobile)
     const particleCount = isMobileViewport ? 28 : 68;
     const particleGeo = new THREE.OctahedronGeometry(0.032, 0);
     const particleMat = new THREE.MeshStandardMaterial({
-      color: 0xf5d76e,
-      metalness: 0.9,
+      color: 0x38bdf8,
+      metalness: 0.85,
       roughness: 0.2,
-      emissive: 0xd4af37,
-      emissiveIntensity: 0.45,
+      emissive: 0x8b5cf6,
+      emissiveIntensity: 0.55,
     });
     const particlesMesh = new THREE.InstancedMesh(particleGeo, particleMat, particleCount);
     particlesMesh.frustumCulled = false;
@@ -440,7 +444,7 @@ export const HeroGoldScene: React.FC = () => {
 
   if (webglFailed) {
     return (
-      <div className="flex h-full min-h-[260px] w-full items-center justify-center rounded-2xl border border-[#D4AF37]/20 bg-[#0B0B0D]/90">
+      <div className="flex h-full min-h-[260px] w-full items-center justify-center rounded-2xl border border-[#6366F1]/25 bg-[#0B1020]/90">
         <GoldCrestMark size={120} />
       </div>
     );
@@ -451,7 +455,7 @@ export const HeroGoldScene: React.FC = () => {
       ref={mountRef}
       className="h-[260px] sm:h-[310px] lg:h-[340px] w-full select-none"
       role="img"
-      aria-label="Interactive 3D metallic gold FinCalc Pro Rupee crest rotating in dark studio lighting"
+      aria-label="Interactive 3D Aurora metallic FinCalc Pro Rupee crest rotating in deep navy studio lighting"
     />
   );
 };

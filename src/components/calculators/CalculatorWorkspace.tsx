@@ -24,10 +24,10 @@ interface CalculatorWorkspaceProps {
 
 const CalculatorSkeleton: React.FC = () => (
   <div className="grid gap-6 lg:grid-cols-12 items-start animate-pulse" aria-hidden="true">
-    <div className="luxury-card p-6 lg:col-span-5 h-[420px]" />
+    <div className="aurora-card p-6 lg:col-span-5 h-[420px]" />
     <div className="lg:col-span-7 space-y-5">
-      <div className="luxury-card p-6 h-[220px]" />
-      <div className="luxury-card p-6 h-[180px]" />
+      <div className="aurora-card p-6 h-[220px]" />
+      <div className="aurora-card p-6 h-[180px]" />
     </div>
   </div>
 );
@@ -58,12 +58,12 @@ export const CalculatorWorkspace: React.FC<CalculatorWorkspaceProps> = ({
     >
       {/* Section Heading */}
       <div>
-        <div className="flex items-center gap-2 text-xs font-semibold text-[#D4AF37]">
-          <Calculator className="h-4 w-4" aria-hidden="true" />
+        <div className="flex items-center gap-2 text-xs font-semibold text-[#38BDF8]">
+          <Calculator className="h-4 w-4 text-[#06B6D4]" aria-hidden="true" />
           <span>Interactive Calculator Workspace · {activeMeta.categoryLabel}</span>
         </div>
         <div className="mt-1.5 flex items-center gap-3">
-          <h2 className="heading-3 text-white">{sectionTitle}</h2>
+          <h2 className="heading-3 text-[#F8FAFC]">{sectionTitle}</h2>
           <button
             type="button"
             onClick={() => onToggleFavorite(activeMeta.id)}
@@ -75,8 +75,8 @@ export const CalculatorWorkspace: React.FC<CalculatorWorkspaceProps> = ({
             aria-pressed={isFavorited}
             className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors cursor-pointer ${
               isFavorited
-                ? 'border-[#F5D76E]/55 bg-[#D4AF37]/18 text-[#F5D76E]'
-                : 'border-[#D4AF37]/25 bg-white/[0.04] text-[#A1A1AA] hover:border-[#D4AF37] hover:text-white'
+                ? 'border-[#06B6D4]/55 bg-[#06B6D4]/18 text-[#38BDF8]'
+                : 'border-[#6366F1]/28 bg-[#0F172A]/50 text-[#94A3B8] hover:border-[#06B6D4] hover:text-[#F8FAFC]'
             }`}
           >
             <Star
@@ -94,7 +94,7 @@ export const CalculatorWorkspace: React.FC<CalculatorWorkspaceProps> = ({
           <div
             role="tablist"
             aria-label="Interest calculation type"
-            className="inline-flex rounded-full border border-[#D4AF37]/25 bg-[#0C0C0F]/85 backdrop-blur-md p-1"
+            className="inline-flex rounded-full border border-[#6366F1]/30 bg-[#0B1020]/85 backdrop-blur-md p-1"
           >
             {(
               [
@@ -110,17 +110,17 @@ export const CalculatorWorkspace: React.FC<CalculatorWorkspaceProps> = ({
                   aria-selected={selected}
                   type="button"
                   onClick={() => onSelectCalc(tab.id)}
-                  className={`relative rounded-full px-4 py-1.5 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap cursor-pointer focus-visible:outline-2 focus-visible:outline-[#D4AF37] ${
+                  className={`relative rounded-full px-4 py-1.5 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap cursor-pointer focus-visible:outline-2 focus-visible:outline-[#06B6D4] ${
                     selected
-                      ? 'text-[#050505] font-semibold'
-                      : 'text-[#A1A1AA] hover:text-[#F5D76E]'
+                      ? 'text-[#F8FAFC] font-semibold'
+                      : 'text-[#94A3B8] hover:text-[#38BDF8]'
                   }`}
                 >
                   {selected && (
                     <motion.span
                       layoutId="interest-subtab-pill"
                       transition={{ type: 'spring', stiffness: 440, damping: 34 }}
-                      className="absolute inset-0 rounded-full bg-gradient-to-r from-[#F5D76E] to-[#D4AF37] shadow-[0_4px_16px_-3px_rgba(212,175,55,0.55)]"
+                      className="absolute inset-0 rounded-full bg-gradient-to-r from-[#06B6D4] via-[#2563EB] to-[#8B5CF6] shadow-[0_4px_18px_-3px_rgba(6,182,212,0.58)]"
                       aria-hidden="true"
                     />
                   )}
@@ -130,7 +130,7 @@ export const CalculatorWorkspace: React.FC<CalculatorWorkspaceProps> = ({
             })}
           </div>
 
-          <p className="text-xs text-[#A1A1AA]">
+          <p className="text-xs text-[#94A3B8]">
             {activeCalc === 'simple-interest'
               ? 'Linear interest growth across years, months, or days'
               : 'Compounded annual to daily schedules with Effective Annual Rate'}

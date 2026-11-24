@@ -30,12 +30,13 @@ function buildSmoothSvgPath(points: Array<{ x: number; y: number }>): string {
     const p0 = points[Math.max(0, i - 1)];
     const p1 = points[i];
     const p2 = points[i + 1];
-    const p3 = points[Math.min(points.length - 1, i + 2)];
+    const p3 = Math.min(points.length - 1, i + 2);
+    const p3Pt = points[p3];
 
     const cp1x = p1.x + (p2.x - p0.x) * tension;
     const cp1y = p1.y + (p2.y - p0.y) * tension;
-    const cp2x = p2.x - (p3.x - p1.x) * tension;
-    const cp2y = p2.y - (p3.y - p1.y) * tension;
+    const cp2x = p2.x - (p3Pt.x - p1.x) * tension;
+    const cp2y = p2.y - (p3Pt.y - p1.y) * tension;
 
     path += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
   }
@@ -91,8 +92,10 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const uid = useId().replace(/:/g, '');
-  const totalAreaGradId = `gold-total-area-${uid}`;
-  const interestAreaGradId = `gold-interest-area-${uid}`;
+  const totalStrokeGradId = `aurora-total-stroke-${uid}`;
+  const interestStrokeGradId = `aurora-interest-stroke-${uid}`;
+  const totalAreaGradId = `aurora-total-area-${uid}`;
+  const interestAreaGradId = `aurora-interest-area-${uid}`;
 
   if (!data || data.length === 0) {
     return null;
@@ -165,7 +168,6 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
     setActiveIndex(nearest);
   };
 
-  // Floating tooltip geometry in SVG space (only shown when actively hovered/focused)
   const tooltipW = 204;
   const tooltipH = 104;
   const activeX = activeIndex !== null ? getX(activeIndex) : 0;
@@ -180,55 +182,55 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   );
 
   return (
-    <div className="luxury-card p-5 sm:p-6 space-y-4">
+    <div className="aurora-card p-5 sm:p-6 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h4 className="text-sm font-semibold text-white">{title}</h4>
-          <p className="text-xs text-[#A1A1AA]">
+          <h4 className="text-sm font-semibold text-[#F8FAFC]">{title}</h4>
+          <p className="text-xs text-[#94A3B8]">
             {xAxisLabel} ({data.length} {data.length === 1 ? 'month' : 'months'}) vs Amount (₹)
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 text-xs text-[#A1A1AA]">
+        <div className="flex flex-wrap items-center gap-4 text-xs text-[#94A3B8]">
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-0.5 w-3.5 border-t border-dashed border-zinc-400" />
+            <span className="h-0.5 w-3.5 border-t border-dashed border-slate-400" />
             Principal
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-0.5 w-3.5 bg-[#D4AF37]" />
+            <span className="h-0.5 w-3.5 bg-gradient-to-r from-[#10B981] to-[#06B6D4]" />
             Accumulated Interest
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-0.5 w-3.5 bg-[#F5D76E]" />
+            <span className="h-0.5 w-3.5 bg-gradient-to-r from-[#2563EB] via-[#6366F1] to-[#D946EF]" />
             Total Amount
           </span>
         </div>
       </div>
 
-      <div className="luxury-subcard flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 text-xs tabular-nums">
-        <span className="font-mono font-semibold text-[#F5D76E]">{selectedDatum.label}</span>
+      <div className="aurora-subcard flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 text-xs tabular-nums">
+        <span className="font-mono font-semibold text-[#38BDF8]">{selectedDatum.label}</span>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          <span className="text-[#A1A1AA]">
+          <span className="text-[#94A3B8]">
             Principal:{' '}
-            <strong className="font-mono text-white">
+            <strong className="font-mono text-[#F8FAFC]">
               {formatINR(selectedDatum.principal, 0)}
             </strong>
           </span>
-          <span className="text-[#A1A1AA]">
+          <span className="text-[#94A3B8]">
             Monthly Interest:{' '}
-            <strong className="font-mono text-[#E8D18B]">
+            <strong className="font-mono text-[#10B981]">
               +{formatINR(monthlyGain, 2)}
             </strong>
           </span>
-          <span className="text-[#A1A1AA]">
+          <span className="text-[#94A3B8]">
             Accumulated:{' '}
-            <strong className="font-mono text-[#F5D76E]">
+            <strong className="font-mono text-[#06B6D4]">
               {formatINR(selectedDatum.interestEarned, 2)}
             </strong>
           </span>
-          <span className="text-[#A1A1AA]">
+          <span className="text-[#94A3B8]">
             Total:{' '}
-            <strong className="font-mono text-white">
+            <strong className="font-mono text-[#F8FAFC]">
               {formatINR(selectedDatum.totalAmount, 2)}
             </strong>
           </span>
@@ -244,13 +246,23 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
           aria-label={`${title} showing Principal, Monthly Interest, Accumulated Interest, and Total Amount across ${data.length} months`}
         >
           <defs>
+            <linearGradient id={totalStrokeGradId} x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#06B6D4" />
+              <stop offset="48%" stopColor="#6366F1" />
+              <stop offset="100%" stopColor="#D946EF" />
+            </linearGradient>
+            <linearGradient id={interestStrokeGradId} x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#10B981" />
+              <stop offset="100%" stopColor="#06B6D4" />
+            </linearGradient>
             <linearGradient id={totalAreaGradId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#F5D76E" stopOpacity="0.24" />
-              <stop offset="100%" stopColor="#D4AF37" stopOpacity="0.02" />
+              <stop offset="0%" stopColor="#6366F1" stopOpacity="0.28" />
+              <stop offset="60%" stopColor="#8B5CF6" stopOpacity="0.1" />
+              <stop offset="100%" stopColor="#080D1B" stopOpacity="0.01" />
             </linearGradient>
             <linearGradient id={interestAreaGradId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#D4AF37" stopOpacity="0.22" />
-              <stop offset="100%" stopColor="#D4AF37" stopOpacity="0.01" />
+              <stop offset="0%" stopColor="#06B6D4" stopOpacity="0.22" />
+              <stop offset="100%" stopColor="#10B981" stopOpacity="0.01" />
             </linearGradient>
           </defs>
 
@@ -261,14 +273,14 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                 y1={tick.y}
                 x2={svgWidth - pad.right}
                 y2={tick.y}
-                stroke="rgba(212, 175, 55, 0.14)"
+                stroke="rgba(99, 102, 241, 0.16)"
                 strokeDasharray={idx === 0 ? undefined : '3 4'}
               />
               <text
                 x={pad.left - 10}
                 y={tick.y + 4}
                 textAnchor="end"
-                fill="#A1A1AA"
+                fill="#94A3B8"
                 fontSize="11"
                 fontFamily="JetBrains Mono, ui-monospace, monospace"
               >
@@ -283,7 +295,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
           <path
             d={principalPath}
             fill="none"
-            stroke="#71717A"
+            stroke="#64748B"
             strokeWidth="1.75"
             strokeDasharray="5 4"
           />
@@ -292,8 +304,8 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
             <path
               d={interestPath}
               fill="none"
-              stroke="#D4AF37"
-              strokeWidth="2"
+              stroke={`url(#${interestStrokeGradId})`}
+              strokeWidth="2.1"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
@@ -303,8 +315,8 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
             <path
               d={totalPath}
               fill="none"
-              stroke="#F5D76E"
-              strokeWidth="2.75"
+              stroke={`url(#${totalStrokeGradId})`}
+              strokeWidth="2.85"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
@@ -326,7 +338,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                     ? 'end'
                     : 'middle'
                 }
-                fill="#A1A1AA"
+                fill="#94A3B8"
                 fontSize="11"
                 fontFamily="JetBrains Mono, ui-monospace, monospace"
               >
@@ -335,7 +347,6 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
             );
           })}
 
-          {/* Markers on concise series or labeled ticks */}
           {data.map((d, i) => {
             const showDot = data.length <= 24 || visibleXIndices.has(i);
             if (!showDot) return null;
@@ -346,8 +357,8 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                 cx={cx}
                 cy={getY(d.totalAmount)}
                 r={data.length <= 12 ? 3.8 : 3}
-                fill="#050505"
-                stroke="#F5D76E"
+                fill="#080D1B"
+                stroke="#38BDF8"
                 strokeWidth="1.75"
               />
             );
@@ -360,7 +371,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                 y1={pad.top}
                 x2={activeX}
                 y2={pad.top + plotH}
-                stroke="rgba(245, 215, 110, 0.55)"
+                stroke="rgba(56, 189, 248, 0.55)"
                 strokeWidth="1"
                 strokeDasharray="3 3"
               />
@@ -368,16 +379,16 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                 cx={activeX}
                 cy={getY(data[activeIndex].interestEarned)}
                 r={4.5}
-                fill="#D4AF37"
-                stroke="#FFFFFF"
+                fill="#10B981"
+                stroke="#F8FAFC"
                 strokeWidth="1.5"
               />
               <circle
                 cx={activeX}
                 cy={activeY}
                 r={5.5}
-                fill="#F5D76E"
-                stroke="#FFFFFF"
+                fill="#6366F1"
+                stroke="#F8FAFC"
                 strokeWidth="2"
               />
 
@@ -386,70 +397,70 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                   width={tooltipW}
                   height={tooltipH}
                   rx="12"
-                  fill="rgba(12, 12, 14, 0.94)"
-                  stroke="rgba(245, 215, 110, 0.48)"
+                  fill="rgba(8, 13, 27, 0.95)"
+                  stroke="rgba(6, 182, 212, 0.55)"
                   strokeWidth="1"
                 />
                 <text
                   x="12"
                   y="20"
-                  fill="#F5D76E"
+                  fill="#38BDF8"
                   fontSize="11.5"
                   fontWeight="700"
                   fontFamily="JetBrains Mono, ui-monospace, monospace"
                 >
                   {data[activeIndex].label}
                 </text>
-                <text x="12" y="39" fill="#A1A1AA" fontSize="10.5">
+                <text x="12" y="39" fill="#94A3B8" fontSize="10.5">
                   Principal:
                 </text>
                 <text
                   x={tooltipW - 12}
                   y="39"
                   textAnchor="end"
-                  fill="#FFFFFF"
+                  fill="#F8FAFC"
                   fontSize="10.5"
                   fontFamily="JetBrains Mono, ui-monospace, monospace"
                 >
                   {formatINR(data[activeIndex].principal, 0)}
                 </text>
 
-                <text x="12" y="56" fill="#A1A1AA" fontSize="10.5">
+                <text x="12" y="56" fill="#94A3B8" fontSize="10.5">
                   Monthly Int.:
                 </text>
                 <text
                   x={tooltipW - 12}
                   y="56"
                   textAnchor="end"
-                  fill="#E8D18B"
+                  fill="#10B981"
                   fontSize="10.5"
                   fontFamily="JetBrains Mono, ui-monospace, monospace"
                 >
                   +{formatINR(data[activeIndex].monthlyInterest ?? 0, 2)}
                 </text>
 
-                <text x="12" y="73" fill="#A1A1AA" fontSize="10.5">
+                <text x="12" y="73" fill="#94A3B8" fontSize="10.5">
                   Accumulated:
                 </text>
                 <text
                   x={tooltipW - 12}
                   y="73"
                   textAnchor="end"
-                  fill="#F5D76E"
+                  fill="#06B6D4"
                   fontSize="10.5"
                   fontFamily="JetBrains Mono, ui-monospace, monospace"
                 >
                   {formatINR(data[activeIndex].interestEarned, 2)}
                 </text>
 
-                <text x="12" y="91" fill="#E4E4E7" fontSize="10.5" fontWeight="600">
+                <text x="12" y="91" fill="#E2E8F0" fontSize="10.5" fontWeight="600">
                   Total:
                 </text>
                 <text
                   x={tooltipW - 12}
                   y="91"
                   textAnchor="end"
-                  fill="#FFFFFF"
+                  fill="#F8FAFC"
                   fontSize="11"
                   fontWeight="700"
                   fontFamily="JetBrains Mono, ui-monospace, monospace"
@@ -460,7 +471,6 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
             </g>
           )}
 
-          {/* Full plot pointer interaction zone for smooth month scrubbing */}
           <rect
             x={pad.left}
             y={pad.top}

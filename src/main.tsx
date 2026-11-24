@@ -9,7 +9,28 @@ if (typeof document !== 'undefined') {
 }
 
 if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-  registerSW({ immediate: true });
+  if (import.meta.env.PROD) {
+    registerSW({ immediate: true });
+  } else if (import.meta.env.DEV) {
+    navigator.serviceWorker
+      .getRegistrations()
+      .then((registrations) => {
+        registrations.forEach((registration) => {
+          registration.unregister().catch(() => {});
+        });
+      })
+      .catch(() => {});
+    if ('caches' in window) {
+      caches
+        .keys()
+        .then((keys) => {
+          keys
+            .filter((k) => k.includes('static-resources') || k.includes('workbox'))
+            .forEach((k) => caches.delete(k).catch(() => {}));
+        })
+        .catch(() => {});
+    }
+  }
 }
 
 createRoot(document.getElementById('root')!).render(

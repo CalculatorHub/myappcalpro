@@ -7,8 +7,7 @@ interface GoldCrestMarkProps {
 }
 
 /**
- * Interactive 3D Metallic Gold Rupee Crest honoring CalHub FinCalc's beveled emblem identity.
- * Hardware-accelerated CSS 3D depth with metallic champagne specular gradients.
+ * Interactive 3D Aurora Rupee Crest with beveled metallic cyan-indigo-violet rim and deep navy core.
  */
 export const GoldCrestMark: React.FC<GoldCrestMarkProps> = ({
   size = 36,
@@ -33,28 +32,28 @@ export const GoldCrestMark: React.FC<GoldCrestMarkProps> = ({
         height={size}
         viewBox="0 0 64 64"
         fill="none"
-        className="drop-shadow-[0_4px_12px_rgba(212,175,55,0.42)]"
+        className="drop-shadow-[0_6px_16px_rgba(99,102,241,0.48)]"
       >
         <defs>
           <linearGradient id={rimGrad} x1="6" y1="6" x2="58" y2="58" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#FFF1B8" />
-            <stop offset="35%" stopColor="#F5D76E" />
-            <stop offset="70%" stopColor="#D4AF37" />
-            <stop offset="100%" stopColor="#8C6A16" />
+            <stop offset="0%" stopColor="#06B6D4" />
+            <stop offset="42%" stopColor="#2563EB" />
+            <stop offset="76%" stopColor="#8B5CF6" />
+            <stop offset="100%" stopColor="#D946EF" />
           </linearGradient>
-          <radialGradient id={faceGrad} cx="35%" cy="28%" r="72%">
-            <stop offset="0%" stopColor="#262218" />
-            <stop offset="55%" stopColor="#121214" />
-            <stop offset="100%" stopColor="#050505" />
+          <radialGradient id={faceGrad} cx="32%" cy="28%" r="74%">
+            <stop offset="0%" stopColor="#16213E" />
+            <stop offset="58%" stopColor="#0B1020" />
+            <stop offset="100%" stopColor="#080D1B" />
           </radialGradient>
           <linearGradient id={symbolGrad} x1="18" y1="16" x2="46" y2="50" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#FFF5C8" />
-            <stop offset="45%" stopColor="#F5D76E" />
-            <stop offset="100%" stopColor="#C49622" />
+            <stop offset="0%" stopColor="#38BDF8" />
+            <stop offset="48%" stopColor="#6366F1" />
+            <stop offset="100%" stopColor="#D946EF" />
           </linearGradient>
         </defs>
 
-        {/* Outer metallic beveled medallion */}
+        {/* Outer Aurora beveled medallion */}
         <rect
           x="2.5"
           y="2.5"
@@ -73,8 +72,8 @@ export const GoldCrestMark: React.FC<GoldCrestMarkProps> = ({
           width="49"
           height="49"
           rx="12"
-          stroke="#D4AF37"
-          strokeOpacity="0.32"
+          stroke="#6366F1"
+          strokeOpacity="0.36"
           strokeWidth="1"
         />
 

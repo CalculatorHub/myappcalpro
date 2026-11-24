@@ -255,27 +255,27 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
 
   return (
     <div className="grid gap-6 lg:grid-cols-12 items-start">
-      <div className="luxury-card p-6 space-y-5 lg:col-span-5">
+      <div className="aurora-card p-6 space-y-5 lg:col-span-5">
         <div>
-          <h3 className="text-lg font-semibold text-white">Income Tax Inputs</h3>
-          <p className="mt-1 text-sm text-[#A1A1AA]">
+          <h3 className="text-lg font-semibold text-[#F8FAFC]">Income Tax Inputs</h3>
+          <p className="mt-1 text-sm text-[#94A3B8]">
             Educational slab estimator across New &amp; Old regimes with 87A &amp; 4% cess.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 border-b border-[#D4AF37]/15 pb-4">
-          <span className="text-xs font-medium text-[#A1A1AA]">Examples:</span>
+        <div className="flex flex-wrap items-center gap-2 border-b border-[#6366F1]/18 pb-4">
+          <span className="text-xs font-medium text-[#94A3B8]">Examples:</span>
           <button
             type="button"
             onClick={() => handleLoadExample('fy-2025-26', 'new', '1350000', '50000', '150000', '40000')}
-            className="rounded-xl border border-[#D4AF37]/25 bg-white/[0.03] px-2.5 py-1 text-xs font-medium text-[#E4E4E7] transition-colors hover:border-[#F5D76E] hover:text-[#F5D76E] cursor-pointer"
+            className="rounded-xl border border-[#6366F1]/28 bg-[#0F172A]/60 px-2.5 py-1 text-xs font-medium text-[#E2E8F0] transition-colors hover:border-[#06B6D4] hover:text-[#38BDF8] cursor-pointer"
           >
             Salaried ₹14L
           </button>
           <button
             type="button"
             onClick={() => handleLoadExample('fy-2025-26', 'new', '1275000', '0', '0', '0')}
-            className="rounded-xl border border-[#D4AF37]/25 bg-white/[0.03] px-2.5 py-1 text-xs font-medium text-[#E4E4E7] transition-colors hover:border-[#F5D76E] hover:text-[#F5D76E] cursor-pointer"
+            className="rounded-xl border border-[#6366F1]/28 bg-[#0F172A]/60 px-2.5 py-1 text-xs font-medium text-[#E2E8F0] transition-colors hover:border-[#06B6D4] hover:text-[#38BDF8] cursor-pointer"
           >
             87A Edge ₹12.75L
           </button>
@@ -284,24 +284,24 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
             onClick={() =>
               handleLoadExample('fy-2025-26', 'old', '1800000', '120000', '350000', '180000', 'senior-60-79')
             }
-            className="rounded-xl border border-[#D4AF37]/25 bg-white/[0.03] px-2.5 py-1 text-xs font-medium text-[#E4E4E7] transition-colors hover:border-[#F5D76E] hover:text-[#F5D76E] cursor-pointer"
+            className="rounded-xl border border-[#6366F1]/28 bg-[#0F172A]/60 px-2.5 py-1 text-xs font-medium text-[#E2E8F0] transition-colors hover:border-[#06B6D4] hover:text-[#38BDF8] cursor-pointer"
           >
             Old Regime Senior
           </button>
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="tax-fy" className="block text-sm font-medium text-white">
+          <label htmlFor="tax-fy" className="block text-sm font-medium text-[#F8FAFC]">
             Financial Year
           </label>
           <select
             id="tax-fy"
             value={financialYear}
             onChange={(e) => setFinancialYear(e.target.value as FinancialYearId)}
-            className="luxury-input w-full px-3.5 py-2.5 text-sm font-medium text-white focus:outline-none cursor-pointer"
+            className="aurora-input w-full px-3.5 py-2.5 text-sm font-medium text-[#F8FAFC] focus:outline-none cursor-pointer"
           >
             {(Object.keys(INDIAN_TAX_RULES) as FinancialYearId[]).map((fyKey) => (
-              <option key={fyKey} value={fyKey} className="bg-[#111111] text-white">
+              <option key={fyKey} value={fyKey} className="bg-[#0B1020] text-[#F8FAFC]">
                 {INDIAN_TAX_RULES[fyKey].label} ({INDIAN_TAX_RULES[fyKey].assessmentYearLabel})
               </option>
             ))}
@@ -309,11 +309,11 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
         </div>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-white">Tax Regime</span>
+          <span className="block text-sm font-medium text-[#F8FAFC]">Tax Regime</span>
           <div
             role="group"
             aria-label="Tax regime selection"
-            className="flex rounded-xl border border-[#D4AF37]/20 bg-[#0B0B0D] p-1"
+            className="flex rounded-xl border border-[#6366F1]/25 bg-[#080D1B] p-1"
           >
             {(['new', 'old'] as TaxRegimeId[]).map((rKey) => (
               <button
@@ -322,8 +322,8 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
                 onClick={() => setRegime(rKey)}
                 className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-colors cursor-pointer ${
                   regime === rKey
-                    ? 'bg-[#D4AF37] text-[#050505] font-semibold'
-                    : 'text-[#A1A1AA] hover:text-white'
+                    ? 'bg-gradient-to-r from-[#2563EB] via-[#6366F1] to-[#8B5CF6] text-[#F8FAFC] font-semibold shadow-sm'
+                    : 'text-[#94A3B8] hover:text-[#F8FAFC]'
                 }`}
               >
                 {rKey === 'new' ? 'New Regime (115BAC)' : 'Old Regime'}
@@ -334,15 +334,15 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-sm font-medium text-white">Age Bracket</span>
+            <span className="text-sm font-medium text-[#F8FAFC]">Age Bracket</span>
             {regime === 'new' && (
-              <span className="text-[11px] text-[#A1A1AA]">Uniform slabs under 115BAC</span>
+              <span className="text-[11px] text-[#94A3B8]">Uniform slabs under 115BAC</span>
             )}
           </div>
           <div
             role="group"
             aria-label="Taxpayer age bracket"
-            className="grid grid-cols-3 gap-1 rounded-xl border border-[#D4AF37]/20 bg-[#0B0B0D] p-1"
+            className="grid grid-cols-3 gap-1 rounded-xl border border-[#6366F1]/25 bg-[#080D1B] p-1"
           >
             {AGE_CATEGORY_LABELS.map((item) => {
               const selected = (regime === 'new' ? 'below-60' : ageCategory) === item.id;
@@ -354,10 +354,10 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
                   onClick={() => setAgeCategory(item.id)}
                   className={`rounded-lg px-2 py-1.5 text-xs font-medium transition-colors ${
                     regime === 'new'
-                      ? 'opacity-45 cursor-not-allowed text-[#A1A1AA]'
+                      ? 'opacity-45 cursor-not-allowed text-[#94A3B8]'
                       : selected
-                      ? 'bg-[#D4AF37] text-[#050505] font-semibold cursor-pointer'
-                      : 'text-[#A1A1AA] hover:text-white cursor-pointer'
+                      ? 'bg-gradient-to-r from-[#06B6D4] via-[#2563EB] to-[#6366F1] text-[#F8FAFC] font-semibold cursor-pointer'
+                      : 'text-[#94A3B8] hover:text-[#F8FAFC] cursor-pointer'
                   }`}
                 >
                   {item.label}
@@ -459,44 +459,44 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
           />
         ) : (
           <>
-            <div className="luxury-card px-5 py-4 text-xs leading-relaxed text-[#A1A1AA]">
+            <div className="aurora-card px-5 py-4 text-xs leading-relaxed text-[#94A3B8]">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-semibold text-white">
+                <span className="font-semibold text-[#F8FAFC]">
                   {fyConfig.label} ({fyConfig.assessmentYearLabel}) · {regimeConfig.label}
                 </span>
-                <span className="font-mono font-semibold text-[#F5D76E]">
+                <span className="font-mono font-semibold text-[#38BDF8]">
                   Educational Estimate ({fyConfig.regimeScopeNote})
                 </span>
               </div>
               <p className="mt-1.5">{fyConfig.statusNote}</p>
             </div>
 
-            <TiltCard3D className="luxury-card-accent p-6 space-y-5" maxTiltDeg={2.5}>
-              <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#D4AF37]/20 pb-4">
+            <TiltCard3D className="aurora-card-accent p-6 space-y-5" maxTiltDeg={2.5}>
+              <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#6366F1]/22 pb-4">
                 <div className="flex flex-wrap gap-x-8 gap-y-3">
                   <div>
-                    <p className="text-xs font-semibold text-[#F5D76E]">
+                    <p className="text-xs font-semibold text-[#38BDF8]">
                       {isRefund ? 'Estimated Tax Refund' : 'Estimated Net Tax Payable'}
                     </p>
-                    <p className="mt-1 font-mono text-3xl font-bold text-white tabular-nums sm:text-4xl">
+                    <p className="mt-1 font-mono text-3xl font-bold text-[#F8FAFC] tabular-nums sm:text-4xl">
                       <AnimatedNumber
                         value={Math.abs(result.balancePayableOrRefund)}
                         format={(n) => formatINR(n)}
                       />
                     </p>
-                    <p className="mt-1 font-mono text-xs text-[#A1A1AA] tabular-nums">
+                    <p className="mt-1 font-mono text-xs text-[#94A3B8] tabular-nums">
                       Effective Rate on Gross Income: {result.effectiveTaxRate.toFixed(2)}%
                     </p>
                   </div>
 
-                  <div className="sm:border-l sm:border-[#D4AF37]/20 sm:pl-6">
-                    <p className="text-xs font-semibold text-[#A1A1AA]">
+                  <div className="sm:border-l sm:border-[#6366F1]/25 sm:pl-6">
+                    <p className="text-xs font-semibold text-[#94A3B8]">
                       Estimated Monthly Take-Home
                     </p>
-                    <p className="mt-1 font-mono text-2xl font-bold text-[#F5D76E] tabular-nums sm:text-3xl">
+                    <p className="mt-1 font-mono text-2xl font-bold text-[#10B981] tabular-nums sm:text-3xl">
                       <AnimatedNumber value={monthlyTakeHome} format={(n) => `${formatINR(n)}/mo`} />
                     </p>
-                    <p className="mt-1 font-mono text-xs text-[#A1A1AA] tabular-nums">
+                    <p className="mt-1 font-mono text-xs text-[#94A3B8] tabular-nums">
                       Annual Post-Tax: {formatINR(postTaxIncome)}
                     </p>
                   </div>
@@ -510,27 +510,27 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="luxury-subcard p-3.5">
-                  <p className="text-xs text-[#A1A1AA]">Gross Total Income</p>
-                  <p className="mt-1 font-mono text-base font-semibold text-white tabular-nums">
+                <div className="aurora-subcard p-3.5">
+                  <p className="text-xs text-[#94A3B8]">Gross Total Income</p>
+                  <p className="mt-1 font-mono text-base font-semibold text-[#F8FAFC] tabular-nums">
                     {formatINR(result.grossTotalIncome)}
                   </p>
                 </div>
-                <div className="luxury-subcard p-3.5">
-                  <p className="text-xs text-[#A1A1AA]">Eligible Deductions</p>
-                  <p className="mt-1 font-mono text-base font-semibold text-white tabular-nums">
+                <div className="aurora-subcard p-3.5">
+                  <p className="text-xs text-[#94A3B8]">Eligible Deductions</p>
+                  <p className="mt-1 font-mono text-base font-semibold text-[#F8FAFC] tabular-nums">
                     {formatINR(result.standardDeduction + result.eligibleDeductionsApplied)}
                   </p>
                 </div>
-                <div className="luxury-subcard p-3.5">
-                  <p className="text-xs text-[#A1A1AA]">Taxable Income</p>
-                  <p className="mt-1 font-mono text-base font-semibold text-white tabular-nums">
+                <div className="aurora-subcard p-3.5">
+                  <p className="text-xs text-[#94A3B8]">Taxable Income</p>
+                  <p className="mt-1 font-mono text-base font-semibold text-[#F8FAFC] tabular-nums">
                     {formatINR(result.taxableIncome)}
                   </p>
                 </div>
-                <div className="luxury-subcard p-3.5">
-                  <p className="text-xs font-medium text-[#F5D76E]">Total Tax Liability</p>
-                  <p className="mt-1 font-mono text-base font-semibold text-white tabular-nums">
+                <div className="aurora-subcard p-3.5">
+                  <p className="text-xs font-medium text-[#C084FC]">Total Tax Liability</p>
+                  <p className="mt-1 font-mono text-base font-semibold text-[#F8FAFC] tabular-nums">
                     {formatINR(result.totalTaxLiability)}
                   </p>
                 </div>
@@ -538,13 +538,13 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
             </TiltCard3D>
 
             {regimeComparison && (
-              <div className="luxury-card p-5 space-y-4">
+              <div className="aurora-card p-5 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <h4 className="text-sm font-semibold text-white">
+                    <h4 className="text-sm font-semibold text-[#F8FAFC]">
                       New vs Old Regime Comparison ({fyConfig.label})
                     </h4>
-                    <p className="text-xs text-[#A1A1AA]">
+                    <p className="text-xs text-[#94A3B8]">
                       {regimeComparison.suggestedRegime === 'tie'
                         ? 'Both regimes yield equal estimated tax liability for your current inputs.'
                         : regimeComparison.suggestedRegime === 'new'
@@ -558,7 +558,7 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
                       <button
                         type="button"
                         onClick={() => setRegime(regimeComparison.suggestedRegime as TaxRegimeId)}
-                        className="rounded-xl border border-[#D4AF37]/40 bg-[#D4AF37]/14 px-3 py-1.5 text-xs font-semibold text-[#F5D76E] transition-colors hover:bg-[#D4AF37]/24 cursor-pointer whitespace-nowrap"
+                        className="rounded-xl border border-[#06B6D4]/40 bg-[#06B6D4]/12 px-3 py-1.5 text-xs font-semibold text-[#38BDF8] transition-colors hover:bg-[#06B6D4]/22 cursor-pointer whitespace-nowrap"
                       >
                         Switch to {regimeComparison.suggestedRegime === 'new' ? 'New Regime' : 'Old Regime'}
                       </button>
@@ -567,44 +567,44 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
 
                 <div className="grid gap-3 sm:grid-cols-3">
                   <div
-                    className={`luxury-subcard p-3.5 ${
+                    className={`aurora-subcard p-3.5 ${
                       regimeComparison.suggestedRegime === 'new'
-                        ? 'border-[#F5D76E]/55 bg-[#D4AF37]/10'
+                        ? 'border-[#10B981]/55 bg-[#10B981]/10'
                         : ''
                     }`}
                   >
-                    <p className="text-xs text-[#A1A1AA]">
+                    <p className="text-xs text-[#94A3B8]">
                       New Regime (115BAC)
                       {regimeComparison.suggestedRegime === 'new' && (
-                        <span className="ml-1.5 font-semibold text-[#F5D76E]">· Lower Tax</span>
+                        <span className="ml-1.5 font-semibold text-[#10B981]">· Lower Tax</span>
                       )}
                     </p>
-                    <p className="mt-1 font-mono text-lg font-bold text-white tabular-nums">
+                    <p className="mt-1 font-mono text-lg font-bold text-[#F8FAFC] tabular-nums">
                       {formatINR(regimeComparison.newRes.totalTaxLiability)}
                     </p>
                   </div>
 
                   <div
-                    className={`luxury-subcard p-3.5 ${
+                    className={`aurora-subcard p-3.5 ${
                       regimeComparison.suggestedRegime === 'old'
-                        ? 'border-[#F5D76E]/55 bg-[#D4AF37]/10'
+                        ? 'border-[#10B981]/55 bg-[#10B981]/10'
                         : ''
                     }`}
                   >
-                    <p className="text-xs text-[#A1A1AA]">
+                    <p className="text-xs text-[#94A3B8]">
                       Old Regime
                       {regimeComparison.suggestedRegime === 'old' && (
-                        <span className="ml-1.5 font-semibold text-[#F5D76E]">· Lower Tax</span>
+                        <span className="ml-1.5 font-semibold text-[#10B981]">· Lower Tax</span>
                       )}
                     </p>
-                    <p className="mt-1 font-mono text-lg font-bold text-white tabular-nums">
+                    <p className="mt-1 font-mono text-lg font-bold text-[#F8FAFC] tabular-nums">
                       {formatINR(regimeComparison.oldRes.totalTaxLiability)}
                     </p>
                   </div>
 
-                  <div className="luxury-subcard p-3.5">
-                    <p className="text-xs text-[#A1A1AA]">Tax Difference</p>
-                    <p className="mt-1 font-mono text-lg font-bold text-[#F5D76E] tabular-nums">
+                  <div className="aurora-subcard p-3.5">
+                    <p className="text-xs text-[#94A3B8]">Tax Difference</p>
+                    <p className="mt-1 font-mono text-lg font-bold text-[#38BDF8] tabular-nums">
                       {formatINR(regimeComparison.diff)}
                     </p>
                   </div>
@@ -612,19 +612,19 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
               </div>
             )}
 
-            <div className="luxury-card overflow-hidden">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#D4AF37]/15 px-5 py-4">
-                <h4 className="text-sm font-semibold text-white">
+            <div className="aurora-card overflow-hidden">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#6366F1]/18 px-5 py-4">
+                <h4 className="text-sm font-semibold text-[#F8FAFC]">
                   Estimated Slab-by-Slab Computation
                 </h4>
-                <span className="font-mono text-xs text-[#A1A1AA]">
+                <span className="font-mono text-xs text-[#94A3B8]">
                   {regimeConfig.sectionReference}
                 </span>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-[#141416] text-[#A1A1AA]">
+                  <thead className="bg-[#0B1020] text-[#94A3B8]">
                     <tr>
                       <th className="px-4 py-3 font-medium">Income Slab</th>
                       <th className="px-4 py-3 font-medium text-right">Rate</th>
@@ -632,15 +632,15 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
                       <th className="px-4 py-3 font-medium text-right">Slab Tax</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#D4AF37]/12 font-mono tabular-nums">
+                  <tbody className="divide-y divide-[#6366F1]/14 font-mono tabular-nums">
                     {result.slabBreakdown.map((row) => (
-                      <tr key={row.label} className="hover:bg-white/[0.025]">
-                        <td className="px-4 py-3 font-sans text-[#E4E4E7]">{row.label}</td>
-                        <td className="px-4 py-3 text-right text-[#A1A1AA]">{row.rate}%</td>
-                        <td className="px-4 py-3 text-right text-white">
+                      <tr key={row.label} className="hover:bg-[#6366F1]/[0.06]">
+                        <td className="px-4 py-3 font-sans text-[#E2E8F0]">{row.label}</td>
+                        <td className="px-4 py-3 text-right text-[#94A3B8]">{row.rate}%</td>
+                        <td className="px-4 py-3 text-right text-[#F8FAFC]">
                           {formatINR(row.taxableSlice)}
                         </td>
-                        <td className="px-4 py-3 text-right font-semibold text-[#F5D76E]">
+                        <td className="px-4 py-3 text-right font-semibold text-[#38BDF8]">
                           {formatINR(row.taxAmount)}
                         </td>
                       </tr>
@@ -649,49 +649,49 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
                 </table>
               </div>
 
-              <div className="space-y-2 border-t border-[#D4AF37]/18 bg-white/[0.02] px-5 py-4 text-xs font-mono tabular-nums">
-                <div className="flex justify-between text-[#A1A1AA]">
+              <div className="space-y-2 border-t border-[#6366F1]/20 bg-[#080D1B]/45 px-5 py-4 text-xs font-mono tabular-nums">
+                <div className="flex justify-between text-[#94A3B8]">
                   <span className="font-sans">Slab Tax Before Rebate</span>
                   <span>{formatINR(result.taxBeforeRebate)}</span>
                 </div>
                 {(result.rebate87A > 0 || result.marginalRelief > 0) ? (
                   <>
                     {result.rebate87A > 0 && (
-                      <div className="flex justify-between text-emerald-400">
+                      <div className="flex justify-between text-[#10B981]">
                         <span className="font-sans">Less: Section 87A Rebate</span>
                         <span>-{formatINR(result.rebate87A)}</span>
                       </div>
                     )}
                     {result.marginalRelief > 0 && (
-                      <div className="flex justify-between text-emerald-400">
+                      <div className="flex justify-between text-[#10B981]">
                         <span className="font-sans">Less: Section 87A Marginal Relief</span>
                         <span>-{formatINR(result.marginalRelief)}</span>
                       </div>
                     )}
                   </>
                 ) : (
-                  <div className="flex justify-between text-[#A1A1AA]">
+                  <div className="flex justify-between text-[#94A3B8]">
                     <span className="font-sans">Section 87A Rebate / Marginal Relief</span>
                     <span>{formatINR(0)}</span>
                   </div>
                 )}
                 {result.surcharge > 0 && (
-                  <div className="flex justify-between text-[#A1A1AA]">
+                  <div className="flex justify-between text-[#94A3B8]">
                     <span className="font-sans">Add: Surcharge</span>
                     <span>{formatINR(result.surcharge)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-[#A1A1AA]">
+                <div className="flex justify-between text-[#94A3B8]">
                   <span className="font-sans">Add: Health &amp; Education Cess (4%)</span>
                   <span>{formatINR(result.cessAmount)}</span>
                 </div>
-                <div className="flex justify-between text-[#A1A1AA]">
+                <div className="flex justify-between text-[#94A3B8]">
                   <span className="font-sans">Less: TDS / Advance Tax Paid</span>
                   <span>-{formatINR(result.tdsAndCredits)}</span>
                 </div>
-                <div className="flex justify-between border-t border-[#D4AF37]/18 pt-2 text-sm font-semibold text-white">
+                <div className="flex justify-between border-t border-[#6366F1]/20 pt-2 text-sm font-semibold text-[#F8FAFC]">
                   <span className="font-sans">Estimated Total Tax Liability</span>
-                  <span className="text-[#F5D76E]">{formatINR(result.totalTaxLiability)}</span>
+                  <span className="text-[#C084FC]">{formatINR(result.totalTaxLiability)}</span>
                 </div>
               </div>
             </div>
@@ -701,11 +701,11 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
               steps={formulaSteps}
             />
 
-            <div className="luxury-card p-5 space-y-2">
-              <h4 className="text-xs font-semibold text-white">
+            <div className="aurora-card p-5 space-y-2">
+              <h4 className="text-xs font-semibold text-[#F8FAFC]">
                 Key Assumptions ({fyConfig.label} · {regimeConfig.label})
               </h4>
-              <ul className="space-y-1 text-xs text-[#A1A1AA]">
+              <ul className="space-y-1 text-xs text-[#94A3B8]">
                 {regime === 'old' && ageCategory !== 'below-60' ? (
                   <li>
                     · Using resident{' '}
@@ -719,7 +719,7 @@ export const IncomeTaxCalc: React.FC<IncomeTaxCalcProps> = ({ onSaveHistory }) =
                   <li key={idx}>· {note}</li>
                 ))}
               </ul>
-              <p className="border-t border-[#D4AF37]/15 pt-2 text-xs text-[#A1A1AA]">
+              <p className="border-t border-[#6366F1]/18 pt-2 text-xs text-[#94A3B8]">
                 Educational Estimate Notice: Figures shown are educational estimates for CA exam
                 practice and planning, not formal tax or legal advice.
               </p>

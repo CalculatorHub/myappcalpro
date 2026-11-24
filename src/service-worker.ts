@@ -26,7 +26,13 @@ registerRoute(
 );
 
 registerRoute(
-  ({ request }) => request.destination === 'image' || request.destination === 'style' || request.destination === 'script',
+  ({ request, url }) =>
+    (request.destination === 'image' ||
+      request.destination === 'style' ||
+      request.destination === 'script') &&
+    !url.pathname.startsWith('/src/') &&
+    !url.pathname.startsWith('/@') &&
+    !url.pathname.startsWith('/node_modules/'),
   new StaleWhileRevalidate({
     cacheName: 'static-resources',
   })

@@ -289,27 +289,27 @@ export const LoanEmiCalc: React.FC<LoanEmiCalcProps> = ({ onSaveHistory }) => {
 
   return (
     <div className="grid gap-6 lg:grid-cols-12 items-start">
-      <div className="luxury-card p-6 space-y-5 lg:col-span-5">
+      <div className="aurora-card p-6 space-y-5 lg:col-span-5">
         <div>
-          <h3 className="text-lg font-semibold text-white">Home Loan &amp; EMI Inputs</h3>
-          <p className="mt-1 text-sm text-[#A1A1AA]">
+          <h3 className="text-lg font-semibold text-[#F8FAFC]">Home Loan &amp; EMI Inputs</h3>
+          <p className="mt-1 text-sm text-[#94A3B8]">
             Calculate monthly EMI from property price &amp; down payment or direct loan amount.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 border-b border-[#D4AF37]/15 pb-4">
-          <span className="text-xs font-medium text-[#A1A1AA]">Examples:</span>
+        <div className="flex flex-wrap items-center gap-2 border-b border-[#6366F1]/18 pb-4">
+          <span className="text-xs font-medium text-[#94A3B8]">Examples:</span>
           <button
             type="button"
             onClick={() => handleLoadExample(true, '6500000', '1500000', '8.75', '20', '25000')}
-            className="rounded-xl border border-[#D4AF37]/25 bg-white/[0.03] px-2.5 py-1 text-xs font-medium text-[#E4E4E7] transition-colors hover:border-[#F5D76E] hover:text-[#F5D76E] cursor-pointer"
+            className="rounded-xl border border-[#6366F1]/28 bg-[#0F172A]/60 px-2.5 py-1 text-xs font-medium text-[#E2E8F0] transition-colors hover:border-[#06B6D4] hover:text-[#38BDF8] cursor-pointer"
           >
             ₹65L Home · 20 yrs
           </button>
           <button
             type="button"
             onClick={() => handleLoadExample(true, '10000000', '2000000', '8.5', '15', '35000')}
-            className="rounded-xl border border-[#D4AF37]/25 bg-white/[0.03] px-2.5 py-1 text-xs font-medium text-[#E4E4E7] transition-colors hover:border-[#F5D76E] hover:text-[#F5D76E] cursor-pointer"
+            className="rounded-xl border border-[#6366F1]/28 bg-[#0F172A]/60 px-2.5 py-1 text-xs font-medium text-[#E2E8F0] transition-colors hover:border-[#06B6D4] hover:text-[#38BDF8] cursor-pointer"
           >
             ₹1Cr Home · 15 yrs
           </button>
@@ -318,15 +318,15 @@ export const LoanEmiCalc: React.FC<LoanEmiCalcProps> = ({ onSaveHistory }) => {
         <div
           role="group"
           aria-label="Loan input mode"
-          className="flex rounded-xl border border-[#D4AF37]/20 bg-[#0B0B0D] p-1"
+          className="flex rounded-xl border border-[#6366F1]/25 bg-[#080D1B] p-1"
         >
           <button
             type="button"
             onClick={() => setUseHomeEstimator(true)}
             className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-colors cursor-pointer ${
               useHomeEstimator
-                ? 'bg-[#D4AF37] text-[#050505] font-semibold'
-                : 'text-[#A1A1AA] hover:text-white'
+                ? 'bg-gradient-to-r from-[#2563EB] via-[#6366F1] to-[#8B5CF6] text-[#F8FAFC] font-semibold shadow-sm'
+                : 'text-[#94A3B8] hover:text-[#F8FAFC]'
             }`}
           >
             Home Price &amp; Down Payment
@@ -336,8 +336,8 @@ export const LoanEmiCalc: React.FC<LoanEmiCalcProps> = ({ onSaveHistory }) => {
             onClick={() => setUseHomeEstimator(false)}
             className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-colors cursor-pointer ${
               !useHomeEstimator
-                ? 'bg-[#D4AF37] text-[#050505] font-semibold'
-                : 'text-[#A1A1AA] hover:text-white'
+                ? 'bg-gradient-to-r from-[#2563EB] via-[#6366F1] to-[#8B5CF6] text-[#F8FAFC] font-semibold shadow-sm'
+                : 'text-[#94A3B8] hover:text-[#F8FAFC]'
             }`}
           >
             Direct Loan Amount
@@ -412,11 +412,11 @@ export const LoanEmiCalc: React.FC<LoanEmiCalcProps> = ({ onSaveHistory }) => {
 
         <div className="space-y-2.5">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-sm font-medium text-white">Tenure Unit</span>
+            <span className="text-sm font-medium text-[#F8FAFC]">Tenure Unit</span>
             <div
               role="group"
               aria-label="Loan tenure unit"
-              className="flex rounded-xl border border-[#D4AF37]/20 bg-[#0B0B0D] p-0.5"
+              className="flex rounded-xl border border-[#6366F1]/25 bg-[#080D1B] p-0.5"
             >
               {(['years', 'months'] as TenureUnit[]).map((unit) => (
                 <button
@@ -425,8 +425,8 @@ export const LoanEmiCalc: React.FC<LoanEmiCalcProps> = ({ onSaveHistory }) => {
                   onClick={() => handleToggleTenureUnit(unit)}
                   className={`rounded-lg px-2.5 py-1 text-xs font-medium capitalize transition-colors cursor-pointer ${
                     tenureUnit === unit
-                      ? 'bg-[#D4AF37] text-[#050505] font-semibold'
-                      : 'text-[#A1A1AA] hover:text-white'
+                      ? 'bg-gradient-to-r from-[#06B6D4] via-[#2563EB] to-[#6366F1] text-[#F8FAFC] font-semibold'
+                      : 'text-[#94A3B8] hover:text-[#F8FAFC]'
                   }`}
                 >
                   {unit}
@@ -464,7 +464,7 @@ export const LoanEmiCalc: React.FC<LoanEmiCalcProps> = ({ onSaveHistory }) => {
                 setTenureStr(e.target.value);
                 setTouched((prev) => ({ ...prev, tenure: true }));
               }}
-              className="gold-slider w-full"
+              className="aurora-slider w-full"
             />
           )}
         </div>
@@ -497,11 +497,11 @@ export const LoanEmiCalc: React.FC<LoanEmiCalcProps> = ({ onSaveHistory }) => {
           />
         ) : (
           <>
-            <TiltCard3D className="luxury-card-accent p-6 space-y-5" maxTiltDeg={2.5}>
-              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#D4AF37]/20 pb-4">
+            <TiltCard3D className="aurora-card-accent p-6 space-y-5" maxTiltDeg={2.5}>
+              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#6366F1]/22 pb-4">
                 <div>
-                  <p className="text-xs font-semibold text-[#F5D76E]">Estimated Monthly EMI</p>
-                  <p className="mt-1 font-mono text-3xl font-bold text-white tabular-nums sm:text-4xl">
+                  <p className="text-xs font-semibold text-[#38BDF8]">Estimated Monthly EMI</p>
+                  <p className="mt-1 font-mono text-3xl font-bold text-[#F8FAFC] tabular-nums sm:text-4xl">
                     <AnimatedNumber value={result.monthlyEmi} format={(n) => formatINR(n)} />
                   </p>
                 </div>
@@ -514,27 +514,27 @@ export const LoanEmiCalc: React.FC<LoanEmiCalcProps> = ({ onSaveHistory }) => {
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="luxury-subcard p-3.5">
-                  <p className="text-xs text-[#A1A1AA]">Loan Principal</p>
-                  <p className="mt-1 font-mono text-base font-semibold text-white tabular-nums">
+                <div className="aurora-subcard p-3.5">
+                  <p className="text-xs text-[#94A3B8]">Loan Principal</p>
+                  <p className="mt-1 font-mono text-base font-semibold text-[#F8FAFC] tabular-nums">
                     {formatINR(result.loanAmount)}
                   </p>
                 </div>
-                <div className="luxury-subcard p-3.5">
-                  <p className="text-xs font-medium text-[#F5D76E]">Total Interest</p>
-                  <p className="mt-1 font-mono text-base font-semibold text-white tabular-nums">
+                <div className="aurora-subcard p-3.5">
+                  <p className="text-xs font-medium text-[#C084FC]">Total Interest</p>
+                  <p className="mt-1 font-mono text-base font-semibold text-[#F8FAFC] tabular-nums">
                     {formatINR(result.totalInterest)}
                   </p>
                 </div>
-                <div className="luxury-subcard p-3.5">
-                  <p className="text-xs text-[#A1A1AA]">Total Repayment</p>
-                  <p className="mt-1 font-mono text-base font-semibold text-white tabular-nums">
+                <div className="aurora-subcard p-3.5">
+                  <p className="text-xs text-[#94A3B8]">Total Repayment</p>
+                  <p className="mt-1 font-mono text-base font-semibold text-[#F8FAFC] tabular-nums">
                     {formatINR(result.totalRepayment)}
                   </p>
                 </div>
-                <div className="luxury-subcard p-3.5">
-                  <p className="text-xs text-[#A1A1AA]">Cost incl. Fee</p>
-                  <p className="mt-1 font-mono text-base font-semibold text-[#F5D76E] tabular-nums">
+                <div className="aurora-subcard p-3.5">
+                  <p className="text-xs text-[#94A3B8]">Cost incl. Fee</p>
+                  <p className="mt-1 font-mono text-base font-semibold text-[#38BDF8] tabular-nums">
                     {formatINR(result.totalCostWithFee)}
                   </p>
                 </div>
@@ -542,19 +542,26 @@ export const LoanEmiCalc: React.FC<LoanEmiCalcProps> = ({ onSaveHistory }) => {
             </TiltCard3D>
 
             {/* Principal vs Interest Visual Breakdown */}
-            <div className="luxury-card p-5 sm:p-6">
-              <h4 className="text-sm font-semibold text-white">
+            <div className="aurora-card p-5 sm:p-6">
+              <h4 className="text-sm font-semibold text-[#F8FAFC]">
                 Principal vs Interest Breakdown
               </h4>
               <div className="mt-4 flex flex-col items-center gap-6 sm:flex-row">
                 <div className="relative flex h-36 w-36 shrink-0 items-center justify-center">
                   <svg viewBox="0 0 140 140" className="h-full w-full -rotate-90" aria-hidden="true">
+                    <defs>
+                      <linearGradient id="emiInterestGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#06B6D4" />
+                        <stop offset="52%" stopColor="#8B5CF6" />
+                        <stop offset="100%" stopColor="#D946EF" />
+                      </linearGradient>
+                    </defs>
                     <circle
                       cx="70"
                       cy="70"
                       r={radius}
                       fill="none"
-                      stroke="#1F1F23"
+                      stroke="#1E293B"
                       strokeWidth="16"
                     />
                     <circle
@@ -562,7 +569,7 @@ export const LoanEmiCalc: React.FC<LoanEmiCalcProps> = ({ onSaveHistory }) => {
                       cy="70"
                       r={radius}
                       fill="none"
-                      stroke="#71717A"
+                      stroke="#6366F1"
                       strokeWidth="16"
                       strokeDasharray={`${principalStroke} ${circumference}`}
                     />
@@ -571,42 +578,42 @@ export const LoanEmiCalc: React.FC<LoanEmiCalcProps> = ({ onSaveHistory }) => {
                       cy="70"
                       r={radius}
                       fill="none"
-                      stroke="#D4AF37"
+                      stroke="url(#emiInterestGradient)"
                       strokeWidth="16"
                       strokeDasharray={`${interestStroke} ${circumference}`}
                       strokeDashoffset={-principalStroke}
                     />
                   </svg>
                   <div className="absolute text-center">
-                    <span className="block font-mono text-[11px] text-[#A1A1AA]">Principal</span>
-                    <span className="font-mono text-sm font-semibold text-white tabular-nums">
+                    <span className="block font-mono text-[11px] text-[#94A3B8]">Principal</span>
+                    <span className="font-mono text-sm font-semibold text-[#F8FAFC] tabular-nums">
                       {result.principalSharePercent.toFixed(1)}%
                     </span>
                   </div>
                 </div>
 
                 <div className="flex-1 space-y-3 w-full">
-                  <div className="flex items-center justify-between border-b border-[#D4AF37]/14 pb-2 text-sm">
-                    <span className="inline-flex items-center gap-2 text-[#E4E4E7]">
-                      <span className="h-2.5 w-2.5 rounded-sm bg-zinc-500" />
+                  <div className="flex items-center justify-between border-b border-[#6366F1]/18 pb-2 text-sm">
+                    <span className="inline-flex items-center gap-2 text-[#E2E8F0]">
+                      <span className="h-2.5 w-2.5 rounded-sm bg-[#6366F1]" />
                       Loan Principal
                     </span>
-                    <span className="font-mono font-medium text-white tabular-nums">
+                    <span className="font-mono font-medium text-[#F8FAFC] tabular-nums">
                       {formatINR(result.loanAmount)} ({result.principalSharePercent.toFixed(1)}%)
                     </span>
                   </div>
-                  <div className="flex items-center justify-between border-b border-[#D4AF37]/14 pb-2 text-sm">
-                    <span className="inline-flex items-center gap-2 text-[#E4E4E7]">
-                      <span className="h-2.5 w-2.5 rounded-sm bg-[#D4AF37]" />
+                  <div className="flex items-center justify-between border-b border-[#6366F1]/18 pb-2 text-sm">
+                    <span className="inline-flex items-center gap-2 text-[#E2E8F0]">
+                      <span className="h-2.5 w-2.5 rounded-sm bg-gradient-to-r from-[#06B6D4] via-[#8B5CF6] to-[#D946EF]" />
                       Total Interest Outflow
                     </span>
-                    <span className="font-mono font-medium text-[#F5D76E] tabular-nums">
+                    <span className="font-mono font-medium text-[#38BDF8] tabular-nums">
                       {formatINR(result.totalInterest)} ({result.interestSharePercent.toFixed(1)}%)
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-[#E4E4E7]">Processing Fee</span>
-                    <span className="font-mono font-medium text-white tabular-nums">
+                    <span className="text-[#E2E8F0]">Processing Fee</span>
+                    <span className="font-mono font-medium text-[#F8FAFC] tabular-nums">
                       {formatINR(result.processingFee)}
                     </span>
                   </div>
@@ -615,25 +622,25 @@ export const LoanEmiCalc: React.FC<LoanEmiCalcProps> = ({ onSaveHistory }) => {
             </div>
 
             {/* Expandable Amortization Schedule with Yearly / Monthly Toggle */}
-            <div className="luxury-card overflow-hidden">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#D4AF37]/15 px-5 py-4">
+            <div className="aurora-card overflow-hidden">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#6366F1]/18 px-5 py-4">
                 <button
                   type="button"
                   aria-expanded={scheduleExpanded}
                   onClick={() => setScheduleExpanded((prev) => !prev)}
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-white hover:text-[#F5D76E] cursor-pointer"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-[#F8FAFC] hover:text-[#38BDF8] cursor-pointer"
                 >
                   <span>Amortization Schedule ({result.schedule.length} months)</span>
                   {scheduleExpanded ? (
-                    <ChevronUp className="h-4 w-4 text-[#F5D76E]" aria-hidden="true" />
+                    <ChevronUp className="h-4 w-4 text-[#38BDF8]" aria-hidden="true" />
                   ) : (
-                    <ChevronDown className="h-4 w-4 text-[#A1A1AA]" aria-hidden="true" />
+                    <ChevronDown className="h-4 w-4 text-[#94A3B8]" aria-hidden="true" />
                   )}
                 </button>
 
                 {scheduleExpanded && (
                   <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex rounded-lg border border-[#D4AF37]/20 bg-[#0B0B0D] p-0.5">
+                    <div className="flex rounded-lg border border-[#6366F1]/25 bg-[#080D1B] p-0.5">
                       {(['yearly', 'monthly'] as ScheduleView[]).map((view) => (
                         <button
                           key={view}
@@ -641,8 +648,8 @@ export const LoanEmiCalc: React.FC<LoanEmiCalcProps> = ({ onSaveHistory }) => {
                           onClick={() => setScheduleView(view)}
                           className={`rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors cursor-pointer ${
                             scheduleView === view
-                              ? 'bg-[#D4AF37] text-[#050505] font-semibold'
-                              : 'text-[#A1A1AA] hover:text-white'
+                              ? 'bg-gradient-to-r from-[#2563EB] via-[#6366F1] to-[#8B5CF6] text-[#F8FAFC] font-semibold'
+                              : 'text-[#94A3B8] hover:text-[#F8FAFC]'
                           }`}
                         >
                           {view}
@@ -658,7 +665,7 @@ export const LoanEmiCalc: React.FC<LoanEmiCalcProps> = ({ onSaveHistory }) => {
                             prev < result.schedule.length ? result.schedule.length : 24
                           )
                         }
-                        className="rounded-lg border border-[#D4AF37]/30 bg-[#111111] px-2.5 py-1 text-xs font-medium text-[#F5D76E] cursor-pointer"
+                        className="rounded-lg border border-[#6366F1]/30 bg-[#0F172A] px-2.5 py-1 text-xs font-medium text-[#38BDF8] cursor-pointer hover:border-[#06B6D4]"
                       >
                         {visibleMonths < result.schedule.length
                           ? `Show all ${result.schedule.length}`
@@ -673,7 +680,7 @@ export const LoanEmiCalc: React.FC<LoanEmiCalcProps> = ({ onSaveHistory }) => {
                 <div className="max-h-80 overflow-x-auto overflow-y-auto">
                   {scheduleView === 'yearly' ? (
                     <table className="w-full text-left text-xs">
-                      <thead className="sticky top-0 bg-[#141416] text-[#A1A1AA]">
+                      <thead className="sticky top-0 bg-[#0B1020] text-[#94A3B8]">
                         <tr>
                           <th className="px-3 py-3 font-medium">Year</th>
                           <th className="px-3 py-3 font-medium text-right">Opening</th>
@@ -682,20 +689,20 @@ export const LoanEmiCalc: React.FC<LoanEmiCalcProps> = ({ onSaveHistory }) => {
                           <th className="px-3 py-3 font-medium text-right">Closing</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#D4AF37]/12 font-mono tabular-nums">
+                      <tbody className="divide-y divide-[#6366F1]/14 font-mono tabular-nums">
                         {result.yearlySchedule.map((row) => (
-                          <tr key={row.year} className="hover:bg-white/[0.025]">
-                            <td className="px-3 py-2.5 text-[#A1A1AA]">Yr {row.year}</td>
-                            <td className="px-3 py-2.5 text-right text-[#A1A1AA]">
+                          <tr key={row.year} className="hover:bg-[#6366F1]/[0.06]">
+                            <td className="px-3 py-2.5 text-[#38BDF8]">Yr {row.year}</td>
+                            <td className="px-3 py-2.5 text-right text-[#94A3B8]">
                               {formatINR(row.openingBalance)}
                             </td>
-                            <td className="px-3 py-2.5 text-right text-[#E4E4E7]">
+                            <td className="px-3 py-2.5 text-right text-[#E2E8F0]">
                               {formatINR(row.principalPaid)}
                             </td>
-                            <td className="px-3 py-2.5 text-right text-[#F5D76E]">
+                            <td className="px-3 py-2.5 text-right text-[#C084FC]">
                               {formatINR(row.interestPaid)}
                             </td>
-                            <td className="px-3 py-2.5 text-right font-semibold text-white">
+                            <td className="px-3 py-2.5 text-right font-semibold text-[#F8FAFC]">
                               {formatINR(row.closingBalance)}
                             </td>
                           </tr>
@@ -704,7 +711,7 @@ export const LoanEmiCalc: React.FC<LoanEmiCalcProps> = ({ onSaveHistory }) => {
                     </table>
                   ) : (
                     <table className="w-full text-left text-xs">
-                      <thead className="sticky top-0 bg-[#141416] text-[#A1A1AA]">
+                      <thead className="sticky top-0 bg-[#0B1020] text-[#94A3B8]">
                         <tr>
                           <th className="px-3 py-3 font-medium">Month</th>
                           <th className="px-3 py-3 font-medium text-right">Opening</th>
@@ -714,23 +721,23 @@ export const LoanEmiCalc: React.FC<LoanEmiCalcProps> = ({ onSaveHistory }) => {
                           <th className="px-3 py-3 font-medium text-right">Closing</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#D4AF37]/12 font-mono tabular-nums">
+                      <tbody className="divide-y divide-[#6366F1]/14 font-mono tabular-nums">
                         {displayedMonths.map((row) => (
-                          <tr key={row.month} className="hover:bg-white/[0.025]">
-                            <td className="px-3 py-2.5 text-[#A1A1AA]">M{row.month}</td>
-                            <td className="px-3 py-2.5 text-right text-[#A1A1AA]">
+                          <tr key={row.month} className="hover:bg-[#6366F1]/[0.06]">
+                            <td className="px-3 py-2.5 text-[#38BDF8]">M{row.month}</td>
+                            <td className="px-3 py-2.5 text-right text-[#94A3B8]">
                               {formatINR(row.openingBalance)}
                             </td>
-                            <td className="px-3 py-2.5 text-right text-[#E4E4E7]">
+                            <td className="px-3 py-2.5 text-right text-[#E2E8F0]">
                               {formatINR(row.emi)}
                             </td>
-                            <td className="px-3 py-2.5 text-right text-[#E4E4E7]">
+                            <td className="px-3 py-2.5 text-right text-[#E2E8F0]">
                               {formatINR(row.principalPaid)}
                             </td>
-                            <td className="px-3 py-2.5 text-right text-[#F5D76E]">
+                            <td className="px-3 py-2.5 text-right text-[#C084FC]">
                               {formatINR(row.interestPaid)}
                             </td>
-                            <td className="px-3 py-2.5 text-right font-semibold text-white">
+                            <td className="px-3 py-2.5 text-right font-semibold text-[#F8FAFC]">
                               {formatINR(row.closingBalance)}
                             </td>
                           </tr>

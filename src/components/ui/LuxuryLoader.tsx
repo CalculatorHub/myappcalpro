@@ -24,17 +24,17 @@ export const LuxuryLoader: React.FC = () => {
     <div
       role="presentation"
       onClick={() => setVisible(false)}
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050505] transition-opacity duration-300 ${
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#080D1B] transition-opacity duration-300 ${
         fading ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
       <div className="flex flex-col items-center gap-4">
         <GoldCrestMark size={72} />
         <div className="text-center">
-          <p className="text-base font-bold tracking-tight text-white">
-            CalHub <span className="gold-text-gradient">FinCalc</span>
+          <p className="text-base font-bold tracking-tight text-[#F8FAFC]">
+            CalHub <span className="aurora-text-gradient">FinCalc</span>
           </p>
-          <p className="mt-1 text-xs text-[#A1A1AA]">Preparing calculator workspace</p>
+          <p className="mt-1 text-xs text-[#94A3B8]">Preparing calculator workspace</p>
         </div>
       </div>
     </div>

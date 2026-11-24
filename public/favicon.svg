@@ -1,5 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <rect width="64" height="64" rx="14" fill="#0A0A0A" />
-  <rect x="2" y="2" width="60" height="60" rx="12" stroke="#D4AF37" stroke-opacity="0.35" stroke-width="2" />
-  <path d="M20 18H44M20 27H44M30 18C35.5 18 39 21.5 39 27C39 32.5 35.5 36 28 36H22L38 48" stroke="#D4AF37" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+  <defs>
+    <linearGradient id="fav-rim" x1="2" y1="2" x2="62" y2="62" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#06B6D4" />
+      <stop offset="50%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#A855F7" />
+    </linearGradient>
+    <linearGradient id="fav-sym" x1="20" y1="18" x2="44" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="55%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#D946EF" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#080D1B" />
+  <rect x="2" y="2" width="60" height="60" rx="12" stroke="url(#fav-rim)" stroke-opacity="0.7" stroke-width="2" />
+  <path d="M20 18H44M20 27H44M30 18C35.5 18 39 21.5 39 27C39 32.5 35.5 36 28 36H22L38 48" stroke="url(#fav-sym)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
 </svg>

@@ -1,55 +1,11 @@
 export type FinancialYearId = 'fy-2024-25' | 'fy-2025-26' | 'fy-2026-27';
-export type FinancialYearKey = FinancialYearId;
 export type TaxRegimeId = 'new' | 'old';
-export type TaxRegime = TaxRegimeId;
-export type AgeCategory = 'below-60' | 'senior-60-79' | 'super-senior-80';
 
 export interface TaxSlab {
   min: number;
   max: number | null;
-  upto?: number | null;
   rate: number; // percentage, e.g. 5 means 5%
   label: string;
-}
-
-export interface SurchargeBracket {
-  minExclusive: number;
-  maxInclusive: number | null;
-  rate: number;
-}
-
-export interface FinancialYearTaxRules {
-  financialYear: string;
-  assessmentYear: string;
-  verified: boolean;
-  verificationSource: string;
-  assumptions: string[];
-  newRegime: {
-    name: string;
-    standardDeductionSalaried: number;
-    cessRatePercent: number;
-    rebate87A: {
-      maxTaxableIncome: number;
-      maxRebateAmount: number;
-      marginalReliefApplicable: boolean;
-    };
-    slabs: TaxSlab[];
-    surchargeBrackets: SurchargeBracket[];
-    notes: string[];
-  };
-  oldRegime: {
-    name: string;
-    standardDeductionSalaried: number;
-    cessRatePercent: number;
-    rebate87A: {
-      maxTaxableIncome: number;
-      maxRebateAmount: number;
-      marginalReliefApplicable: boolean;
-    };
-    slabsByAge: Record<AgeCategory, TaxSlab[]>;
-    surchargeBrackets: SurchargeBracket[];
-    notes: string[];
-  };
 }
 
 export interface RegimeRuleConfig {

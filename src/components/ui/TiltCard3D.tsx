@@ -8,7 +8,7 @@ interface TiltCard3DProps {
 }
 
 /**
- * Hardware-accelerated 3D mouse-tilt card with subtle champagne-gold spotlight reflection.
+ * Hardware-accelerated 3D mouse-tilt card with subtle Aurora cyan-indigo spotlight reflection.
  * Automatically degrades cleanly on touch pointers and prefers-reduced-motion.
  */
 export const TiltCard3D: React.FC<TiltCard3DProps> = ({
@@ -70,13 +70,13 @@ export const TiltCard3D: React.FC<TiltCard3DProps> = ({
       }}
       className={`relative overflow-hidden ${className}`}
     >
-      {/* Subtle champagne spotlight layer */}
+      {/* Subtle Aurora Cyan-Indigo spotlight layer */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 transition-opacity duration-300"
         style={{
           opacity: spotPos.active ? 1 : 0,
-          background: `radial-gradient(280px circle at ${spotPos.x}% ${spotPos.y}%, rgba(245, 215, 110, 0.12), transparent 72%)`,
+          background: `radial-gradient(280px circle at ${spotPos.x}% ${spotPos.y}%, rgba(56, 189, 248, 0.14), rgba(139, 92, 246, 0.08) 45%, transparent 74%)`,
         }}
       />
       <div className="relative z-10 h-full flex flex-col justify-between">{children}</div>

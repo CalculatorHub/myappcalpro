@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { MotionConfig } from 'motion/react';
 import { Header, type MainNavSection } from './components/ui/Header';
 import { LuxuryLoader } from './components/ui/LuxuryLoader';
+import { InteractiveBackground } from './components/ui/InteractiveBackground';
 import { MobileBottomNav } from './components/ui/MobileBottomNav';
 import { OfflineIndicator } from './components/ui/OfflineIndicator';
 import { HeroSection } from './components/landing/HeroSection';
@@ -143,12 +144,13 @@ export default function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="min-h-screen bg-[#050505] text-white flex flex-col pb-16 lg:pb-0">
+      <div className="relative min-h-screen bg-[#080D1B] text-[#F8FAFC] flex flex-col pb-16 lg:pb-0">
+        <InteractiveBackground />
         <LuxuryLoader />
 
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-xl focus:bg-[#D4AF37] focus:px-3 py-2 focus:text-xs focus:font-semibold focus:text-[#050505]"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-xl focus:bg-gradient-to-r focus:from-[#2563EB] focus:to-[#8B5CF6] focus:px-3 py-2 focus:text-xs focus:font-semibold focus:text-[#F8FAFC]"
         >
           Skip to content
         </a>
@@ -159,7 +161,7 @@ export default function App() {
           onGoHome={() => handleNavigateRoute('home')}
         />
 
-        <main id="main-content" className="flex-1">
+        <main id="main-content" className="relative z-10 flex-1">
           {route === 'home' ? (
             <>
               <HeroSection

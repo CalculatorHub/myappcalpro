@@ -43,7 +43,7 @@ export const NumberInput: React.FC<NumberInputProps> = ({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between gap-2">
-        <label htmlFor={id} className="text-sm font-medium text-white">
+        <label htmlFor={id} className="text-sm font-medium text-[#F8FAFC]">
           {label}
         </label>
         {tooltip && (
@@ -56,14 +56,14 @@ export const NumberInput: React.FC<NumberInputProps> = ({
               onFocus={() => setShowTooltip(true)}
               onBlur={() => setShowTooltip(false)}
               aria-label={`More information about ${label}`}
-              className="rounded-lg p-1 text-[#A1A1AA] transition-colors hover:text-[#F5D76E] focus-visible:outline-2 focus-visible:outline-[#D4AF37] cursor-pointer"
+              className="rounded-lg p-1 text-[#94A3B8] transition-colors hover:text-[#38BDF8] focus-visible:outline-2 focus-visible:outline-[#06B6D4] cursor-pointer"
             >
               <Info className="h-4 w-4" aria-hidden="true" />
             </button>
             {showTooltip && (
               <div
                 role="tooltip"
-                className="luxury-card absolute right-0 top-7 z-30 w-64 p-3 text-xs leading-relaxed text-[#A1A1AA]"
+                className="aurora-card absolute right-0 top-7 z-30 w-64 p-3 text-xs leading-relaxed text-[#94A3B8]"
               >
                 {tooltip}
               </div>
@@ -74,11 +74,11 @@ export const NumberInput: React.FC<NumberInputProps> = ({
 
       <div
         className={`flex items-center px-3.5 py-2.5 ${
-          error ? 'luxury-input luxury-input-error' : 'luxury-input'
+          error ? 'aurora-input aurora-input-error' : 'aurora-input'
         } ${disabled ? 'opacity-55' : ''}`}
       >
         {prefix && (
-          <span className="mr-2 select-none font-mono text-sm font-semibold text-[#D4AF37]">
+          <span className="mr-2 select-none font-mono text-sm font-semibold text-[#38BDF8]">
             {prefix}
           </span>
         )}
@@ -107,10 +107,10 @@ export const NumberInput: React.FC<NumberInputProps> = ({
                 : raw;
             onChange(normalized);
           }}
-          className="min-w-0 w-full bg-transparent font-mono text-base font-medium text-white tabular-nums placeholder:text-[#A1A1AA]/55 focus:outline-none disabled:cursor-not-allowed"
+          className="min-w-0 w-full bg-transparent font-mono text-base font-medium text-[#F8FAFC] tabular-nums placeholder:text-[#94A3B8]/55 focus:outline-none disabled:cursor-not-allowed"
         />
         {suffix && (
-          <span className="ml-2 shrink-0 select-none font-mono text-xs font-medium text-[#A1A1AA] whitespace-nowrap">
+          <span className="ml-2 shrink-0 select-none font-mono text-xs font-medium text-[#94A3B8] whitespace-nowrap">
             {suffix}
           </span>
         )}
@@ -120,14 +120,14 @@ export const NumberInput: React.FC<NumberInputProps> = ({
         <p
           id={errorId}
           role="alert"
-          className="flex items-center gap-1.5 text-xs font-medium text-red-400"
+          className="flex items-center gap-1.5 text-xs font-medium text-rose-400"
         >
           <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           <span>{error}</span>
         </p>
       )}
       {helperText && (
-        <p id={helperId} className="text-xs text-[#A1A1AA]">
+        <p id={helperId} className="text-xs text-[#94A3B8]">
           {helperText}
         </p>
       )}
