@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Scale, TrendingUp } from 'lucide-react';
+import { BookOpen, Home, LayoutDashboard, Scale, TrendingUp } from 'lucide-react';
 import type { MainNavSection } from './Header';
 
 interface MobileBottomNavProps {
@@ -10,7 +10,9 @@ interface MobileBottomNavProps {
 const ITEMS: { id: MainNavSection; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'interest', label: 'Interest', icon: TrendingUp },
   { id: 'loan-emi', label: 'Loan EMI', icon: Home },
-  { id: 'income-tax', label: 'Income Tax', icon: Scale },
+  { id: 'income-tax', label: 'Tax', icon: Scale },
+  { id: 'insights', label: 'Suite', icon: LayoutDashboard },
+  { id: 'learn', label: 'Learn', icon: BookOpen },
 ];
 
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
@@ -22,10 +24,13 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       aria-label="Mobile calculator navigation"
       className="fixed bottom-0 inset-x-0 z-40 lg:hidden border-t border-[#6366F1]/30 bg-[#080D1B]/90 backdrop-blur-xl no-print"
     >
-      <div className="mx-auto grid max-w-md grid-cols-3 h-14">
+      <div className="mx-auto grid max-w-md grid-cols-5 h-14">
         {ITEMS.map((item) => {
           const Icon = item.icon;
-          const isCurrent = activeNavSection === item.id;
+          const isCurrent =
+            activeNavSection === item.id ||
+            (item.id === 'insights' &&
+              (activeNavSection === 'planners' || activeNavSection === 'reports'));
           return (
             <button
               key={item.id}

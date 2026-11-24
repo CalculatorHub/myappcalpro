@@ -51,11 +51,18 @@
 }
 
 @layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
   html {
     background-color: var(--bg-primary);
     color: var(--text-primary);
     font-family: var(--font-sans);
     scroll-behavior: smooth;
+    overflow-x: clip;
   }
 
   body {
@@ -64,7 +71,8 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden;
+    overflow-x: clip;
+    min-width: 0;
   }
 }
 

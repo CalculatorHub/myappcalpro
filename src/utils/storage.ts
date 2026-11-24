@@ -137,15 +137,15 @@ export function appendCalculationHistory(
   item: Omit<CalculationHistoryItem, 'id' | 'timestamp'>
 ): CalculationHistoryItem[] {
   const existing = getCalculationHistory();
-  // Avoid duplicating identical consecutive calculations
-  if (
-    existing.length > 0 &&
-    existing[0].calculatorId === item.calculatorId &&
-    existing[0].primaryMetricValue === item.primaryMetricValue &&
-    existing[0].summaryLine === item.summaryLine
-  ) {
-    return existing;
-  }
+  // Deduplicate identical calculations across history while refreshing timestamp at top
+  const deduplicated = existing.filter(
+    (entry) =>
+      !(
+        entry.calculatorId === item.calculatorId &&
+        entry.primaryMetricValue === item.primaryMetricValue &&
+        entry.summaryLine === item.summaryLine
+      )
+  );
 
   const entry: CalculationHistoryItem = {
     ...item,
@@ -153,7 +153,7 @@ export function appendCalculationHistory(
     timestamp: new Date().toISOString(),
   };
 
-  const next = [entry, ...existing].slice(0, 25);
+  const next = [entry, ...deduplicated].slice(0, 25);
   safeSetItem(KEYS.history, JSON.stringify(next));
   return next;
 }

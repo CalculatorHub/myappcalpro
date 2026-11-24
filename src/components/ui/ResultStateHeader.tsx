@@ -8,7 +8,11 @@ import {
   Printer,
   Share2,
 } from 'lucide-react';
-import { shareCalculationResult, triggerPrintPdf } from '../../utils/exportUtils';
+import {
+  copyTextToClipboard,
+  shareCalculationResult,
+  triggerPrintPdf,
+} from '../../utils/exportUtils';
 
 interface ResultActionsBarProps {
   shareTitle: string;
@@ -30,25 +34,9 @@ export const ResultActionsBar: React.FC<ResultActionsBarProps> = ({
 
   const handleCopy = async () => {
     if (disabled || !summaryText) return;
-    try {
-      await navigator.clipboard.writeText(summaryText);
+    if (await copyTextToClipboard(summaryText)) {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2200);
-    } catch {
-      const el = document.createElement('textarea');
-      el.value = summaryText;
-      el.setAttribute('readonly', '');
-      el.style.position = 'absolute';
-      el.style.left = '-9999px';
-      document.body.appendChild(el);
-      el.select();
-      try {
-        document.execCommand('copy');
-        setCopied(true);
-        window.setTimeout(() => setCopied(false), 2200);
-      } finally {
-        document.body.removeChild(el);
-      }
     }
   };
 

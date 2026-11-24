@@ -12,7 +12,7 @@ import {
   X,
 } from 'lucide-react';
 import type { CalculationHistoryItem, CalculatorSlug } from '../../utils/storage';
-import { downloadCsvFile } from '../../utils/exportUtils';
+import { copyTextToClipboard, downloadCsvFile } from '../../utils/exportUtils';
 import { TiltCard3D } from '../ui/TiltCard3D';
 
 interface HistoryPanelProps {
@@ -58,12 +58,9 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
   const handleCopyEntry = async (item: CalculationHistoryItem) => {
     const detailsText = item.details?.length ? `\n${item.details.join('\n')}` : '';
     const payload = `${item.calculatorTitle} — ${item.primaryMetricLabel}: ${item.primaryMetricValue}\n${item.summaryLine}${detailsText}`;
-    try {
-      await navigator.clipboard.writeText(payload);
+    if (await copyTextToClipboard(payload)) {
       setCopiedId(item.id);
       window.setTimeout(() => setCopiedId(null), 2000);
-    } catch {
-      // Ignore clipboard permission errors cleanly
     }
   };
 

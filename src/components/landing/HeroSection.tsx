@@ -13,6 +13,8 @@ import {
   type CalculatorCategory,
   type CalculatorId,
 } from '../../data/calculatorCatalog';
+import { SUITE_MODULE_ITEMS } from '../suite/SuiteWorkspace';
+import type { SuiteModuleId } from '../suite/InsightsDashboardModule';
 import { GoldCrestMark } from '../ui/GoldCrestMark';
 import { TiltCard3D } from '../ui/TiltCard3D';
 
@@ -78,20 +80,26 @@ const CARD_ICON_GRADIENTS: Record<CalculatorId, { active: string; idle: string }
 
 interface HeroSectionProps {
   activeCalc: CalculatorId;
+  activeSuiteModule: SuiteModuleId;
   favorites: CalculatorId[];
   recentIds: CalculatorId[];
   onToggleFavorite: (id: CalculatorId) => void;
   onExploreCalculators: () => void;
+  onExploreSuite: () => void;
   onOpenCalculator: (id: CalculatorId) => void;
+  onOpenSuiteModule: (id: SuiteModuleId) => void;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
   activeCalc,
+  activeSuiteModule,
   favorites,
   recentIds,
   onToggleFavorite,
   onExploreCalculators,
+  onExploreSuite,
   onOpenCalculator,
+  onOpenSuiteModule,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<CalculatorCategory>('all');
@@ -107,6 +115,20 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     window.addEventListener('keydown', handleShortcut);
     return () => window.removeEventListener('keydown', handleShortcut);
   }, []);
+
+  const isSearching = searchQuery.trim().length > 0;
+
+  const filteredSuiteModules = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    return SUITE_MODULE_ITEMS.filter(
+      (mod) =>
+        mod.title.toLowerCase().includes(q) ||
+        mod.shortLabel.toLowerCase().includes(q) ||
+        mod.description.toLowerCase().includes(q) ||
+        mod.keywords.some((kw) => kw.toLowerCase().includes(q))
+    );
+  }, [searchQuery]);
 
   const filteredCards = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -169,7 +191,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               step-by-step solutions.
             </p>
 
-            <div className="flex flex-wrap items-center gap-4 pt-2">
+            <div className="flex flex-wrap items-center gap-3 pt-2">
               <button
                 type="button"
                 onClick={onExploreCalculators}
@@ -179,8 +201,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </button>
 
+              <button
+                type="button"
+                onClick={onExploreSuite}
+                className="inline-flex items-center gap-2 rounded-2xl border border-[#6366F1]/40 bg-[#0B1020]/90 px-5 py-3.5 text-sm font-semibold text-[#F8FAFC] hover:border-[#06B6D4] hover:text-[#38BDF8] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              >
+                <span>Financial Suite (10 Modules)</span>
+              </button>
+
               <span className="text-xs text-[#94A3B8]">
-                Free to use · Runs locally in your browser · No signup required
+                Free to use · SQLite persistent wealth vault · Instant calculations
               </span>
             </div>
           </motion.div>
@@ -316,11 +346,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
           )}
 
-          {/* Calculator Directory Cards with 3D Tilt & Aurora Gradient Highlights */}
-          {filteredCards.length === 0 ? (
+          {/* Calculator Directory Cards (Shown once; Suite search hits appear inline when searching) */}
+          {filteredCards.length === 0 && filteredSuiteModules.length === 0 ? (
             <div className="aurora-card p-8 text-center space-y-3">
               <p className="text-sm font-semibold text-[#F8FAFC]">
-                No calculators match your current filter
+                No calculators or planning tools match your current filter
               </p>
               <button
                 type="button"
@@ -334,98 +364,141 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               </button>
             </div>
           ) : (
-            <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
-              {filteredCards.map((card, idx) => {
-                const Icon = card.icon;
-                const isSelected = activeCalc === card.id;
-                const isFav = favorites.includes(card.id);
-                const iconTone = CARD_ICON_GRADIENTS[card.id];
-                return (
-                  <motion.div
-                    key={card.id}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      duration: 0.35,
-                      delay: 0.04 * idx,
-                      ease: [0.16, 1, 0.3, 1],
-                    }}
-                  >
-                    <TiltCard3D
-                      className={`group h-full p-4 text-left ${
-                        isSelected ? 'aurora-card-accent' : 'aurora-card'
-                      }`}
-                    >
-                      <div>
-                        <div className="flex items-center justify-between gap-2">
+            <>
+              {filteredCards.length > 0 && (
+                <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
+                  {filteredCards.map((card, idx) => {
+                    const Icon = card.icon;
+                    const isSelected = activeCalc === card.id;
+                    const isFav = favorites.includes(card.id);
+                    const iconTone = CARD_ICON_GRADIENTS[card.id];
+                    return (
+                      <motion.div
+                        key={card.id}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          duration: 0.35,
+                          delay: 0.04 * idx,
+                          ease: [0.16, 1, 0.3, 1],
+                        }}
+                      >
+                        <TiltCard3D
+                          className={`group h-full p-4 text-left ${
+                            isSelected ? 'aurora-card-accent' : 'aurora-card'
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-center justify-between gap-2">
+                              <button
+                                type="button"
+                                onClick={() => onOpenCalculator(card.id)}
+                                className={`flex h-9 w-9 items-center justify-center rounded-xl transition-all cursor-pointer ${
+                                  isSelected
+                                    ? `bg-gradient-to-br ${iconTone.active} text-[#F8FAFC]`
+                                    : `border ${iconTone.idle}`
+                                }`}
+                                aria-label={`Open ${card.title}`}
+                              >
+                                <Icon className="h-4.5 w-4.5" aria-hidden="true" />
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => onToggleFavorite(card.id)}
+                                aria-label={
+                                  isFav
+                                    ? `Unpin ${card.title} from favorites`
+                                    : `Pin ${card.title} to favorites`
+                                }
+                                aria-pressed={isFav}
+                                className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors cursor-pointer ${
+                                  isFav
+                                    ? 'text-[#38BDF8] bg-[#06B6D4]/15'
+                                    : 'text-[#94A3B8] hover:text-[#38BDF8] hover:bg-white/5'
+                                }`}
+                              >
+                                <Star
+                                  className={`h-3.5 w-3.5 ${isFav ? 'fill-current' : ''}`}
+                                  aria-hidden="true"
+                                />
+                              </button>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => onOpenCalculator(card.id)}
+                              className="mt-3.5 block w-full text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-[#06B6D4] rounded-lg"
+                            >
+                              <p className="font-mono text-[11px] text-[#94A3B8]">
+                                {card.categoryLabel} · {card.formulaTag}
+                              </p>
+                              <h3 className="mt-1 text-sm font-semibold text-[#F8FAFC] group-hover:text-[#38BDF8] transition-colors">
+                                {card.title}
+                              </h3>
+                              <p className="mt-1.5 text-xs leading-relaxed text-[#94A3B8]">
+                                {card.shortDesc}
+                              </p>
+                            </button>
+                          </div>
+
                           <button
                             type="button"
                             onClick={() => onOpenCalculator(card.id)}
-                            className={`flex h-9 w-9 items-center justify-center rounded-xl transition-all cursor-pointer ${
-                              isSelected
-                                ? `bg-gradient-to-br ${iconTone.active} text-[#F8FAFC]`
-                                : `border ${iconTone.idle}`
-                            }`}
-                            aria-label={`Open ${card.title}`}
+                            className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#38BDF8] hover:text-[#F8FAFC] transition-colors cursor-pointer"
                           >
-                            <Icon className="h-4.5 w-4.5" aria-hidden="true" />
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => onToggleFavorite(card.id)}
-                            aria-label={
-                              isFav
-                                ? `Unpin ${card.title} from favorites`
-                                : `Pin ${card.title} to favorites`
-                            }
-                            aria-pressed={isFav}
-                            className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors cursor-pointer ${
-                              isFav
-                                ? 'text-[#38BDF8] bg-[#06B6D4]/15'
-                                : 'text-[#94A3B8] hover:text-[#38BDF8] hover:bg-white/5'
-                            }`}
-                          >
-                            <Star
-                              className={`h-3.5 w-3.5 ${isFav ? 'fill-current' : ''}`}
+                            <span>Open calculator</span>
+                            <ArrowRight
+                              className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
                               aria-hidden="true"
                             />
                           </button>
-                        </div>
+                        </TiltCard3D>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
 
+              {/* Filtered Suite Matches (shown only during active search to avoid duplicating SuiteWorkspace grid) */}
+              {isSearching && filteredSuiteModules.length > 0 && (
+                <div className="pt-2 space-y-2.5">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#38BDF8]">
+                    Matching Financial Suite Modules
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+                    {filteredSuiteModules.map((mod) => {
+                      const Icon = mod.icon;
+                      const active = activeSuiteModule === mod.id;
+                      return (
                         <button
+                          key={`hero-suite-${mod.id}`}
                           type="button"
-                          onClick={() => onOpenCalculator(card.id)}
-                          className="mt-3.5 block w-full text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-[#06B6D4] rounded-lg"
+                          onClick={() => onOpenSuiteModule(mod.id)}
+                          className={`group flex items-center gap-2.5 rounded-2xl border p-3 text-left transition-all cursor-pointer min-w-0 ${
+                            active
+                              ? 'border-[#06B6D4]/65 bg-gradient-to-br from-[#2563EB]/20 via-[#6366F1]/20 to-[#A855F7]/15'
+                              : 'border-[#6366F1]/25 bg-[#0B1020]/80 hover:border-[#06B6D4]/55 hover:bg-[#0F172A]'
+                          }`}
                         >
-                          <p className="font-mono text-[11px] text-[#94A3B8]">
-                            {card.categoryLabel} · {card.formulaTag}
-                          </p>
-                          <h3 className="mt-1 text-sm font-semibold text-[#F8FAFC] group-hover:text-[#38BDF8] transition-colors">
-                            {card.title}
-                          </h3>
-                          <p className="mt-1.5 text-xs leading-relaxed text-[#94A3B8]">
-                            {card.shortDesc}
-                          </p>
+                          <span
+                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${mod.accentGradient} text-[#F8FAFC] shadow-[0_4px_12px_-4px_rgba(99,102,241,0.5)]`}
+                          >
+                            <Icon className="h-4 w-4" aria-hidden="true" />
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-[#F8FAFC] truncate group-hover:text-[#38BDF8] transition-colors">
+                              {mod.shortLabel}
+                            </p>
+                            <p className="text-[10px] text-[#94A3B8] truncate">{mod.title}</p>
+                          </div>
                         </button>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => onOpenCalculator(card.id)}
-                        className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#38BDF8] hover:text-[#F8FAFC] transition-colors cursor-pointer"
-                      >
-                        <span>Open calculator</span>
-                        <ArrowRight
-                          className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
-                          aria-hidden="true"
-                        />
-                      </button>
-                    </TiltCard3D>
-                  </motion.div>
-                );
-              })}
-            </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

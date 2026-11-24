@@ -36,7 +36,7 @@ export const Footer: React.FC<FooterProps> = ({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-6 text-xs font-medium text-[#94A3B8]">
+        <div className="flex flex-wrap items-center gap-5 text-xs font-medium text-[#94A3B8]">
           <PWAInstallButton />
           <button
             type="button"
@@ -44,6 +44,13 @@ export const Footer: React.FC<FooterProps> = ({
             className="aurora-underline hover:text-[#38BDF8] transition-colors cursor-pointer"
           >
             Calculators
+          </button>
+          <button
+            type="button"
+            onClick={() => onNavigateSection('financial-suite')}
+            className="aurora-underline hover:text-[#38BDF8] transition-colors cursor-pointer"
+          >
+            Financial Suite
           </button>
           <button
             type="button"

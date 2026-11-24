@@ -36,13 +36,42 @@ export function triggerPrintPdf(): void {
   }
 }
 
+export async function copyTextToClipboard(text: string): Promise<boolean> {
+  if (!text || (typeof navigator === 'undefined' && typeof document === 'undefined')) {
+    return false;
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    if (typeof document === 'undefined') return false;
+    const el = document.createElement('textarea');
+    el.value = text;
+    el.setAttribute('readonly', '');
+    el.style.position = 'absolute';
+    el.style.left = '-9999px';
+    document.body.appendChild(el);
+    el.select();
+    try {
+      document.execCommand('copy');
+      return true;
+    } catch {
+      return false;
+    } finally {
+      document.body.removeChild(el);
+    }
+  }
+}
+
 export async function shareCalculationResult(params: {
   title: string;
   text: string;
 }): Promise<'shared' | 'copied' | 'failed'> {
   const shareUrl =
     typeof window !== 'undefined' ? window.location.origin + window.location.pathname : '';
-  const combinedText = shareUrl ? `${params.text}\n\nComputed on CalHub FinCalc Pro: ${shareUrl}` : params.text;
+  const combinedText = shareUrl
+    ? `${params.text}\n\nComputed on CalHub FinCalc Pro: ${shareUrl}`
+    : params.text;
 
   if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
     try {
@@ -57,24 +86,6 @@ export async function shareCalculationResult(params: {
     }
   }
 
-  try {
-    await navigator.clipboard.writeText(combinedText);
-    return 'copied';
-  } catch {
-    const el = document.createElement('textarea');
-    el.value = combinedText;
-    el.setAttribute('readonly', '');
-    el.style.position = 'absolute';
-    el.style.left = '-9999px';
-    document.body.appendChild(el);
-    el.select();
-    try {
-      document.execCommand('copy');
-      return 'copied';
-    } catch {
-      return 'failed';
-    } finally {
-      document.body.removeChild(el);
-    }
-  }
+  const copied = await copyTextToClipboard(combinedText);
+  return copied ? 'copied' : 'failed';
 }

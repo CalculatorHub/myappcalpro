@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { MotionConfig } from 'motion/react';
+import { AuthProvider } from './context/AuthContext';
 import { Header, type MainNavSection } from './components/ui/Header';
 import { LuxuryLoader } from './components/ui/LuxuryLoader';
 import { InteractiveBackground } from './components/ui/InteractiveBackground';
@@ -7,7 +8,10 @@ import { MobileBottomNav } from './components/ui/MobileBottomNav';
 import { OfflineIndicator } from './components/ui/OfflineIndicator';
 import { HeroSection } from './components/landing/HeroSection';
 import { CalculatorWorkspace } from './components/calculators/CalculatorWorkspace';
+import { SuiteWorkspace } from './components/suite/SuiteWorkspace';
+import type { SuiteModuleId } from './components/suite/InsightsDashboardModule';
 import { HistoryPanel } from './components/calculators/HistoryPanel';
+import { AccountVaultModal } from './components/auth/AccountVaultModal';
 import { Footer, type AppRoute } from './components/landing/Footer';
 import { LegalView } from './components/landing/LegalView';
 import type { CalculatorId } from './data/calculatorCatalog';
@@ -43,21 +47,35 @@ function sectionForCalculator(id: CalculatorId): MainNavSection {
   return 'income-tax';
 }
 
+function sectionForSuiteModule(id: SuiteModuleId): MainNavSection {
+  if (id === 'insights') return 'insights';
+  if (id === 'reports') return 'reports';
+  if (id === 'glossary' || id === 'education') return 'learn';
+  return 'planners';
+}
+
 export default function App() {
   const [route, setRoute] = useState<AppRoute>(() =>
     typeof window === 'undefined' ? 'home' : resolveRouteFromPath(window.location.pathname)
   );
+  const [activeArea, setActiveArea] = useState<'calculators' | 'suite'>('calculators');
   const [activeCalc, setActiveCalc] = useState<CalculatorId>('simple-interest');
+  const [activeSuiteModule, setActiveSuiteModule] = useState<SuiteModuleId>('insights');
   const [lastInterestCalc, setLastInterestCalc] = useState<
     'simple-interest' | 'compound-interest'
   >('simple-interest');
+  const [lastPlannerModule, setLastPlannerModule] = useState<SuiteModuleId>('investments');
+  const [lastLearnModule, setLastLearnModule] = useState<SuiteModuleId>('glossary');
   const [favorites, setFavorites] = useState<CalculatorId[]>(() => getFavorites());
   const [recentIds, setRecentIds] = useState<CalculatorId[]>(() => getRecentCalculators());
   const [history, setHistory] = useState<CalculationHistoryItem[]>(() =>
     getCalculationHistory()
   );
 
-  const activeNavSection = sectionForCalculator(activeCalc);
+  const activeNavSection =
+    activeArea === 'suite'
+      ? sectionForSuiteModule(activeSuiteModule)
+      : sectionForCalculator(activeCalc);
 
   // Sync browser back/forward history navigation
   useEffect(() => {
@@ -100,24 +118,54 @@ export default function App() {
     if (id === 'simple-interest' || id === 'compound-interest') {
       setLastInterestCalc(id);
     }
+    setActiveArea('calculators');
     setActiveCalc(id);
     setRecentIds(recordRecentCalculator(id));
   };
 
+  const handleSelectSuiteModule = (id: SuiteModuleId) => {
+    setActiveArea('suite');
+    setActiveSuiteModule(id);
+    if (id === 'glossary' || id === 'education') {
+      setLastLearnModule(id);
+    } else if (id !== 'insights' && id !== 'reports') {
+      setLastPlannerModule(id);
+    }
+  };
+
   const handleSelectNavSection = (section: MainNavSection) => {
-    const targetCalc: CalculatorId =
-      section === 'interest'
-        ? lastInterestCalc
-        : section === 'loan-emi'
-        ? 'loan-emi'
-        : 'income-tax';
-    handleSelectCalculator(targetCalc);
-    handleNavigateSection('calculators');
+    if (section === 'interest' || section === 'loan-emi' || section === 'income-tax') {
+      const targetCalc: CalculatorId =
+        section === 'interest'
+          ? lastInterestCalc
+          : section === 'loan-emi'
+          ? 'loan-emi'
+          : 'income-tax';
+      handleSelectCalculator(targetCalc);
+      handleNavigateSection('calculators');
+      return;
+    }
+
+    const targetSuite: SuiteModuleId =
+      section === 'insights'
+        ? 'insights'
+        : section === 'reports'
+        ? 'reports'
+        : section === 'learn'
+        ? lastLearnModule
+        : lastPlannerModule;
+    handleSelectSuiteModule(targetSuite);
+    handleNavigateSection('financial-suite');
   };
 
   const handleOpenCalculator = (id: CalculatorId) => {
     handleSelectCalculator(id);
     handleNavigateSection('calculators');
+  };
+
+  const handleOpenSuiteModule = (id: SuiteModuleId) => {
+    handleSelectSuiteModule(id);
+    handleNavigateSection('financial-suite');
   };
 
   const handleToggleFavorite = (id: CalculatorId) => {
@@ -143,65 +191,76 @@ export default function App() {
   };
 
   return (
-    <MotionConfig reducedMotion="user">
-      <div className="relative min-h-screen bg-[#080D1B] text-[#F8FAFC] flex flex-col pb-16 lg:pb-0">
-        <InteractiveBackground />
-        <LuxuryLoader />
+    <AuthProvider>
+      <MotionConfig reducedMotion="user">
+        <div className="relative min-h-screen bg-[#080D1B] text-[#F8FAFC] flex flex-col pb-16 lg:pb-0">
+          <InteractiveBackground />
+          <LuxuryLoader />
 
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-xl focus:bg-gradient-to-r focus:from-[#2563EB] focus:to-[#8B5CF6] focus:px-3 py-2 focus:text-xs focus:font-semibold focus:text-[#F8FAFC]"
-        >
-          Skip to content
-        </a>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-xl focus:bg-gradient-to-r focus:from-[#2563EB] focus:to-[#8B5CF6] focus:px-3 py-2 focus:text-xs focus:font-semibold focus:text-[#F8FAFC]"
+          >
+            Skip to content
+          </a>
 
-        <Header
-          activeNavSection={activeNavSection}
-          onSelectNavSection={handleSelectNavSection}
-          onGoHome={() => handleNavigateRoute('home')}
-        />
+          <Header
+            activeNavSection={activeNavSection}
+            onSelectNavSection={handleSelectNavSection}
+            onSelectSuiteModule={handleOpenSuiteModule}
+            onGoHome={() => handleNavigateRoute('home')}
+          />
 
-        <main id="main-content" className="relative z-10 flex-1">
-          {route === 'home' ? (
-            <>
-              <HeroSection
-                activeCalc={activeCalc}
-                favorites={favorites}
-                recentIds={recentIds}
-                onToggleFavorite={handleToggleFavorite}
-                onExploreCalculators={() => handleNavigateSection('calculators')}
-                onOpenCalculator={handleOpenCalculator}
-              />
-              <CalculatorWorkspace
-                activeNavSection={activeNavSection}
-                activeCalc={activeCalc}
-                onSelectCalc={handleSelectCalculator}
-                favorites={favorites}
-                onToggleFavorite={handleToggleFavorite}
-                onSaveHistory={handleSaveHistory}
-              />
-              <HistoryPanel
-                history={history}
-                onOpenCalculator={handleOpenCalculator}
-                onRemoveItem={handleRemoveHistoryItem}
-                onClearHistory={handleClearHistory}
-              />
-            </>
-          ) : (
-            <LegalView mode={route} onBackHome={() => handleNavigateRoute('home')} />
-          )}
-        </main>
+          <main id="main-content" className="relative z-10 flex-1">
+            {route === 'home' ? (
+              <>
+                <HeroSection
+                  activeCalc={activeCalc}
+                  activeSuiteModule={activeSuiteModule}
+                  favorites={favorites}
+                  recentIds={recentIds}
+                  onToggleFavorite={handleToggleFavorite}
+                  onExploreCalculators={() => handleNavigateSection('calculators')}
+                  onExploreSuite={() => handleNavigateSection('financial-suite')}
+                  onOpenCalculator={handleOpenCalculator}
+                  onOpenSuiteModule={handleOpenSuiteModule}
+                />
+                <CalculatorWorkspace
+                  activeNavSection={sectionForCalculator(activeCalc)}
+                  activeCalc={activeCalc}
+                  onSelectCalc={handleSelectCalculator}
+                  favorites={favorites}
+                  onToggleFavorite={handleToggleFavorite}
+                  onSaveHistory={handleSaveHistory}
+                />
+                <SuiteWorkspace
+                  activeModule={activeSuiteModule}
+                  onSelectModule={handleSelectSuiteModule}
+                />
+                <HistoryPanel
+                  history={history}
+                  onOpenCalculator={handleOpenCalculator}
+                  onRemoveItem={handleRemoveHistoryItem}
+                  onClearHistory={handleClearHistory}
+                />
+              </>
+            ) : (
+              <LegalView mode={route} onBackHome={() => handleNavigateRoute('home')} />
+            )}
+          </main>
 
-        <Footer
-          onNavigateRoute={handleNavigateRoute}
-          onNavigateSection={handleNavigateSection}
-        />
-        <MobileBottomNav
-          activeNavSection={activeNavSection}
-          onSelectNavSection={handleSelectNavSection}
-        />
-        <OfflineIndicator />
-      </div>
-    </MotionConfig>
+          <Footer
+            onNavigateRoute={handleNavigateRoute}
+            onNavigateSection={handleNavigateSection}
+          />
+          <MobileBottomNav
+            activeNavSection={activeNavSection}
+            onSelectNavSection={handleSelectNavSection}
+          />
+          <AccountVaultModal />
+          <OfflineIndicator />
+        </div>
+      </MotionConfig>
+    </AuthProvider>
   );
 }
